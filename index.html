@@ -468,10 +468,7 @@ nav button.on{color:var(--gold);background:rgba(240,165,0,.1)}
   </div>
 </nav>
 <div class="view on" id="view-home">
-  <div id="live-panel-wrap"></div>
-  <div class="sh"><h2>Today &amp; Coming Up</h2><p>IPL 2026 · Season Opener</p></div>
-  <div id="ad-banner-home"></div>
-  <div id="home-matches"></div>
+  <div id="home-main"></div>
   <div class="sh" style="margin-top:24px"><h2>Teams</h2><p>Tap to open team page</p></div>
   <div class="tgrid" id="home-teams"></div>
 </div>
@@ -565,7 +562,7 @@ LSG:{logo:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAAB4CAYAAAA5ZDbSAAB
 };
 const SCHEDULE=[
 {no:1,date:'Sat, Mar 28',d:'Mar 28',t1:'RCB',t2:'SRH',time:'7:30 PM',result:'RCB won by 6 wkts',t1score:'203/4',t2score:'201/9',completed:true},
-{no:2,date:'Sun, Mar 29',d:'Mar 29',t1:'MI',t2:'KKR',time:'7:30 PM'},
+{no:2,date:'Sun, Mar 29',d:'Mar 29',t1:'MI',t2:'KKR',time:'7:30 PM',venue:'Wankhede Stadium, Mumbai'},
 {no:3,date:'Mon, Mar 30',d:'Mar 30',t1:'RR',t2:'CSK',time:'7:30 PM'},
 {no:4,date:'Tue, Mar 31',d:'Mar 31',t1:'PBKS',t2:'GT',time:'7:30 PM'},
 {no:5,date:'Wed, Apr 1',d:'Apr 1',t1:'LSG',t2:'DC',time:'7:30 PM'},
@@ -719,7 +716,12 @@ const NEWSLETTERS=[
 ];
 
 const RC={'Batsman':'#3b82f6','WK-Batsman':'#22c55e','All-Rounder':'#f59e0b','Bowler':'#e8341a'};
-const TODAY='Mar 28';
+// Dynamic TODAY — matches the d: field format in SCHEDULE ('Mar 29', 'Mar 30' etc)
+const TODAY=(function(){
+  var now=new Date();
+  var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return months[now.getMonth()]+' '+now.getDate();
+})();
 let API_KEY=localStorage.getItem('cricapi_key')||'';
 document.getElementById('api-key-input').value=API_KEY;
 function saveKey(){API_KEY=document.getElementById('api-key-input').value.trim();localStorage.setItem('cricapi_key',API_KEY);startAutoRefresh();renderLivePanel();}
@@ -1413,7 +1415,18 @@ const MATCHES = [{
     {n:'Bhuvneshwar Kumar',t:'RCB',role:'Bowl', v:7.0,note:'1/28 in 4 · Tight in death · 199 IPL wkts'},
     {n:'Phil Salt',        t:'RCB',role:'WK',   v:7.0,note:'1-handed screamer dismissed Kishan · 2 total catches'},
   ]
-}];
+  },
+  {
+    id:'m2', no:2, date:'Sun, Mar 29 2026',
+    venue:'Wankhede Stadium, Mumbai',
+    t1:'MI', t2:'KKR', status:'upcoming',
+    toss:'', result:'',
+    t1score:'', t1ov:'', t2score:'', t2ov:'',
+    inn1:{team:'MI',total:'',overs:null,runs:0,batting:[],bowling:[],overR:[],overW:[],pships:[],fow:[],moments:[]},
+    inn2:{team:'KKR',total:'',overs:null,runs:0,batting:[],bowling:[],overR:[],overW:[],pships:[],fow:[],moments:[]},
+    ratings:[]
+  }
+];
 
 // ═══════════════════════════════════════════════════════════════════════
 // CHART HELPERS
@@ -1468,6 +1481,246 @@ function chartTitle(txt,col){
 // ═══════════════════════════════════════════════════════════════════════
 // MATCH LIST
 // ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════
+// SMART HOME PAGE — renders differently based on match state & time
+// ═══════════════════════════════════════════════════════════════════════
+
+function startMatchCountdown(timeStr, matchNo){
+  // Parse "7:30 PM" into today's Date in IST (UTC+5:30)
+  function getMatchDate(timeStr){
+    var parts=timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if(!parts)return null;
+    var h=parseInt(parts[1]), m=parseInt(parts[2]), ampm=parts[3].toUpperCase();
+    if(ampm==='PM' && h!==12) h+=12;
+    if(ampm==='AM' && h===12) h=0;
+    // Build today in IST: get current UTC, add 5:30, set time
+    var now=new Date();
+    // Create target as UTC by subtracting IST offset (5h30m = 330 min)
+    var target=new Date();
+    target.setHours(h,m,0,0);
+    // Adjust: if user is not in IST we treat the match time as IST
+    // Get IST midnight offset
+    var istOffset=330; // IST is UTC+5:30
+    var localOffset=-now.getTimezoneOffset(); // in minutes
+    var diff=(istOffset-localOffset)*60*1000; // ms to add to convert local→IST
+    target=new Date(target.getTime()-diff);
+    return target;
+  }
+
+  var matchDate=getMatchDate(timeStr);
+  if(!matchDate)return;
+
+  function tick(){
+    var el=document.getElementById('match-countdown-wrap');
+    if(!el)return; // navigated away
+    var now=new Date();
+    var msLeft=matchDate-now;
+
+    if(msLeft<=0){
+      // Match time reached
+      el.innerHTML=
+        '<div style="display:flex;align-items:center;gap:8px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:7px;padding:10px 14px">'+
+          '<div class="live-dot"></div>'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:13px;font-weight:700;color:var(--green);letter-spacing:1px">MATCH TIME! The game should be starting now</div>'+
+        '</div>';
+      return;
+    }
+
+    var totalSec=Math.floor(msLeft/1000);
+    var hrs=Math.floor(totalSec/3600);
+    var mins=Math.floor((totalSec%3600)/60);
+    var secs=totalSec%60;
+
+    function pad(n){return n<10?'0'+n:String(n);}
+
+    el.innerHTML=
+      '<div style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:10px 14px">'+
+        '<div style="font-family:Barlow Condensed,sans-serif;font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--dim);margin-bottom:8px">Match starts in</div>'+
+        '<div style="display:flex;gap:10px;align-items:flex-end">'+
+          (hrs>0?
+            '<div style="text-align:center">'+
+              '<div style="font-family:Teko,sans-serif;font-size:36px;font-weight:700;color:var(--gold);line-height:1">'+pad(hrs)+'</div>'+
+              '<div style="font-family:Barlow Condensed,sans-serif;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim)">HRS</div>'+
+            '</div>'+
+            '<div style="font-family:Teko,sans-serif;font-size:28px;font-weight:700;color:var(--dim);padding-bottom:14px">:</div>':'')+ 
+          '<div style="text-align:center">'+
+            '<div style="font-family:Teko,sans-serif;font-size:36px;font-weight:700;color:var(--gold);line-height:1">'+pad(mins)+'</div>'+
+            '<div style="font-family:Barlow Condensed,sans-serif;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim)">MINS</div>'+
+          '</div>'+
+          '<div style="font-family:Teko,sans-serif;font-size:28px;font-weight:700;color:var(--dim);padding-bottom:14px">:</div>'+
+          '<div style="text-align:center">'+
+            '<div style="font-family:Teko,sans-serif;font-size:36px;font-weight:700;color:'+(totalSec<60?'var(--red)':'var(--gold)')+';line-height:1">'+pad(secs)+'</div>'+
+            '<div style="font-family:Barlow Condensed,sans-serif;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim)">SECS</div>'+
+          '</div>'+
+          '<div style="margin-left:6px;padding-bottom:4px">'+
+            '<div style="font-family:Barlow Condensed,sans-serif;font-size:11px;color:var(--dim2)">'+timeStr+' IST</div>'+
+            '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;color:var(--dim)">Wankhede Stadium</div>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+
+    setTimeout(tick,1000);
+  }
+  tick();
+}
+
+function renderHomePage(){
+  var el=document.getElementById('home-main');
+  if(!el)return;
+
+  var now=new Date();
+  var completed=SCHEDULE.filter(function(s){return s.completed;});
+  var todayS=SCHEDULE.filter(function(s){return s.d===TODAY && !s.completed;});
+  var upcoming=SCHEDULE.filter(function(s){return !s.completed && s.d!==TODAY;});
+  var lastCompleted=completed.length?completed[completed.length-1]:null;
+  var todayMatch=todayS[0]||null;
+  var nextMatch=todayMatch||upcoming[0]||null;
+  var afterNext=(todayMatch?upcoming:upcoming.slice(1)).slice(0,2);
+
+  var html='';
+
+  // ── A. If there's a live/today match — show it as the hero ──────────
+  if(todayMatch){
+    var t1=TEAMS[todayMatch.t1], t2=TEAMS[todayMatch.t2];
+    function lg(team,t,sz){
+      return t&&t.logo?'<img src="'+t.logo+'" style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;object-fit:contain">'
+        :'<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:'+(t?t.color:'#888')+';display:flex;align-items:center;justify-content:center;font-family:Teko,sans-serif;font-size:'+(sz/3)+'px;font-weight:700;color:#fff">'+team.slice(0,3)+'</div>';
+    }
+    html+=
+      '<div style="background:var(--s1);border:1px solid rgba(240,165,0,.35);border-left:4px solid var(--gold);border-radius:10px;padding:18px 20px;margin-bottom:16px">'+
+        '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:6px;margin-bottom:12px">'+
+          '<div class="live-dot"></div>TODAY\'S MATCH · Match '+todayMatch.no+' · '+todayMatch.time+' IST'+
+        '</div>'+
+        '<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">'+
+          '<div style="flex:1;display:flex;align-items:center;gap:10px">'+
+            lg(todayMatch.t1,t1,44)+
+            '<div style="font-family:Teko,sans-serif;font-size:28px;font-weight:700">'+todayMatch.t1+'</div>'+
+          '</div>'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:13px;color:var(--dim);font-weight:700">VS</div>'+
+          '<div style="flex:1;display:flex;align-items:center;gap:10px;justify-content:flex-end">'+
+            '<div style="font-family:Teko,sans-serif;font-size:28px;font-weight:700">'+todayMatch.t2+'</div>'+
+            lg(todayMatch.t2,t2,44)+
+          '</div>'+
+        '</div>'+
+        '<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--dim2);margin-top:8px">📍 '+(todayMatch.venue||'')+
+        ' &nbsp;·&nbsp; <span style="color:var(--gold);font-weight:700">Pre-match forecast available</span></div>'+
+        '<div id="match-countdown-wrap" style="margin-top:12px;margin-bottom:2px"></div>'+
+        '<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">'+
+          '<button onclick="openMatch(\'m'+todayMatch.no+'\')" style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:6px 14px;border-radius:5px;border:1px solid var(--gold);background:rgba(240,165,0,.1);color:var(--gold);cursor:pointer">📊 Forecast &amp; Analytics</button>'+
+          '<button onclick="go(\'schedule\')" style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:6px 14px;border-radius:5px;border:1px solid var(--bd2);background:transparent;color:var(--dim2);cursor:pointer">Full Schedule</button>'+
+        '</div>'+
+      '</div>';
+  }
+
+  // ── B. Last completed match — compact result card ────────────────────
+  if(lastCompleted){
+    var mc=MATCHES.find(function(m){return m.no===lastCompleted.no;});
+    var t1=TEAMS[lastCompleted.t1], t2=TEAMS[lastCompleted.t2];
+    function lg2(team,t,sz){
+      return t&&t.logo?'<img src="'+t.logo+'" style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;object-fit:contain">'
+        :'<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:'+(t?t.color:'#888')+';display:flex;align-items:center;justify-content:center;font-family:Teko,sans-serif;font-size:'+(sz/3)+'px;font-weight:700;color:#fff">'+team.slice(0,3)+'</div>';
+    }
+    html+=
+      '<div style="background:var(--s1);border:1px solid var(--bd);border-radius:10px;overflow:hidden;margin-bottom:16px">'+
+        '<div style="background:rgba(34,197,94,.06);border-bottom:1px solid rgba(34,197,94,.15);padding:8px 16px;display:flex;align-items:center;justify-content:space-between">'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--green)">Match Result · Match '+lastCompleted.no+' · '+lastCompleted.date+' · '+(lastCompleted.venue||'')+' </div>'+
+          '<div id="sc-toggle" onclick="toggleHomeCard()" style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);cursor:pointer">Full Scorecard ▼</div>'+
+        '</div>'+
+        '<div style="padding:14px 16px">'+
+          '<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'+
+            '<div style="flex:1;min-width:100px">'+
+              '<div style="display:flex;align-items:center;gap:8px;font-family:Teko,sans-serif;font-size:26px;font-weight:700">'+lg2(lastCompleted.t1,t1,28)+lastCompleted.t1+'</div>'+
+              '<div style="font-family:Barlow Condensed,sans-serif;font-size:16px;font-weight:700;color:var(--dim2);margin-top:2px">'+lastCompleted.t1score+' <span style="font-size:11px;font-weight:400">('+lastCompleted.t1ov+' ov)</span></div>'+
+            '</div>'+
+            '<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--dim);font-weight:700">VS</div>'+
+            '<div style="flex:1;min-width:100px">'+
+              '<div style="display:flex;align-items:center;gap:8px;font-family:Teko,sans-serif;font-size:26px;font-weight:700">'+lg2(lastCompleted.t2,t2,28)+lastCompleted.t2+'</div>'+
+              '<div style="font-family:Barlow Condensed,sans-serif;font-size:16px;font-weight:700;color:var(--green);margin-top:2px">'+lastCompleted.t2score+' <span style="font-size:11px;font-weight:400">('+lastCompleted.t2ov+' ov)</span></div>'+
+            '</div>'+
+          '</div>'+
+          '<div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:6px;padding:8px 12px;margin-top:10px">'+
+            '<div style="font-family:Teko,sans-serif;font-size:16px;font-weight:700;color:var(--green)">🏆 '+lastCompleted.result+'</div>'+
+            (mc&&mc.inn2&&mc.inn2.batting.length?
+              '<div style="font-family:Barlow Condensed,sans-serif;font-size:11px;color:var(--dim2);margin-top:3px">'+
+                mc.inn2.batting.filter(function(b){return b.r>=20;}).map(function(b){var notOut=b.d==='not out';return b.n+(notOut?'*':'')+' '+b.r+'('+b.b+')';}).join(' · ')+
+                (mc.inn1?'&nbsp;&nbsp;·&nbsp;&nbsp;'+mc.inn1.bowling.filter(function(b){return b.w>=2;}).map(function(b){return b.n+' '+b.w+'/'+b.r;}).join(' · '):'')+'</div>':'')+
+            '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;color:var(--dim);margin-top:4px">Player of Match: '+(mc?mc.pom||'—':'—')+'</div>'+
+          '</div>'+
+          '<div id="home-scorecard-detail" style="display:none;margin-top:12px">'+
+            (mc?buildHomeScorecard(mc):'')+ 
+          '</div>'+
+          '<div style="margin-top:10px;display:flex;gap:8px">'+
+            '<button onclick="openMatch(\''+(mc?mc.id:'m1')+'\')" style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:6px 14px;border-radius:5px;border:1px solid var(--bd2);background:transparent;color:var(--dim2);cursor:pointer">→ Matches tab for charts &amp; analytics</button>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+  }
+
+  // ── C. Sponsor ad ────────────────────────────────────────────────────
+  html+='<div id="ad-banner-home"></div>';
+
+  // ── D. Upcoming fixtures (not today) ────────────────────────────────
+  if(afterNext.length||(!todayMatch && upcoming.length)){
+    var toShow=todayMatch?afterNext:upcoming.slice(0,3);
+    if(toShow.length){
+      html+='<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--dim);padding:12px 0 8px;border-top:1px solid var(--bd);margin-top:4px">Up Next</div>';
+      toShow.forEach(function(m){html+=mRow(m,"go('schedule')");});
+    }
+  }
+
+  el.innerHTML=html;
+  renderAdBanner('ad-banner-home');
+  // Start countdown if there's a today match
+  if(todayMatch) startMatchCountdown(todayMatch.time, todayMatch.no);
+}
+
+function toggleHomeCard(){
+  var det=document.getElementById('home-scorecard-detail');
+  var btn=document.getElementById('sc-toggle');
+  if(!det||!btn)return;
+  var open=det.style.display==='none';
+  det.style.display=open?'block':'none';
+  btn.textContent=open?'Full Scorecard ▲':'Full Scorecard ▼';
+}
+
+function buildHomeScorecard(m){
+  if(!m||!m.inn1||!m.inn1.batting.length)return '';
+  function batRows(inn){
+    return inn.batting.map(function(b){
+      var sr=b.b>0?((b.r/b.b)*100).toFixed(0):'—';
+      var notOut=b.d==='not out';
+      return '<tr><td style="padding:4px 8px;font-family:Barlow Condensed,sans-serif;font-size:12px;border-bottom:1px solid var(--bd)">'+b.n+(notOut?'*':'')+'<span style="color:var(--dim);font-size:10px;margin-left:4px">'+b.d+'</span></td>'+
+        '<td style="padding:4px 8px;font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;color:var(--gold);text-align:right;border-bottom:1px solid var(--bd)">'+b.r+'</td>'+
+        '<td style="padding:4px 8px;font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--dim2);text-align:right;border-bottom:1px solid var(--bd)">'+b.b+'</td>'+
+        '<td style="padding:4px 8px;font-family:Barlow Condensed,sans-serif;font-size:12px;text-align:right;border-bottom:1px solid var(--bd)">'+sr+'</td></tr>';
+    }).join('');
+  }
+  function bowlRows(inn){
+    return inn.bowling.map(function(b){
+      var econ=(b.r/b.o).toFixed(1);
+      return '<tr><td style="padding:4px 8px;font-family:Barlow Condensed,sans-serif;font-size:12px;border-bottom:1px solid var(--bd)">'+b.n+'</td>'+
+        '<td style="padding:4px 8px;font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--dim2);text-align:right;border-bottom:1px solid var(--bd)">'+b.o+'</td>'+
+        '<td style="padding:4px 8px;font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;color:var(--red);text-align:right;border-bottom:1px solid var(--bd)">'+b.w+'</td>'+
+        '<td style="padding:4px 8px;font-family:Barlow Condensed,sans-serif;font-size:12px;text-align:right;border-bottom:1px solid var(--bd)">'+econ+'</td></tr>';
+    }).join('');
+  }
+  var t=function(head,rows){
+    return '<div style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin:10px 0 4px">'+head+'</div>'+
+      '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">'+rows+'</table></div>';
+  };
+  return t(m.inn1.team+' Innings — '+m.inn1.total,
+    '<thead><tr>'+['Batter','R','B','SR'].map(function(h){return '<th style="padding:4px 8px;font-family:Barlow Condensed,sans-serif;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);text-align:'+(h==='Batter'?'left':'right')+'">'+h+'</th>';}).join('')+'</tr></thead><tbody>'+batRows(m.inn1)+'</tbody>')+
+  t('RCB Bowling',
+    '<thead><tr>'+['Bowler','O','W','Econ'].map(function(h){return '<th style="padding:4px 8px;font-family:Barlow Condensed,sans-serif;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);text-align:'+(h==='Bowler'?'left':'right')+'">'+h+'</th>';}).join('')+'</tr></thead><tbody>'+bowlRows(m.inn1)+'</tbody>')+
+  (m.inn2&&m.inn2.batting.length?
+    t(m.inn2.team+' Innings — '+m.inn2.total,
+      '<thead><tr>'+['Batter','R','B','SR'].map(function(h){return '<th style="padding:4px 8px;font-family:Barlow Condensed,sans-serif;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);text-align:'+(h==='Batter'?'left':'right')+'">'+h+'</th>';}).join('')+'</tr></thead><tbody>'+batRows(m.inn2)+'</tbody>')+
+    t('SRH Bowling',
+      '<thead><tr>'+['Bowler','O','W','Econ'].map(function(h){return '<th style="padding:4px 8px;font-family:Barlow Condensed,sans-serif;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);text-align:'+(h==='Bowler'?'left':'right')+'">'+h+'</th>';}).join('')+'</tr></thead><tbody>'+bowlRows(m.inn2)+'</tbody>')+
+  '':'');
+}
+
+
 function renderMatchList(){
   var el=document.getElementById('match-list');
   if(!el)return;
@@ -1598,7 +1851,8 @@ function _drawForecast(m){
       },
       ppTrend:{
         label:'Avg PP Score at Chinnaswamy (IPL 2025)',
-        avg:'52/1'
+        avg:'52/1',
+        note:'Both RCB and SRH are among the <b style="color:var(--gold)">highest powerplay scoring sides</b> in recent IPL seasons \u2014 expect an explosive opening 6 overs.'
       },
       impactPlayer:{
         name:'Virat Kohli',
@@ -1611,6 +1865,38 @@ function _drawForecast(m){
         t1pct:35, t2pct:65,
         t1label:m.t1, t2label:m.t2,
         reason:'SRH edge based on H2H record (13-11), home advantage slight factor, but Chinnaswamy historically favours chasing (3-2 in IPL 2025). Kohli\'s home record and RCB\'s batting depth countered by SRH\'s explosive top order without Cummins.'
+      }
+    },
+    m2:{
+      h2h:{
+        total:35, t1wins:24, t2wins:11,
+        t1:'MI', t2:'KKR'
+      },
+      venue:{
+        name:'Wankhede Stadium, Mumbai',
+        season:'IPL 2025 · From 7 Matches',
+        batFirst:3, batSecond:4
+      },
+      avgFirstInnings:{
+        score:'175',
+        label:'Average 1st Innings Score at Wankhede (IPL 2025)'
+      },
+      ppTrend:{
+        label:'Avg PP Score at Wankhede (IPL 2025)',
+        avg:'53/1',
+        note:'MI have one of the <b style="color:var(--gold)">most aggressive powerplay batting lineups</b> in the IPL \u2014 Rohit, SKY and Tilak Varma make them lethal in the first 6 overs at their home ground.'
+      },
+      impactPlayer:{
+        name:'Suryakumar Yadav',
+        team:'MI',
+        stat1:{label:'100s since IPL 2023',value:'2'},
+        stat2:{label:'50s since IPL 2023',value:'13'},
+        note:'From 43 innings in IPL since 2023'
+      },
+      winMeter:{
+        t1pct:70, t2pct:30,
+        t1label:'MI', t2label:'KKR',
+        reason:'MI dominate this H2H with 24 wins to KKR\u2019s 11 (total 35). Wankhede is MI\u2019s fortress \u2014 they have a significantly better home record here. Chasing teams have won 4 out of 7 at this venue in IPL 2025, but MI\u2019s batting depth and Wankhede familiarity gives them a strong 70-30 edge.'
       }
     }
   };
@@ -1663,6 +1949,26 @@ function _drawForecast(m){
       '</div>'+
     '</div>';
 
+  // ── SECTION 1b: Avg 1st Innings (if available)
+  var avgInnHTML='';
+  if(fc.avgFirstInnings){
+    var af=fc.avgFirstInnings;
+    avgInnHTML=
+      '<div class="fc-card" style="border-left:3px solid var(--gold)">'+
+        '<div class="fc-section-title">Average 1st Innings Score</div>'+
+        '<div style="font-family:Barlow Condensed,sans-serif;font-size:11px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:16px">'+af.label+'</div>'+
+        '<div style="display:flex;align-items:center;gap:20px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:18px 22px">'+
+          '<div style="font-family:Teko,sans-serif;font-size:80px;font-weight:700;color:var(--gold);line-height:1;flex-shrink:0">'+af.score+'</div>'+
+          '<div>'+
+            '<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--txt);margin-bottom:4px">Runs</div>'+
+            '<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--dim2);line-height:1.6">'+
+              'The average first innings total at this venue gives batting teams a benchmark to target and bowling sides a par score to defend.'+
+            '</div>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+  }
+
   // ── SECTION 2: Venue Trends ────────────────────────────────────────
   var v=fc.venue;
   var totalGames=v.batFirst+v.batSecond;
@@ -1708,7 +2014,7 @@ function _drawForecast(m){
         '</div>'+
       '</div>'+
       '<div style="background:rgba(240,165,0,.06);border:1px solid rgba(240,165,0,.2);border-radius:6px;padding:10px 14px;margin-top:12px;font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--dim2)">'+
-        '📌 Both RCB and SRH are among the <b style="color:var(--gold)">highest powerplay scoring sides</b> in recent IPL seasons — expect an explosive opening 6 overs.'+
+        '📌 '+(fc.ppTrend.note||('Both '+m.t1+' and '+m.t2+' are explosive in the powerplay \u2014 expect an aggressive opening 6 overs.'))+
       '</div>'+
     '</div>';
 
@@ -1852,7 +2158,7 @@ function _drawForecast(m){
     '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--dim);margin-bottom:16px;padding:10px 0;border-bottom:1px solid var(--bd)">'+
       '📊 Pre-Match Forecast — Data as of Match Day · Predictions based on historical trends'+
     '</div>'+
-    h2hHTML+ppHTML+venueHTML+impactHTML+winHTML;
+    h2hHTML+(avgInnHTML||'')+ppHTML+venueHTML+impactHTML+winHTML;
 }
 
 function _drawSC(m){
@@ -2675,7 +2981,7 @@ function go(id){
   if(nb) nb.classList.add('on');
   window.scrollTo(0,0);
   nextAd();
-  if(id==='matches') setTimeout(renderMatchList,0);
+  if(id==='home') setTimeout(renderHomePage,0);if(id==='matches') setTimeout(renderMatchList,0);
   if(id==='scores')  setTimeout(renderScorecardsPage,0);
   if(id==='stats')   setTimeout(renderStats,0);
 }
@@ -2691,9 +2997,9 @@ function mRow(m,fn){
   return '<div class="mrow'+(isCompleted?' completed-match':isT?' today-match':'')+'"'+(fn?' onclick="'+fn+'"':'')+'>'+
     '<div class="mno">'+m.no+'</div>'+
     '<div class="mteams">'+
-      teamBadge(t1,m.t1,isCompleted?m.t2score:'','var(--dim2)')+
+      teamBadge(t1,m.t1,isCompleted?m.t1score:'','var(--green)')+
       '<div class="mvs">VS</div>'+
-      teamBadge(t2,m.t2,isCompleted?m.t1score:'','var(--green)')+
+      teamBadge(t2,m.t2,isCompleted?m.t2score:'','var(--dim2)')+
     '</div>'+
     '<div class="mright">'+
       (isCompleted?'<div class="m-result-badge">'+m.result+'</div>':
@@ -2707,7 +3013,7 @@ function renderSchedule(){
   const list=schedFilter==='ALL'?SCHEDULE:SCHEDULE.filter(m=>m.t1===schedFilter||m.t2===schedFilter);
   const g={};list.forEach(m=>{if(!g[m.d])g[m.d]=[];g[m.d].push(m);});
   let html='';
-  for(const[d,ms]of Object.entries(g)){html+='<div class="date-sep'+(d===TODAY?' today':'')+'">'+ms[0].date+(d===TODAY?' -- Today':'')+'</div>';ms.forEach(m=>{html+=mRow(m,"openTeam('"+m.t1+"','schedule')");});}
+  for(const[d,ms]of Object.entries(g)){html+='<div class="date-sep'+(d===TODAY?' today':'')+'">'+ms[0].date+(d===TODAY?' — TODAY':'')+'</div>';ms.forEach(m=>{html+=mRow(m,"openTeam('"+m.t1+"','schedule')");});}
   document.getElementById('sched-list').innerHTML=html||'<p style="color:var(--dim);font-family:Barlow Condensed,sans-serif;padding:12px 0">No matches found</p>';
 }
 function filterSched(team,btn){schedFilter=team;document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderSchedule();}
@@ -2819,26 +3125,33 @@ function switchTab(name,btn){
 (function init(){
   const bar=document.getElementById('sched-filters');
   ['ALL',...Object.keys(TEAMS)].forEach(abbr=>{const b=document.createElement('button');b.className='fbtn'+(abbr==='ALL'?' on':'');b.textContent=abbr==='ALL'?'All Teams':abbr;b.onclick=()=>filterSched(abbr,b);bar.appendChild(b);});
-  // Home: show completed first, then next fixture, then 2 upcoming
+  // Home: completed → today → next → upcoming (all date-aware)
   var completedMatches=SCHEDULE.filter(function(s){return s.completed;});
-  var upcomingMatches=SCHEDULE.filter(function(s){return !s.completed;});
+  var todayMatches=SCHEDULE.filter(function(s){return !s.completed && s.d===TODAY;});
+  var upcomingMatches=SCHEDULE.filter(function(s){return !s.completed && s.d!==TODAY;});
   var nextMatch=upcomingMatches[0];
   var afterNext=upcomingMatches.slice(1,3);
   var homeHTML='';
   if(completedMatches.length){
-    homeHTML+='<div class="date-sep today" style="border-top:none;padding-top:0;margin-bottom:6px">Recent Result</div>';
-    completedMatches.forEach(function(m){homeHTML+=mRow(m,"openMatch('m"+m.no+"')");});
+    homeHTML+='<div class="date-sep today" style="border-top:none;padding-top:0;margin-bottom:6px">Recent Results</div>';
+    completedMatches.slice(-2).forEach(function(m){homeHTML+=mRow(m,"openMatch('m"+m.no+"')");});
   }
-  if(nextMatch){
+  if(todayMatches.length){
+    homeHTML+='<div class="date-sep today" style="margin-top:10px"><div class="live-dot" style="display:inline-block;margin-right:6px"></div>Today\u2019s Match</div>';
+    todayMatches.forEach(function(m){homeHTML+=mRow(m,"go('schedule')");});
+  }
+  if(nextMatch && !todayMatches.length){
     homeHTML+='<div class="date-sep" style="margin-top:10px">Next Fixture</div>';
+    homeHTML+=mRow(nextMatch,"go('schedule')");
+  } else if(nextMatch){
+    homeHTML+='<div class="date-sep" style="margin-top:10px">Coming Up</div>';
     homeHTML+=mRow(nextMatch,"go('schedule')");
   }
   if(afterNext.length){
     homeHTML+='<div class="date-sep" style="margin-top:10px">Up Next</div>';
-    afterNext.forEach(function(m){homeHTML+=mRow(m,"go('schedule')");});
+    afterNext.slice(0,2).forEach(function(m){homeHTML+=mRow(m,"go('schedule')");});
   }
-  document.getElementById('home-matches').innerHTML=homeHTML;
-  renderSchedule();renderPoints();renderTeamCards('home-teams','home');renderTeamCards('teams-list','teams');renderLivePanel();renderAdBanner('ad-banner-home');renderMatchList();renderScorecardsPage();
+  renderHomePage();renderSchedule();renderPoints();renderTeamCards('home-teams','home');renderTeamCards('teams-list','teams');renderMatchList();renderScorecardsPage();
 })();
 
 </script>
