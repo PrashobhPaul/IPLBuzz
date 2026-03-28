@@ -444,6 +444,10 @@ nav button.on{color:var(--gold);background:rgba(240,165,0,.1)}
 .stat-bar-fill{height:100%;border-radius:3px;background:var(--gold)}
 .stat-section-title{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--dim);padding:14px 0 8px}
 .stats-note{font-family:'Barlow Condensed',sans-serif;font-size:11px;color:var(--dim);text-align:center;padding:16px;border:1px solid var(--bd);border-radius:7px;background:var(--s1);margin-top:8px}
+
+/* ── FORECAST ── */
+.fc-card{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:18px 20px;margin-bottom:14px}
+.fc-section-title{font-family:'Teko',sans-serif;font-size:18px;font-weight:700;color:var(--txt);margin-bottom:14px;letter-spacing:-.2px;display:flex;align-items:center;gap:8px}
 </style>
 </head>
 <body>
@@ -1536,20 +1540,23 @@ function renderMatchDetail(m){
       '</div>'+
     '</div>'+
     '<div class="atabs">'+
-      '<button class="atab on" onclick="switchATab(\'sc\',this)">Scorecard</button>'+
+      '<button class="atab on" onclick="switchATab(\'forecast\',this)">Pre-Match Forecast</button>'+
+      '<button class="atab"    onclick="switchATab(\'sc\',this)">Scorecard</button>'+
       '<button class="atab"    onclick="switchATab(\'worm\',this)">Worm Chart</button>'+
       '<button class="atab"    onclick="switchATab(\'overs\',this)">Over Analysis</button>'+
       '<button class="atab"    onclick="switchATab(\'ps\',this)">Partnerships</button>'+
       '<button class="atab"    onclick="switchATab(\'players\',this)">Player Analysis</button>'+
       '<button class="atab"    onclick="switchATab(\'moments\',this)">Key Moments</button>'+
     '</div>'+
-    '<div class="apanel on" id="ap-sc"></div>'+
+    '<div class="apanel on" id="ap-forecast"></div>'+
+    '<div class="apanel"    id="ap-sc"></div>'+
     '<div class="apanel"    id="ap-worm"></div>'+
     '<div class="apanel"    id="ap-overs"></div>'+
     '<div class="apanel"    id="ap-ps"></div>'+
     '<div class="apanel"    id="ap-players"></div>'+
     '<div class="apanel"    id="ap-moments"></div>';
 
+  _drawForecast(m);
   _drawSC(m);
   _drawWorm(m);
   _drawOvers(m);
@@ -1568,6 +1575,286 @@ function switchATab(name,btn){
 // ═══════════════════════════════════════════════════════════════════════
 // TAB 1 — SCORECARD (both innings)
 // ═══════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════
+// PRE-MATCH FORECAST — _drawForecast(m)
+// ═══════════════════════════════════════════════════════════════════════
+function _drawForecast(m){
+  var el=document.getElementById('ap-forecast');
+  if(!el)return;
+  var t1=TEAMS[m.t1],t2=TEAMS[m.t2];
+
+  // ── Forecast data (add per match) ─────────────────────────────────
+  var FORECAST={
+    m1:{
+      h2h:{
+        total:26, t1wins:11, t2wins:13, tied:1, abandoned:1,
+        t1:'RCB', t2:'SRH'
+      },
+      venue:{
+        name:'M. Chinnaswamy Stadium, Bengaluru',
+        season:'IPL 2025',
+        batFirst:2, batSecond:3
+      },
+      ppTrend:{
+        label:'Avg PP Score at Chinnaswamy (IPL 2025)',
+        avg:'52/1'
+      },
+      impactPlayer:{
+        name:'Virat Kohli',
+        team:m.t2,
+        stat1:{label:'100s at Chinnaswamy',value:'4'},
+        stat2:{label:'50s at Chinnaswamy',value:'27'},
+        note:'From 106 innings at M. Chinnaswamy Stadium'
+      },
+      winMeter:{
+        t1pct:35, t2pct:65,
+        t1label:m.t1, t2label:m.t2,
+        reason:'SRH edge based on H2H record (13-11), home advantage slight factor, but Chinnaswamy historically favours chasing (3-2 in IPL 2025). Kohli\'s home record and RCB\'s batting depth countered by SRH\'s explosive top order without Cummins.'
+      }
+    }
+  };
+
+  var fc=FORECAST[m.id];
+  if(!fc){
+    el.innerHTML='<div style="text-align:center;padding:48px 20px;color:var(--dim);font-family:Barlow Condensed,sans-serif">'+
+      '<div style="font-size:36px;margin-bottom:12px">📊</div>'+
+      '<div style="font-size:20px;font-weight:700;margin-bottom:6px">Forecast data not available</div>'+
+      '<div style="font-size:13px">Add forecast data for this match in the FORECAST object.</div>'+
+    '</div>';
+    return;
+  }
+
+  function logo(team,size){
+    var t=TEAMS[team],s=size||44;
+    return t&&t.logo?'<img src="'+t.logo+'" style="width:'+s+'px;height:'+s+'px;border-radius:50%;object-fit:contain">'
+      :'<div style="width:'+s+'px;height:'+s+'px;border-radius:50%;background:'+(t?t.color:'#888')+';display:flex;align-items:center;justify-content:center;font-family:Teko,sans-serif;font-size:'+Math.floor(s*0.3)+'px;font-weight:700;color:#fff">'+team.slice(0,3)+'</div>';
+  }
+
+  // ── SECTION 1: H2H ────────────────────────────────────────────────
+  var h=fc.h2h;
+  var ht1=TEAMS[h.t1], ht2=TEAMS[h.t2];
+  var t1pct=Math.round((h.t1wins/h.total)*100);
+  var t2pct=Math.round((h.t2wins/h.total)*100);
+  var h2hHTML=
+    '<div class="fc-card">'+
+      '<div class="fc-section-title">Head-to-Head Record</div>'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">'+
+        '<div style="text-align:center">'+logo(h.t1,56)+'<div style="font-family:Teko,sans-serif;font-size:36px;font-weight:700;color:'+(ht1?ht1.color:'var(--txt)')+';margin-top:6px">'+h.t1wins+'</div><div style="font-family:Barlow Condensed,sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--dim)">WINS</div></div>'+
+        '<div style="text-align:center">'+
+          '<div style="font-family:Teko,sans-serif;font-size:48px;font-weight:700;color:var(--txt);line-height:1">'+h.total+'</div>'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:8px">MATCHES</div>'+
+          '<div style="display:flex;gap:8px;justify-content:center">'+
+            (h.tied?'<div style="background:rgba(240,165,0,.15);border:1px solid rgba(240,165,0,.3);border-radius:4px;padding:3px 10px;font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:700;color:var(--gold)">'+h.tied+' TIED</div>':'')+
+            (h.abandoned?'<div style="background:rgba(144,153,180,.1);border:1px solid rgba(144,153,180,.25);border-radius:4px;padding:3px 10px;font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:700;color:var(--dim2)">'+h.abandoned+' ABANDONED</div>':'')+
+          '</div>'+
+        '</div>'+
+        '<div style="text-align:center">'+logo(h.t2,56)+'<div style="font-family:Teko,sans-serif;font-size:36px;font-weight:700;color:'+(ht2?ht2.color:'var(--txt)')+';margin-top:6px">'+h.t2wins+'</div><div style="font-family:Barlow Condensed,sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--dim)">WINS</div></div>'+
+      '</div>'+
+      // Win % bar
+      '<div style="margin-bottom:6px;display:flex;justify-content:space-between;font-family:Barlow Condensed,sans-serif;font-size:11px;color:var(--dim2)">'+
+        '<span style="color:'+(ht1?ht1.color:'var(--txt)')+';font-weight:700">'+t1pct+'%</span>'+
+        '<span style="color:var(--dim2)">Win %</span>'+
+        '<span style="color:'+(ht2?ht2.color:'var(--txt)')+';font-weight:700">'+t2pct+'%</span>'+
+      '</div>'+
+      '<div style="height:10px;border-radius:5px;overflow:hidden;display:flex">'+
+        '<div style="width:'+t1pct+'%;background:'+(ht1?ht1.color:'#c9112e')+';border-radius:5px 0 0 5px"></div>'+
+        '<div style="width:'+t2pct+'%;background:'+(ht2?ht2.color:'#f26522')+';border-radius:0 5px 5px 0"></div>'+
+      '</div>'+
+    '</div>';
+
+  // ── SECTION 2: Venue Trends ────────────────────────────────────────
+  var v=fc.venue;
+  var totalGames=v.batFirst+v.batSecond;
+  var bf1pct=Math.round((v.batFirst/totalGames)*100);
+  var bs2pct=Math.round((v.batSecond/totalGames)*100);
+  var venueHTML=
+    '<div class="fc-card">'+
+      '<div class="fc-section-title">Venue Trends — '+v.name+'</div>'+
+      '<div style="font-family:Barlow Condensed,sans-serif;font-size:11px;color:var(--dim);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px">'+v.season+'</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+
+        '<div style="background:var(--s2);border:1px solid var(--bd);border-left:3px solid #3b82f6;border-radius:7px;padding:16px;text-align:center">'+
+          '<div style="font-family:Teko,sans-serif;font-size:52px;font-weight:700;color:#3b82f6;line-height:1">'+v.batFirst+'</div>'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#3b82f6;margin:6px 0 4px">WON BATTING FIRST</div>'+
+          '<div style="background:var(--bd);border-radius:3px;height:6px;overflow:hidden;margin-top:8px"><div style="height:100%;background:#3b82f6;width:'+bf1pct+'%;border-radius:3px"></div></div>'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:11px;color:var(--dim2);margin-top:5px">'+bf1pct+'% of games</div>'+
+        '</div>'+
+        '<div style="background:var(--s2);border:1px solid var(--bd);border-left:3px solid #22c55e;border-radius:7px;padding:16px;text-align:center">'+
+          '<div style="font-family:Teko,sans-serif;font-size:52px;font-weight:700;color:#22c55e;line-height:1">'+v.batSecond+'</div>'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#22c55e;margin:6px 0 4px">WON BATTING SECOND</div>'+
+          '<div style="background:var(--bd);border-radius:3px;height:6px;overflow:hidden;margin-top:8px"><div style="height:100%;background:#22c55e;width:'+bs2pct+'%;border-radius:3px"></div></div>'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:11px;color:var(--dim2);margin-top:5px">'+bs2pct+'% of games</div>'+
+        '</div>'+
+      '</div>'+
+      '<div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:6px;padding:10px 14px;margin-top:12px;font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--dim2)">'+
+        '📌 Chasing teams have won <b style="color:var(--green)">'+bs2pct+'%</b> of matches at this venue in IPL 2025 — a significant advantage for the team batting second.'+
+      '</div>'+
+    '</div>';
+
+  // ── SECTION 3: Powerplay Trends ────────────────────────────────────
+  var pp=fc.ppTrend;
+  var ppHTML=
+    '<div class="fc-card">'+
+      '<div class="fc-section-title">Powerplay Trends at Venue</div>'+
+      '<div style="font-family:Barlow Condensed,sans-serif;font-size:11px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:16px">'+pp.label+'</div>'+
+      '<div style="display:flex;align-items:center;gap:20px;background:var(--s2);border:1px solid var(--bd);border-left:3px solid var(--gold);border-radius:8px;padding:18px 22px">'+
+        '<div style="font-family:Teko,sans-serif;font-size:64px;font-weight:700;color:var(--gold);line-height:1;flex-shrink:0">'+pp.avg+'</div>'+
+        '<div>'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--txt);margin-bottom:4px">Average Powerplay Score</div>'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--dim2);line-height:1.6">'+
+            'Based on matches played at M. Chinnaswamy Stadium in IPL 2025. '+
+            'High powerplay scoring is typical here — short boundaries and a quick outfield make this one of the highest-scoring PP venues in the IPL.'+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+      '<div style="background:rgba(240,165,0,.06);border:1px solid rgba(240,165,0,.2);border-radius:6px;padding:10px 14px;margin-top:12px;font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--dim2)">'+
+        '📌 Both RCB and SRH are among the <b style="color:var(--gold)">highest powerplay scoring sides</b> in recent IPL seasons — expect an explosive opening 6 overs.'+
+      '</div>'+
+    '</div>';
+
+// ── SECTION 4: Impact Player ───────────────────────────────────────
+  var ip=fc.impactPlayer;
+  var ipTeam=TEAMS[ip.team];
+  var impactHTML=
+    '<div class="fc-card" style="border-left:3px solid '+(ipTeam?ipTeam.color:'var(--gold)')+'">'+
+      '<div class="fc-section-title">Impact Player to Watch</div>'+
+      '<div style="display:flex;gap:16px;align-items:center;margin-bottom:14px">'+
+        '<div style="position:relative">'+
+          '<div style="width:72px;height:72px;border-radius:50%;background:radial-gradient(circle,'+(ipTeam?ipTeam.color+'44':'rgba(240,165,0,.2)')+','+(ipTeam?ipTeam.color+'11':'transparent')+');border:2px solid '+(ipTeam?ipTeam.color+'66':'rgba(240,165,0,.4)')+';display:flex;align-items:center;justify-content:center">'+
+            logo(ip.team,56)+
+          '</div>'+
+        '</div>'+
+        '<div>'+
+          '<div style="font-family:Teko,sans-serif;font-size:28px;font-weight:700;color:var(--txt);line-height:1;letter-spacing:-.5px">'+ip.name+'</div>'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;color:'+(ipTeam?ipTeam.color:'var(--gold)')+';letter-spacing:1.5px;text-transform:uppercase;margin-top:2px">'+ip.team+'</div>'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:11px;color:var(--dim2);margin-top:4px">'+ip.note+'</div>'+
+        '</div>'+
+      '</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
+        '<div style="background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:14px;text-align:center">'+
+          '<div style="font-family:Teko,sans-serif;font-size:48px;font-weight:700;color:#3b82f6;line-height:1">'+ip.stat1.value+'</div>'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-top:4px">'+ip.stat1.label+'</div>'+
+        '</div>'+
+        '<div style="background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:14px;text-align:center">'+
+          '<div style="font-family:Teko,sans-serif;font-size:48px;font-weight:700;color:#22c55e;line-height:1">'+ip.stat2.value+'</div>'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-top:4px">'+ip.stat2.label+'</div>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+
+  // ── SECTION 5: Win Prediction Meter ────────────────────────────────
+  var wm=fc.winMeter;
+  var wt1=TEAMS[wm.t1label], wt2=TEAMS[wm.t2label];
+  var wt1color=wt1?wt1.color:'#c9112e';
+  var wt2color=wt2?wt2.color:'#f26522';
+
+  // Semicircle gauge — TOP half only
+  // SVG: cx=200, cy=180, r=130
+  // Arc runs from LEFT (180°) clockwise to RIGHT (0°/360°) across the top
+  // 0% = full left (SRH), 100% = full right (RCB)
+  // Needle angle: 180° + (t2pct/100)*180° clockwise
+  var gcx=200, gcy=180, gr=130;
+
+  // Arc path helper: angles in degrees, clockwise in SVG
+  function degArc(cx,cy,r,startDeg,endDeg){
+    var s=startDeg*Math.PI/180, e=endDeg*Math.PI/180;
+    var x1=cx+r*Math.cos(s), y1=cy+r*Math.sin(s);
+    var x2=cx+r*Math.cos(e), y2=cy+r*Math.sin(e);
+    var large=(endDeg-startDeg)>180?1:0;
+    return 'M'+x1.toFixed(1)+' '+y1.toFixed(1)+' A '+r+' '+r+' 0 '+large+' 1 '+x2.toFixed(1)+' '+y2.toFixed(1);
+  }
+
+  // Split angle: 180° + (t1pct/100)*180°
+  var splitDeg=180+(wm.t1pct/100)*180;
+
+  // Background full arc (180° → 360°)
+  var bgArc=degArc(gcx,gcy,gr,180,360);
+  // T1 arc (left side, 180° → splitDeg) in t1 colour
+  var t1Arc=degArc(gcx,gcy,gr,180,splitDeg);
+  // T2 arc (right side, splitDeg → 360°) in t2 colour
+  var t2Arc=degArc(gcx,gcy,gr,splitDeg,360);
+
+  // Tick marks along the arc
+  var meterTicks='';
+  for(var td=0;td<=10;td++){
+    var tdeg=180+(td/10)*180;
+    var trad=tdeg*Math.PI/180;
+    var innerR=gr-14, outerR=gr-2;
+    var tx1=gcx+innerR*Math.cos(trad), ty1=gcy+innerR*Math.sin(trad);
+    var tx2=gcx+outerR*Math.cos(trad), ty2=gcy+outerR*Math.sin(trad);
+    meterTicks+='<line x1="'+tx1.toFixed(1)+'" y1="'+ty1.toFixed(1)+'" x2="'+tx2.toFixed(1)+'" y2="'+ty2.toFixed(1)+'" stroke="rgba(255,255,255,.25)" stroke-width="'+(td%5===0?2:1)+'"/>';
+    if(td%5===0){
+      var lrad=(tdeg)*Math.PI/180;
+      var lx=gcx+(gr+20)*Math.cos(lrad), ly=gcy+(gr+20)*Math.sin(lrad);
+      meterTicks+='<text x="'+lx.toFixed(1)+'" y="'+(ly+4).toFixed(1)+'" fill="var(--dim2)" font-size="9" text-anchor="middle" font-family="Barlow Condensed,sans-serif">'+(td*10)+'</text>';
+    }
+  }
+
+  // Needle: points to t2pct position (from centre toward arc)
+  var needleDeg=180+(wm.t2pct/100)*180;
+  var needleRad=needleDeg*Math.PI/180;
+  var needleLen=gr-22;
+  var ndx=gcx+needleLen*Math.cos(needleRad), ndy=gcy+needleLen*Math.sin(needleRad);
+
+  // Logo positions: left of arc bottom and right of arc bottom
+  var logoSize=36;
+
+  var winHTML=
+    '<div class="fc-card">'+
+      '<div class="fc-section-title">Pre-Match Win Prediction</div>'+
+      // Team row
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">'+
+        '<div style="display:flex;align-items:center;gap:10px">'+
+          (wt1&&wt1.logo?'<img src="'+wt1.logo+'" style="width:40px;height:40px;border-radius:50%;object-fit:contain">':'<div style="width:40px;height:40px;border-radius:50%;background:'+wt1color+'"></div>')+
+          '<div>'+
+            '<div style="font-family:Teko,sans-serif;font-size:20px;font-weight:700;line-height:1">'+wm.t1label+'</div>'+
+            '<div style="font-family:Barlow Condensed,sans-serif;font-size:11px;color:var(--dim2)">Win probability</div>'+
+          '</div>'+
+        '</div>'+
+        '<div style="font-family:Teko,sans-serif;font-size:44px;font-weight:700;color:'+wt1color+';line-height:1">'+wm.t1pct+'%</div>'+
+      '</div>'+
+      // Bar
+      '<div style="height:32px;border-radius:8px;overflow:hidden;display:flex;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.3)">'+
+        '<div style="width:'+wm.t1pct+'%;background:'+wt1color+';display:flex;align-items:center;justify-content:flex-end;padding-right:10px;transition:width .6s">'+
+          '<span style="font-family:Teko,sans-serif;font-size:16px;font-weight:700;color:#fff">'+wm.t1pct+'%</span>'+
+        '</div>'+
+        '<div style="width:'+wm.t2pct+'%;background:'+wt2color+';display:flex;align-items:center;padding-left:10px;transition:width .6s">'+
+          '<span style="font-family:Teko,sans-serif;font-size:16px;font-weight:700;color:#fff">'+wm.t2pct+'%</span>'+
+        '</div>'+
+      '</div>'+
+      // Team row t2
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">'+
+        '<div style="display:flex;align-items:center;gap:10px">'+
+          (wt2&&wt2.logo?'<img src="'+wt2.logo+'" style="width:40px;height:40px;border-radius:50%;object-fit:contain">':'<div style="width:40px;height:40px;border-radius:50%;background:'+wt2color+'"></div>')+
+          '<div>'+
+            '<div style="font-family:Teko,sans-serif;font-size:20px;font-weight:700;line-height:1">'+wm.t2label+'</div>'+
+            '<div style="font-family:Barlow Condensed,sans-serif;font-size:11px;color:var(--dim2)">Win probability</div>'+
+          '</div>'+
+        '</div>'+
+        '<div style="font-family:Teko,sans-serif;font-size:44px;font-weight:700;color:'+wt2color+';line-height:1">'+wm.t2pct+'%</div>'+
+      '</div>'+
+      // Analysis
+      '<div style="background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:14px;margin-bottom:10px">'+
+        '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:6px">Analysis Basis</div>'+
+        '<div style="font-size:13px;color:var(--dim2);line-height:1.7">'+wm.reason+'</div>'+
+      '</div>'+
+      // Actual result
+      '<div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:7px;padding:12px 14px;display:flex;align-items:center;gap:10px">'+
+        '<div style="font-size:20px">🎯</div>'+
+        '<div>'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:3px">Actual Result</div>'+
+          '<div style="font-family:Teko,sans-serif;font-size:17px;font-weight:700;color:var(--txt)">'+m.result+'</div>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+
+  el.innerHTML=
+    '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--dim);margin-bottom:16px;padding:10px 0;border-bottom:1px solid var(--bd)">'+
+      '📊 Pre-Match Forecast — Data as of Match Day · Predictions based on historical trends'+
+    '</div>'+
+    h2hHTML+ppHTML+venueHTML+impactHTML+winHTML;
+}
+
 function _drawSC(m){
   var el=document.getElementById('ap-sc');
 
