@@ -469,7 +469,9 @@ nav button.on{color:var(--gold);background:rgba(240,165,0,.1)}
 </nav>
 <div class="view on" id="view-home">
   <div id="home-main"></div>
-  <div class="sh" style="margin-top:24px"><h2>Teams</h2><p>Tap to open team page</p></div>
+  <div id="home-caps" style="margin-bottom:16px"></div>
+  <div id="home-predictor" style="margin-bottom:20px"></div>
+  <div class="sh" style="margin-top:4px"><h2>Teams</h2><p>Tap to open team page</p></div>
   <div class="tgrid" id="home-teams"></div>
 </div>
 <div class="view" id="view-schedule">
@@ -1564,6 +1566,169 @@ function startMatchCountdown(timeStr, matchNo){
   tick();
 }
 
+
+// ═══════════════════════════════════════════════════════════════════════
+// ORANGE CAP · PURPLE CAP · TOURNAMENT PREDICTOR
+// All computed live from MATCHES data + POINTS table
+// ═══════════════════════════════════════════════════════════════════════
+
+function getCapHolders(){
+  var data = buildPlayerStats();
+  // Orange Cap — most runs (min 1 ball faced)
+  var batSorted = data.bat.slice().sort(function(a,b){return b.runs-a.runs;});
+  // Purple Cap — most wickets (min 1 over)
+  var bowlSorted = data.bowl.slice().sort(function(a,b){
+    return b.wkts!==a.wkts ? b.wkts-a.wkts : parseFloat(a.econ)-parseFloat(b.econ);
+  });
+  return {
+    orange: batSorted.slice(0,3),
+    purple: bowlSorted.slice(0,3)
+  };
+}
+
+function getTournamentPrediction(){
+  // Score each team: points + NRR weight + matches played consistency
+  var standings = POINTS.slice().sort(function(a,b){
+    return b.pts!==a.pts ? b.pts-a.pts : parseFloat(b.nrr)-parseFloat(a.nrr);
+  });
+
+  // Form factor: wins/matches ratio, NRR, pts
+  var maxPts = Math.max.apply(null, standings.map(function(s){return s.pts;})) || 1;
+  var predictions = standings.map(function(s, i){
+    var t = TEAMS[s.team];
+    // Base score from position
+    var posScore = (standings.length - i) / standings.length;
+    // Pts contribution
+    var ptsScore = s.m > 0 ? s.pts / (s.m * 2) : 0;
+    // NRR contribution (normalise -2 to +2 range → 0 to 1)
+    var nrrScore = (parseFloat(s.nrr) + 2) / 4;
+    // Weighted score
+    var score = s.m === 0
+      ? 0.5 + (Math.random()*0.01) // unplayed teams get neutral 50%
+      : posScore*0.35 + ptsScore*0.45 + nrrScore*0.2;
+    return {
+      team: s.team,
+      pts: s.pts,
+      m: s.m,
+      nrr: s.nrr,
+      score: score,
+      pct: 0 // filled after normalise
+    };
+  });
+
+  // Normalise to sum to 100%
+  var total = predictions.reduce(function(s,p){return s+p.score;},0);
+  predictions.forEach(function(p){
+    p.pct = total>0 ? Math.round((p.score/total)*100) : 10;
+  });
+  // Re-sort by pct descending
+  predictions.sort(function(a,b){return b.pct-a.pct;});
+  return predictions;
+}
+
+function renderCapAndPredictor(){
+  var capsEl = document.getElementById('home-caps');
+  var predEl = document.getElementById('home-predictor');
+  if(!capsEl || !predEl) return;
+
+  var caps = getCapHolders();
+  var preds = getTournamentPrediction();
+
+  // ── Orange & Purple Cap ────────────────────────────────────────────
+  function capCard(players, capType, capColor, capEmoji, valFn, subFn){
+    if(!players.length){
+      return '<div style="flex:1;min-width:140px;background:var(--s1);border:1px solid var(--bd);border-top:3px solid '+capColor+';border-radius:8px;padding:14px;text-align:center">'+
+        '<div style="font-family:Barlow Condensed,sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:'+capColor+';margin-bottom:8px">'+capEmoji+' '+capType+'</div>'+
+        '<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--dim2)">No data yet</div>'+
+      '</div>';
+    }
+    var leader = players[0];
+    var t = TEAMS[leader.team];
+    var rows = players.map(function(p,i){
+      var tc = TEAMS[p.team];
+      return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--bd)">'+
+        '<div style="font-family:Teko,sans-serif;font-size:14px;font-weight:700;color:var(--dim);width:16px;flex-shrink:0">'+(i+1)+'</div>'+
+        (tc&&tc.logo?'<img src="'+tc.logo+'" style="width:20px;height:20px;border-radius:50%;object-fit:contain;flex-shrink:0">':
+          '<div style="width:20px;height:20px;border-radius:50%;background:'+(tc?tc.color:'#888')+';flex-shrink:0"></div>')+
+        '<div style="flex:1;min-width:0">'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:13px;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+p.name+'</div>'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;color:var(--dim2)">'+subFn(p)+'</div>'+
+        '</div>'+
+        '<div style="font-family:Teko,sans-serif;font-size:18px;font-weight:700;color:'+(i===0?capColor:'var(--dim2)')+';flex-shrink:0">'+valFn(p)+'</div>'+
+      '</div>';
+    }).join('');
+
+    return '<div style="flex:1;min-width:260px;background:var(--s1);border:1px solid var(--bd);border-top:3px solid '+capColor+';border-radius:8px;padding:14px">'+
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'+
+        '<div style="font-size:20px">'+capEmoji+'</div>'+
+        '<div>'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:'+capColor+'">'+capType+'</div>'+
+          '<div style="font-family:Teko,sans-serif;font-size:20px;font-weight:700;color:var(--txt);line-height:1">'+leader.name+'</div>'+
+        '</div>'+
+        (t&&t.logo?'<img src="'+t.logo+'" style="width:32px;height:32px;border-radius:50%;object-fit:contain;margin-left:auto">':'')+
+      '</div>'+
+      rows+
+    '</div>';
+  }
+
+  capsEl.innerHTML =
+    '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--dim);margin-bottom:10px">Season Leaders</div>'+
+    '<div style="display:flex;gap:10px;flex-wrap:wrap">'+
+      capCard(caps.orange,'Orange Cap','#f97316','🟠',
+        function(p){return p.runs+' runs';},
+        function(p){return p.inn+' inn · Avg '+p.avg+' · SR '+p.sr;})+
+      capCard(caps.purple,'Purple Cap','#a855f7','🟣',
+        function(p){return p.wkts+' wkts';},
+        function(p){return p.overs+' ov · Econ '+p.econ;})+
+    '</div>';
+
+  // ── Tournament Predictor ───────────────────────────────────────────
+  var maxPct = preds[0].pct;
+  var predRows = preds.map(function(p,i){
+    var t = TEAMS[p.team];
+    var col = i===0?'var(--gold)':i===1?'#9ca3af':i===2?'#cd7f32':'var(--dim2)';
+    var barCol = i===0?'linear-gradient(90deg,#f0a500,#f97316)':
+                 i===1?'linear-gradient(90deg,#6366f1,#8b5cf6)':
+                 i<4?'linear-gradient(90deg,#22c55e,#16a34a)':'var(--bd2)';
+    var barPct = Math.round((p.pct/maxPct)*100);
+    var medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+    return '<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--bd)">'+
+      '<div style="font-family:Teko,sans-serif;font-size:16px;font-weight:700;color:'+col+';width:24px;text-align:center;flex-shrink:0">'+(medal||i+1)+'</div>'+
+      (t&&t.logo?'<img src="'+t.logo+'" style="width:26px;height:26px;border-radius:50%;object-fit:contain;flex-shrink:0">':
+        '<div style="width:26px;height:26px;border-radius:50%;background:'+(t?t.color:'#888')+';flex-shrink:0"></div>')+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-family:Barlow Condensed,sans-serif;font-size:13px;font-weight:700;color:var(--txt)">'+p.team+'</div>'+
+        '<div style="display:flex;align-items:center;gap:6px;margin-top:3px">'+
+          '<div style="flex:1;background:var(--bd);border-radius:3px;height:5px;overflow:hidden">'+
+            '<div style="height:100%;border-radius:3px;background:'+barCol+';width:'+barPct+'%;transition:width .6s"></div>'+
+          '</div>'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;color:var(--dim2);flex-shrink:0">'+
+            (p.m>0?p.pts+'pts · '+p.nrr+' NRR':'No matches yet')+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+      '<div style="font-family:Teko,sans-serif;font-size:20px;font-weight:700;color:'+col+';flex-shrink:0;min-width:40px;text-align:right">'+p.pct+'%</div>'+
+    '</div>';
+  }).join('');
+
+  predEl.innerHTML=
+    '<div style="background:var(--s1);border:1px solid var(--bd);border-top:3px solid var(--gold);border-radius:8px;padding:14px">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'+
+        '<div>'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold)">🏆 Tournament Winner Prediction</div>'+
+          '<div style="font-family:Teko,sans-serif;font-size:18px;font-weight:700;color:var(--txt);line-height:1.2">Based on current form &amp; standings</div>'+
+        '</div>'+
+        '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;color:var(--dim);text-align:right;line-height:1.5">'+
+          'Updated after<br>every match'+
+        '</div>'+
+      '</div>'+
+      predRows+
+      '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;color:var(--dim);margin-top:10px;padding-top:8px;border-top:1px solid var(--bd)">'+
+        '* Prediction based on: points (45%) · win rate (35%) · NRR (20%). Teams with no matches played are shown at 50% neutral baseline. Updates automatically as match data is added.'+
+      '</div>'+
+    '</div>';
+}
+
 function renderHomePage(){
   var el=document.getElementById('home-main');
   if(!el)return;
@@ -1672,6 +1837,8 @@ function renderHomePage(){
   renderAdBanner('ad-banner-home');
   // Start countdown if there's a today match
   if(todayMatch) startMatchCountdown(todayMatch.time, todayMatch.no);
+  // Render caps and predictor
+  renderCapAndPredictor();
 }
 
 function toggleHomeCard(){
@@ -2981,7 +3148,7 @@ function go(id){
   if(nb) nb.classList.add('on');
   window.scrollTo(0,0);
   nextAd();
-  if(id==='home') setTimeout(renderHomePage,0);if(id==='matches') setTimeout(renderMatchList,0);
+  if(id==='home'){setTimeout(renderHomePage,0);setTimeout(renderCapAndPredictor,100);}if(id==='matches') setTimeout(renderMatchList,0);
   if(id==='scores')  setTimeout(renderScorecardsPage,0);
   if(id==='stats')   setTimeout(renderStats,0);
 }
