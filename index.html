@@ -593,7 +593,7 @@ LSG:{logo:'logos/lsg.png',name:'Lucknow Super Giants',city:'Lucknow',color:'#00a
 const SCHEDULE=[
 {no:1,date:'Sat, Mar 28',d:'Mar 28',t1:'RCB',t2:'SRH',time:'7:30 PM',result:'RCB won by 6 wkts',t1score:'203/4',t2score:'201/9',completed:true},
 {no:2,date:'Sun, Mar 29',d:'Mar 29',t1:'MI',t2:'KKR',time:'7:30 PM',venue:'Wankhede Stadium, Mumbai',completed:true,result:'MI won by 6 wkts',t1score:'224/4',t1ov:'19.1',t2score:'220/4',t2ov:'20'},
-{no:3,date:'Mon, Mar 30',d:'Mar 30',t1:'RR',t2:'CSK',time:'7:30 PM'},
+{no:3,date:'Mon, Mar 30',d:'Mar 30',t1:'RR',t2:'CSK',time:'7:30 PM',venue:'Barsapara Cricket Stadium, Guwahati'},
 {no:4,date:'Tue, Mar 31',d:'Mar 31',t1:'PBKS',t2:'GT',time:'7:30 PM'},
 {no:5,date:'Wed, Apr 1',d:'Apr 1',t1:'LSG',t2:'DC',time:'7:30 PM'},
 {no:6,date:'Thu, Apr 2',d:'Apr 2',t1:'KKR',t2:'SRH',time:'7:30 PM'},
@@ -1594,7 +1594,16 @@ const MATCHES = [{
       {n:'Finn Allen',           t:'KKR',role:'Bat',  v:8.0, note:'37(17) SR 217.6 · Explosive opener'},
     ]
   }
-];
+,{
+  id:'m3', no:3, date:'Mon, Mar 30 2026',
+  venue:'Barsapara Cricket Stadium, Guwahati',
+  t1:'RR', t2:'CSK', status:'upcoming',
+  toss:'', result:'',
+  t1score:'', t1ov:'', t2score:'', t2ov:'', pom:'',
+  inn1:{team:'RR',total:'',overs:null,runs:0,batting:[],bowling:[],overR:[],overW:[],pships:[],fow:[],moments:[]},
+  inn2:{team:'CSK',total:'',overs:null,runs:0,batting:[],bowling:[],overR:[],overW:[],pships:[],fow:[],moments:[]},
+  ratings:[]
+}];
 
 // ═══════════════════════════════════════════════════════════════════════
 // CHART HELPERS
@@ -1745,31 +1754,17 @@ function startMatchCountdown(timeStr, matchNo){
 // ═══════════════════════════════════════════════════════════════════════
 
 // Player photos — add more as season progresses
-// Called by img onerror to swap broken image with team-color avatar
-window._pImgErr = function(img){
-  var name = img.getAttribute('data-n')||'';
-  var team = img.getAttribute('data-t')||'';
-  var size = parseInt(img.getAttribute('data-s'))||36;
-  var style = img.getAttribute('data-st')||'';
-  var t = (typeof TEAMS !== 'undefined' && TEAMS[team]) || {};
-  var col = t.color||'#555';
-  var ini = name.split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase()||'?';
-  var div = document.createElement('div');
-  div.style.cssText = 'width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-family:Barlow Condensed,sans-serif;font-size:'+(size*0.36).toFixed(0)+'px;font-weight:700;color:#fff;flex-shrink:0;'+style;
-  div.textContent = ini;
-  img.parentNode && img.parentNode.replaceChild(div, img);
-};
 function playerPhoto(name, team, size, style){
-  size = size||36; style = style||'';
-  var src = PLAYER_PHOTOS[name];
-  var t = TEAMS[team]||{};
-  var col = t.color||'#555';
-  var ini = name ? name.split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase() : '?';
-  var baseStyle = 'width:'+size+'px;height:'+size+'px;border-radius:50%;flex-shrink:0;'+style;
-  if(src){
-    return '<img src="'+src+'" data-n="'+name+'" data-t="'+team+'" data-s="'+size+'" data-st="'+style+'" style="'+baseStyle+';object-fit:cover" alt="'+name+'" onerror="_pImgErr(this)">';
+  size = size || 36;
+  style = style || '';
+  var photo = PLAYER_PHOTOS[name];
+  var t = TEAMS[team] || {};
+  var color = t.color || '#555';
+  var initials = name ? name.split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase() : '?';
+  if(photo){
+    return '<img src="'+photo+'" style="width:'+size+'px;height:'+size+'px;border-radius:50%;object-fit:cover;flex-shrink:0;'+style+'" alt="'+name+'">';
   }
-  return '<div style="'+baseStyle+';background:'+col+';display:flex;align-items:center;justify-content:center;font-family:Barlow Condensed,sans-serif;font-size:'+(size*0.36).toFixed(0)+'px;font-weight:700;color:#fff">'+ini+'</div>';
+  return '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+color+';display:flex;align-items:center;justify-content:center;font-family:Barlow Condensed,sans-serif;font-size:'+(size*0.35).toFixed(0)+'px;font-weight:700;color:#fff;flex-shrink:0;'+style+'">'+initials+'</div>';
 }
 const PLAYER_PHOTOS={
   'Virat Kohli': 'players/virat-kohli.jpg',
@@ -1815,7 +1810,17 @@ const PLAYER_PHOTOS={
   'AM Ghazanfar': 'players/am-ghazanfar.jpg',
   'Trent Boult': 'players/trent-boult.jpg',
   'Mayank Markande': 'players/mayank-markande.jpg',
-  'Sherfane Rutherford': 'players/sherfane-rutherford.jpg'
+  'Sherfane Rutherford': 'players/sherfane-rutherford.jpg',
+  'Sanju Samson': 'players/sanju-samson.jpg',
+  'MS Dhoni': 'players/ms-dhoni.jpg',
+  'Ruturaj Gaikwad': 'players/ruturaj-gaikwad.jpg',
+  'Ravindra Jadeja': 'players/ravindra-jadeja.jpg',
+  'Shimron Hetmyer': 'players/shimron-hetmyer.jpg',
+  'Jos Buttler': 'players/jos-buttler.jpg',
+  'Yashasvi Jaiswal': 'players/yashasvi-jaiswal.jpg',
+  'Deepak Chahar': 'players/deepak-chahar.jpg',
+  'Khaleel Ahmed': 'players/khaleel-ahmed.jpg',
+  'Matheesha Pathirana': 'players/matheesha-pathirana.jpg'
 };;
 
 function getCapHolders(){
@@ -2463,6 +2468,44 @@ function _drawForecast(m){
         t1label:'MI', t2label:'KKR',
         reason:'MI dominate this H2H with 24 wins to KKR\u2019s 11 (total 35). Wankhede is MI\u2019s fortress \u2014 they have a significantly better home record here. Chasing teams have won 4 out of 7 at this venue in IPL 2025, but MI\u2019s batting depth and Wankhede familiarity gives them a strong 70-30 edge.'
       }
+    },
+    m3:{
+      h2h:{
+        total:22, t1wins:11, t2wins:11,
+        t1:'RR', t2:'CSK'
+      },
+      venue:{
+        name:'Barsapara Cricket Stadium, Guwahati',
+        season:'IPL \u00b7 From 5 Matches',
+        batFirst:3, batSecond:2
+      },
+      avgFirstInnings:{
+        score:'175',
+        label:'Average 1st Innings Score at Guwahati (IPL history)'
+      },
+      ppTrend:{
+        label:'Avg PP Score at Guwahati (IPL history)',
+        avg:'46/1',
+        note:'Guwahati tends to produce <b style=\"color:var(--gold)\">measured powerplays</b> before the scoring accelerates in the middle and death overs. Teams posting 175+ have a strong record here.'
+      },
+      impactPlayer:{
+        name:'Sanju Samson',
+        team:'CSK',
+        stat1:{label:'T20 Avg (since 2025)',value:'33.54'},
+        stat2:{label:'T20 Strike Rate',value:'149.19'},
+        note:'Returns to Guwahati in CSK yellow after leaving RR where he was captain. T20 World Cup Player of Tournament. His ground knowledge and hunger to prove a point against his former franchise makes him the match\u2019s most dangerous batter.'
+      },
+      keyMatchup:{
+        batter:'Shimron Hetmyer',
+        bowler:'Khaleel Ahmed',
+        note:'Hetmyer has 51 runs off 25 balls vs Khaleel at SR 204, dismissed only once. A nightmare matchup for the DC left-armer if he features today.'
+      },
+      winMeter:{
+        t1pct:48, t2pct:52,
+        t1label:'RR', t2label:'CSK',
+        t1color:'#e0339d', t2color:'#c8a400',
+        reason:'CSK hold a 52-48 edge despite RR\u2019s home advantage at Guwahati. Sanju Samson\u2019s T20 World Cup form and CSK\u2019s experience in knockout situations tips the balance. The venue trend of batting first winning 60% of games means the toss will be decisive. RR\u2019s home crowd and familiarity with conditions keep this close.'
+      }
     }
   };
 
@@ -2527,7 +2570,7 @@ function _drawForecast(m){
           '<div>'+
             '<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--txt);margin-bottom:4px">Runs</div>'+
             '<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--dim2);line-height:1.6">'+
-              'The average first innings total at this venue gives batting teams a benchmark to target and bowling sides a par score to defend.'+
+              (af.note||'The average first innings total at '+(fc.venue?fc.venue.name:'this venue')+' gives batting teams a benchmark to target and chasing sides a par score to defend.')+
             '</div>'+
           '</div>'+
         '</div>'+
@@ -2558,7 +2601,7 @@ function _drawForecast(m){
         '</div>'+
       '</div>'+
       '<div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:6px;padding:10px 14px;margin-top:12px;font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--dim2)">'+
-        '📌 Chasing teams have won <b style="color:var(--green)">'+bs2pct+'%</b> of matches at this venue in IPL 2025 — a significant advantage for the team batting second.'+
+        (bf1pct>bs2pct ? '📌 Batting first wins <b style="color:#3b82f6">'+bf1pct+'%</b> of matches at this venue — setting a total and applying scoreboard pressure is the winning strategy here.' : '📌 Chasing teams have won <b style="color:var(--green)">'+bs2pct+'%</b> of matches at this venue — a significant advantage for the team batting second.')+
       '</div>'+
     '</div>';
 
@@ -2573,13 +2616,7 @@ function _drawForecast(m){
         '<div>'+
           '<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--txt);margin-bottom:4px">Average Powerplay Score</div>'+
           '<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--dim2);line-height:1.6">'+
-            'Based on matches played at M. Chinnaswamy Stadium in IPL 2025. '+
-            'High powerplay scoring is typical here — short boundaries and a quick outfield make this one of the highest-scoring PP venues in the IPL.'+
-          '</div>'+
-        '</div>'+
-      '</div>'+
-      '<div style="background:rgba(240,165,0,.06);border:1px solid rgba(240,165,0,.2);border-radius:6px;padding:10px 14px;margin-top:12px;font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--dim2)">'+
-        '📌 '+(fc.ppTrend.note||('Both '+m.t1+' and '+m.t2+' are explosive in the powerplay \u2014 expect an aggressive opening 6 overs.'))+
+            (pp.note||('Based on IPL history at '+v.name+'. The powerplay sets the tone — both sides will look to post strong scores in the opening 6 overs.'))+
       '</div>'+
     '</div>';
 
@@ -2707,7 +2744,7 @@ function _drawForecast(m){
       // Analysis
       '<div style="background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:14px;margin-bottom:10px">'+
         '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:6px">Analysis Basis</div>'+
-        '<div style="font-size:13px;color:var(--dim2);line-height:1.7">'+wm.reason+'</div>'+
+        '<div style="font-size:13px;color:var(--dim2);line-height:1.7">'+(wm.reason||wm.note||'Pre-match prediction based on H2H record, venue trends, form and squad strength.')+'</div>'+
       '</div>'+
       // Actual result
       '<div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:7px;padding:12px 14px;display:flex;align-items:center;gap:10px">'+
@@ -2729,7 +2766,18 @@ function _drawForecast(m){
 function _drawSC(m){
   var el=document.getElementById('ap-sc');
 
+  // Guard: upcoming match has no scorecard data
+  if(m.status !== 'completed'){
+    el.innerHTML='<div style="text-align:center;padding:48px 20px;color:var(--dim);font-family:Barlow Condensed,sans-serif">'+
+      '<div style="font-size:36px;margin-bottom:12px">📋</div>'+
+      '<div style="font-family:Teko,sans-serif;font-size:22px;font-weight:700;margin-bottom:6px;color:var(--txt)">Scorecard not yet available</div>'+
+      '<div style="font-size:13px">This match has not been played yet. Check back after the match.</div>'+
+    '</div>';
+    return;
+  }
+
   function batTable(inn){
+    if(!inn.batting||!inn.batting.length) return '<div style="color:var(--dim);font-family:Barlow Condensed,sans-serif;padding:12px">No batting data available.</div>';
     var rows=inn.batting.map(function(b){
       var sr=b.b>0?((b.r/b.b)*100).toFixed(1):'—';
       var notOut=b.d==='not out';
@@ -2791,6 +2839,8 @@ function _drawSC(m){
 // ═══════════════════════════════════════════════════════════════════════
 function _drawWorm(m){
   var el=document.getElementById('ap-worm');
+  if(!el)return;
+  if(m.status!=='completed'){el.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--dim);font-family:Barlow Condensed,sans-serif"><div style="font-size:32px;margin-bottom:10px">⏳</div><div style="font-family:Teko,sans-serif;font-size:20px;font-weight:700;color:var(--txt)">Match not yet played</div><div style="font-size:12px;margin-top:6px">Analytics will appear here after the match.</div></div>';return;}
 
   function wormSVG(inn,col,n){
     var overR=inn.overR;
@@ -2875,6 +2925,8 @@ function _drawWorm(m){
 // ═══════════════════════════════════════════════════════════════════════
 function _drawOvers(m){
   var el=document.getElementById('ap-overs');
+  if(!el)return;
+  if(m.status!=='completed'){el.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--dim);font-family:Barlow Condensed,sans-serif"><div style="font-size:32px;margin-bottom:10px">⏳</div><div style="font-family:Teko,sans-serif;font-size:20px;font-weight:700;color:var(--txt)">Match not yet played</div><div style="font-size:12px;margin-top:6px">Analytics will appear here after the match.</div></div>';return;}
 
   function overBarChart(inn,maxOvs){
     var overR=inn.overR,overW=inn.overW;
@@ -2979,6 +3031,8 @@ function _drawOvers(m){
 // ═══════════════════════════════════════════════════════════════════════
 function _drawPS(m){
   var el=document.getElementById('ap-ps');
+  if(!el)return;
+  if(m.status!=='completed'){el.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--dim);font-family:Barlow Condensed,sans-serif"><div style="font-size:32px;margin-bottom:10px">⏳</div><div style="font-family:Teko,sans-serif;font-size:20px;font-weight:700;color:var(--txt)">Match not yet played</div><div style="font-size:12px;margin-top:6px">Analytics will appear here after the match.</div></div>';return;}
 
   function psChart(pships,total,col){
     var maxR=Math.max.apply(null,pships.map(function(p){return p.r;}))||1;
@@ -3070,6 +3124,8 @@ function _drawPS(m){
 // ═══════════════════════════════════════════════════════════════════════
 function _drawPlayers(m){
   var el=document.getElementById('ap-players');
+  if(!el)return;
+  if(m.status!=='completed'){el.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--dim);font-family:Barlow Condensed,sans-serif"><div style="font-size:32px;margin-bottom:10px">⏳</div><div style="font-family:Teko,sans-serif;font-size:20px;font-weight:700;color:var(--txt)">Match not yet played</div><div style="font-size:12px;margin-top:6px">Analytics will appear here after the match.</div></div>';return;}
 
   function srChart(inn,col){
     var batters=inn.batting.filter(function(b){return b.b>=3;});
@@ -3146,6 +3202,8 @@ function _drawPlayers(m){
 // ═══════════════════════════════════════════════════════════════════════
 function _drawMoments(m){
   var el=document.getElementById('ap-moments');
+  if(!el)return;
+  if(m.status!=='completed'){el.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--dim);font-family:Barlow Condensed,sans-serif"><div style="font-size:32px;margin-bottom:10px">⏳</div><div style="font-family:Teko,sans-serif;font-size:20px;font-weight:700;color:var(--txt)">Match not yet played</div><div style="font-size:12px;margin-top:6px">Analytics will appear here after the match.</div></div>';return;}
 
   function timeline(moments){
     if(!moments||!moments.length) return '<div style="color:var(--dim);font-family:Barlow Condensed,sans-serif;font-size:13px;padding:12px 0">No timeline data yet.</div>';
