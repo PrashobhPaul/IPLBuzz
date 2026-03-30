@@ -15,10 +15,6 @@ IPLBuzz/
 ├── players/            ← Player headshots (add new ones here)
 │   ├── virat-kohli.jpg
 │   ├── rohit-sharma.jpg
-│   ├── ryan-rickelton.jpg
-│   ├── shardul-thakur.jpg
-│   ├── ishan-kishan.jpg
-│   ├── jacob-duffy.jpg
 │   └── [player-name].jpg   ← Add any new player photo here
 └── logos/              ← Team logos (all 10 teams)
     ├── rcb.png
@@ -32,21 +28,14 @@ IPLBuzz/
     ├── gt.png
     └── lsg.png
 ```
-
----
-
 ## Adding a New Player Photo
 
 1. Name the file: `firstname-lastname.jpg` (all lowercase, hyphen-separated)
    - Examples: `jasprit-bumrah.jpg`, `suryakumar-yadav.jpg`, `rinku-singh.jpg`
 2. Drop it into the `players/` folder
 3. That's it — the dashboard auto-picks it up. No code changes needed.
-
 > Photos auto-appear in: Orange Cap · Purple Cap · POM · Stats leaderboard · Squad cards
-
 If a photo file is missing, the dashboard automatically shows a team-coloured circle with the player's initials as a fallback.
-
----
 
 ## Features
 
@@ -59,26 +48,3 @@ If a photo file is missing, the dashboard automatically shows a team-coloured ci
 - **Stats** — 14 leaderboard categories
 - **🏏 AI Chatbot** — Powered by Claude, knows all live data
 
----
-
-## Matches Completed
-
-| # | Match | Result | POM |
-|---|-------|--------|-----|
-| 1 | RCB vs SRH | RCB won by 6 wkts | Virat Kohli 69*(38) |
-| 2 | MI vs KKR | MI won by 6 wkts | Ryan Rickelton 81(43) |
-
----
-
-## Points Table (After Match 2)
-
-| # | Team | Pts | NRR |
-|---|------|-----|-----|
-| 1 | RCB | 2 | +2.900 |
-| 2 | MI | 2 | +0.600 |
-| 9 | KKR | 0 | -0.600 |
-| 10 | SRH | 0 | -2.900 |
-
----
-
-*Built with Claude · Updated after each match*
