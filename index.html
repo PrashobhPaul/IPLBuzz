@@ -877,7 +877,7 @@ document.addEventListener('visibilitychange',()=>{
     if(staleSecs>REFRESH_INTERVAL/1000)refreshLive();
   }
 });
-function findIPL(list){if(!list)return null;return list.find(m=>(m.name||'').toLowerCase().includes('ipl')||(m.teamInfo||[]).some(t=>Object.keys(TEAMS).includes(t.shortname)))||null;}
+function findIPL(list){if(!list)return null;return list.find(m=>{var nm=(m.name||'').toLowerCase();if(nm.includes('ipl')||nm.includes('indian premier league'))return true;if((m.teamInfo||[]).some(t=>Object.keys(TEAMS).includes(t.shortname)))return true;var teams=m.teams||[];if(teams.some(t=>{var s=(t||'').toLowerCase();return Object.values(TEAMS).some(tm=>(tm.name||'').toLowerCase().includes(s)||s.includes((tm.name||'').split(' ')[0].toLowerCase()));}))return true;return false;})||null;}
 let tileExpanded=false;
 function toggleTile(){
   tileExpanded=!tileExpanded;
@@ -2345,12 +2345,12 @@ function renderMatchDetail(m){
       '<div class="md-hero-title">Match '+m.no+' · IPL 2026 · '+m.date+'</div>'+
       '<div class="md-scores">'+
         '<div class="md-team"><div class="md-tname">'+(t1&&t1.logo?'<img src="'+t1.logo+'" style="width:32px;height:32px;border-radius:50%;object-fit:contain;margin-right:8px;vertical-align:middle">':'<div class="tdot" style="background:'+t1.color+'"></div>')+m.t1+'</div>'+
-          '<div class="md-score">'+m.t1score+' <small>('+m.t1ov+' ov)</small></div></div>'+
+          '<div class="md-score">'+(m.t1score?m.t1score+' <small>('+m.t1ov+' ov)</small>':'<span style="color:var(--dim)">—</span>')+'</div></div>'+
         '<div class="md-vs">vs</div>'+
         '<div class="md-team"><div class="md-tname">'+(t2&&t2.logo?'<img src="'+t2.logo+'" style="width:32px;height:32px;border-radius:50%;object-fit:contain;margin-right:8px;vertical-align:middle">':'<div class="tdot" style="background:'+t2.color+'"></div>')+m.t2+'</div>'+
-          '<div class="md-score" style="color:var(--green)">'+m.t2score+' <small>('+m.t2ov+' ov)</small></div></div>'+
+          '<div class="md-score" style="color:var(--green)">'+(m.t2score?m.t2score+' <small>('+m.t2ov+' ov)</small>':'<span style="color:var(--dim)">—</span>')+'</div></div>'+
       '</div>'+
-      '<div class="md-result-bar"><div class="md-result-txt">🏆 '+m.result+'</div></div>'+
+      (m.status==='completed'&&m.result?'<div class="md-result-bar"><div class="md-result-txt">🏆 '+m.result+'</div></div>':'<div class="md-result-bar" style="background:rgba(240,165,0,.08);border-color:rgba(240,165,0,.25)"><div class="md-result-txt" style="color:var(--gold)">⏳ Match not yet played</div></div>')+
       '<div class="md-meta-row">'+
         '<div class="md-meta-item">📍 <b>'+m.venue+'</b></div>'+
         '<div class="md-meta-item">🪙 <b>'+m.toss+'</b></div>'+
@@ -2740,14 +2740,22 @@ function _drawForecast(m){
         '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:6px">Analysis Basis</div>'+
         '<div style="font-size:13px;color:var(--dim2);line-height:1.7">'+(wm.reason||wm.note||'Pre-match prediction based on H2H record, venue trends, form and squad strength.')+'</div>'+
       '</div>'+
-      // Actual result
+      // Actual result — only show for completed matches
+      (m.status==='completed'&&m.result?
       '<div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:7px;padding:12px 14px;display:flex;align-items:center;gap:10px">'+
         '<div style="font-size:20px">🎯</div>'+
         '<div>'+
           '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:3px">Actual Result</div>'+
           '<div style="font-family:Teko,sans-serif;font-size:17px;font-weight:700;color:var(--txt)">'+m.result+'</div>'+
         '</div>'+
-      '</div>'+
+      '</div>':
+      '<div style="background:rgba(240,165,0,.08);border:1px solid rgba(240,165,0,.25);border-radius:7px;padding:12px 14px;display:flex;align-items:center;gap:10px">'+
+        '<div style="font-size:20px">⏳</div>'+
+        '<div>'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:3px">Match Pending</div>'+
+          '<div style="font-family:Teko,sans-serif;font-size:15px;font-weight:700;color:var(--dim2)">Result will appear after the match is played</div>'+
+        '</div>'+
+      '</div>')+
     '</div>';
 
   el.innerHTML=
@@ -2819,12 +2827,13 @@ function _drawSC(m){
       '<span style="color:var(--dim);font-weight:700">DNB: </span>'+inn.dnb.join(', ')+'</div>';
   }
 
-  var t1=TEAMS[m.t1],t2=TEAMS[m.t2];
+  // Derive colors from inn.team, not m.t1/m.t2 (inn1 may not be t1)
+  var c1=TEAMS[m.inn1.team]||TEAMS[m.t1], c2=TEAMS[m.inn2.team]||TEAMS[m.t2];
   el.innerHTML=
     resultBanner(m)+
-    innTitle(m.inn1.team+' Innings',m.inn1.total,m.inn1.overs,t1.color)+
-    batTable(m.inn1)+bowlTable(m.inn1)+fowRow(m.inn1)+
-    innTitle(m.inn2.team+' Innings',m.inn2.total,m.inn2.overs,t2.color)+
+    innTitle(m.inn1.team+' Innings',m.inn1.total,m.inn1.overs,c1.color)+
+    batTable(m.inn1)+bowlTable(m.inn1)+fowRow(m.inn1)+dnbRow(m.inn1)+
+    innTitle(m.inn2.team+' Innings',m.inn2.total,m.inn2.overs,c2.color)+
     batTable(m.inn2)+bowlTable(m.inn2)+dnbRow(m.inn2)+fowRow(m.inn2);
 }
 
@@ -2894,24 +2903,53 @@ function _drawWorm(m){
     '</svg></div>';
   }
 
-  var t1=TEAMS[m.t1],t2=TEAMS[m.t2];
+  // Dynamically compute colors from inn.team, not m.t1/m.t2
+  var c1=TEAMS[m.inn1.team]||TEAMS[m.t1], c2=TEAMS[m.inn2.team]||TEAMS[m.t2];
+
+  // Compute phase stats dynamically from overR/overW
+  function phaseStats(inn){
+    var oR=inn.overR||[], oW=inn.overW||[];
+    var totalOv=oR.length;
+    var ppEnd=Math.min(6,totalOv), midEnd=Math.min(15,totalOv), deathEnd=totalOv;
+    function sumSlice(arr,a,b){var s=0;for(var i=a;i<b;i++)s+=(arr[i]||0);return s;}
+    var ppR=sumSlice(oR,0,ppEnd), ppW=sumSlice(oW,0,ppEnd);
+    var midR=sumSlice(oR,ppEnd,midEnd), midW=sumSlice(oW,ppEnd,midEnd);
+    var deathR=sumSlice(oR,midEnd,deathEnd), deathW=sumSlice(oW,midEnd,deathEnd);
+    var ppOv=ppEnd, midOv=midEnd-ppEnd, deathOv=deathEnd-midEnd;
+    return {
+      pp:{r:ppR,w:ppW,rr:ppOv>0?(ppR/ppOv).toFixed(1):'0',ov:'1–'+ppEnd},
+      mid:{r:midR,w:midW,rr:midOv>0?(midR/midOv).toFixed(1):'0',ov:(ppEnd+1)+'–'+midEnd},
+      death:{r:deathR,w:deathW,rr:deathOv>0?(deathR/deathOv).toFixed(1):'0',ov:(midEnd+1)+'–'+deathEnd}
+    };
+  }
+  function phaseCards(inn,isChase){
+    var ps=phaseStats(inn);
+    var totalOv=(inn.overR||[]).length;
+    // For short chases, label final phase differently
+    if(isChase && totalOv<20){
+      return '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 24px">'+
+        phaseCard('Powerplay',ps.pp.ov,ps.pp.r,ps.pp.w,ps.pp.rr,'#3b82f6')+
+        phaseCard('Middle',ps.mid.ov,ps.mid.r,ps.mid.w,ps.mid.rr,'#f59e0b')+
+        phaseCard('Final',ps.death.ov,ps.death.r,ps.death.w,ps.death.rr,'#22c55e')+
+      '</div>';
+    }
+    return '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 24px">'+
+      phaseCard('Powerplay',ps.pp.ov,ps.pp.r,ps.pp.w,ps.pp.rr,'#3b82f6')+
+      phaseCard('Middle',ps.mid.ov,ps.mid.r,ps.mid.w,ps.mid.rr,'#f59e0b')+
+      phaseCard('Death',ps.death.ov,ps.death.r,ps.death.w,ps.death.rr,'#e0341a')+
+    '</div>';
+  }
+  var maxOv1=(m.inn1.overR||[]).length||20;
+  var maxOv2=(m.inn2.overR||[]).length||20;
   el.innerHTML=
     resultBanner(m)+
     legend()+
-    chartTitle(m.inn1.team+' 1st Innings — Run Progression',t1.color)+
-    wormSVG(m.inn1,t1.color,20)+
-    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 24px">'+
-      phaseCard('Powerplay','1–6',38,3,'6.3','#3b82f6')+
-      phaseCard('Middle','7–15',105,4,'11.7','#f59e0b')+
-      phaseCard('Death','16–20',58,2,'11.6','#e0341a')+
-    '</div>'+
-    chartTitle(m.inn2.team+' 2nd Innings — Run Progression',t2.color)+
-    wormSVG(m.inn2,t2.color,16)+
-    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px">'+
-      phaseCard('Powerplay','1–6',76,1,'12.7','#3b82f6')+
-      phaseCard('Middle','7–12',91,3,'15.2','#f59e0b')+
-      phaseCard('Final','13–15.4',36,0,'13.8','#22c55e')+
-    '</div>';
+    chartTitle(m.inn1.team+' 1st Innings — Run Progression',c1.color)+
+    wormSVG(m.inn1,c1.color,maxOv1)+
+    phaseCards(m.inn1,false)+
+    chartTitle(m.inn2.team+' 2nd Innings — Run Progression',c2.color)+
+    wormSVG(m.inn2,c2.color,maxOv2)+
+    phaseCards(m.inn2,true);
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -3002,21 +3040,26 @@ function _drawOvers(m){
     '</div>';
   }
 
-  var t1=TEAMS[m.t1],t2=TEAMS[m.t2];
+  // Derive colors from inn.team, not m.t1/m.t2
+  var c1=TEAMS[m.inn1.team]||TEAMS[m.t1], c2=TEAMS[m.inn2.team]||TEAMS[m.t2];
+  // Bowling team is the opposite of batting team
+  var bowl1Team=m.inn2.team, bowl2Team=m.inn1.team;
+  var maxOv1=(m.inn1.overR||[]).length||20;
+  var maxOv2=(m.inn2.overR||[]).length||20;
   el.innerHTML=
     resultBanner(m)+
     legend()+
-    chartTitle(m.inn1.team+' 1st Innings — Runs Per Over',t1.color)+
-    overBarChart(m.inn1,20)+
-    chartTitle('SRH Bowling Economy Analysis')+
+    chartTitle(m.inn1.team+' 1st Innings — Runs Per Over',c1.color)+
+    overBarChart(m.inn1,maxOv1)+
+    chartTitle(bowl1Team+' Bowling Economy Analysis')+
     econBars(m.inn1)+
-    chartTitle('SRH Boundary Breakdown')+
+    chartTitle(m.inn1.team+' Boundary Breakdown')+
     bdryBreakdown(m.inn1)+
-    chartTitle(m.inn2.team+' 2nd Innings — Runs Per Over',t2.color)+
-    overBarChart(m.inn2,16)+
-    chartTitle('SRH Bowling vs RCB Chase')+
+    chartTitle(m.inn2.team+' 2nd Innings — Runs Per Over',c2.color)+
+    overBarChart(m.inn2,maxOv2)+
+    chartTitle(bowl2Team+' Bowling vs '+m.inn2.team+' Chase')+
     econBars(m.inn2)+
-    chartTitle('RCB Boundary Breakdown')+
+    chartTitle(m.inn2.team+' Boundary Breakdown')+
     bdryBreakdown(m.inn2);
 }
 
@@ -3074,7 +3117,8 @@ function _drawPS(m){
       '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:16px">'+chips+'</div>';
   }
 
-  var t1=TEAMS[m.t1],t2=TEAMS[m.t2];
+  // Derive colors from inn.team, not m.t1/m.t2
+  var c1=TEAMS[m.inn1.team]||TEAMS[m.t1], c2=TEAMS[m.inn2.team]||TEAMS[m.t2];
   el.innerHTML=
     resultBanner(m)+
     '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;color:var(--dim);margin-bottom:10px">'+
@@ -3082,29 +3126,29 @@ function _drawPS(m){
       '<span style="color:#22c55e">■ 40–79 (solid) </span>'+
       '<span style="color:#9099b4">■ &lt;40</span>'+
     '</div>'+
-    chartTitle(m.inn1.team+' Partnerships — 1st Innings',t1.color)+
-    psChart(m.inn1.pships,m.inn1.runs,t1.color)+
+    chartTitle(m.inn1.team+' Partnerships — 1st Innings',c1.color)+
+    psChart(m.inn1.pships,m.inn1.runs,c1.color)+
     (function(){
       // Dynamic best partnership highlight for inn1
       var allPs = (m.inn1.pships||[]).slice();
       if(!allPs.length) return '';
       var best = allPs.reduce(function(a,b){return b.r>a.r?b:a;},allPs[0]);
       var rr = best.b>0?(best.r/best.b*6).toFixed(1):'—';
-      var teamColor = t1 ? t1.color : 'var(--gold)';
+      var teamColor = c1 ? c1.color : 'var(--gold)';
       return '<div style="background:var(--s1);border:1px solid rgba(240,165,0,.3);border-left:3px solid '+teamColor+';border-radius:8px;padding:14px;margin-bottom:22px">'+
         '<div style="font-family:Barlow Condensed,sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:'+teamColor+';margin-bottom:5px">'+m.inn1.team+' Best Partnership</div>'+
         '<div style="font-family:Teko,sans-serif;font-size:20px;font-weight:700;margin-bottom:4px">'+best.p1+' & '+best.p2+' · '+best.r+' runs ('+best.b+' balls) · RR '+rr+'</div>'+
         '<div style="font-size:13px;color:var(--dim2);line-height:1.7">Wicket '+best.wkt+' partnership — the defining stand of the '+m.inn1.team+' innings. Contributed <b style="color:var(--gold)">'+(m.inn1.runs>0?((best.r/m.inn1.runs*100).toFixed(0)):'—')+'%</b> of the total runs.</div>'+
       '</div>';
     })()+
-    chartTitle(m.inn2.team+' Partnerships — 2nd Innings',t2.color)+
-    psChart(m.inn2.pships,m.inn2.runs,t2.color)+
+    chartTitle(m.inn2.team+' Partnerships — 2nd Innings',c2.color)+
+    psChart(m.inn2.pships,m.inn2.runs,c2.color)+
     (function(){
       if(!m.inn2||!m.inn2.pships||!m.inn2.pships.length) return '';
       var ps2=m.inn2.pships;
       var best2=ps2.reduce(function(a,b){return b.r>a.r?b:a;},ps2[0]);
       var rr2=best2.b>0?(best2.r/best2.b*6).toFixed(1):'—';
-      var teamCol2=t2?t2.color:'var(--green)';
+      var teamCol2=c2?c2.color:'var(--green)';
       return '<div style="background:var(--s1);border:1px solid '+teamCol2+'44;border-left:3px solid '+teamCol2+';border-radius:8px;padding:14px">'+
         '<div style="font-family:Barlow Condensed,sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:'+teamCol2+';margin-bottom:5px">'+m.inn2.team+' Best Partnership</div>'+
         '<div style="font-family:Teko,sans-serif;font-size:20px;font-weight:700;margin-bottom:4px">'+best2.p1+' & '+best2.p2+' · '+best2.r+' runs ('+best2.b+' balls) · RR '+rr2+'</div>'+
@@ -3173,7 +3217,8 @@ function _drawPlayers(m){
     '</div>';
   }
 
-  var t1=TEAMS[m.t1],t2=TEAMS[m.t2];
+  // Derive colors from inn.team, not m.t1/m.t2
+  var c1=TEAMS[m.inn1.team]||TEAMS[m.t1], c2=TEAMS[m.inn2.team]||TEAMS[m.t2];
   el.innerHTML=
     resultBanner(m)+
     '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;color:var(--dim);margin-bottom:8px">'+
@@ -3182,11 +3227,11 @@ function _drawPlayers(m){
       '<span style="color:#9099b4">■ SR 75–124 </span>'+
       '<span style="color:#e0341a">■ SR &lt;75</span>'+
     '</div>'+
-    chartTitle('Batting Strike Rate — SRH 1st Innings',t1.color)+
-    srChart(m.inn1,t1.color)+
-    chartTitle('Batting Strike Rate — RCB 2nd Innings',t2.color)+
-    srChart(m.inn2,t2.color)+
-    chartTitle('Player Impact Ratings · Match 1')+
+    chartTitle('Batting Strike Rate — '+m.inn1.team+' 1st Innings',c1.color)+
+    srChart(m.inn1,c1.color)+
+    chartTitle('Batting Strike Rate — '+m.inn2.team+' 2nd Innings',c2.color)+
+    srChart(m.inn2,c2.color)+
+    chartTitle('Player Impact Ratings · Match '+m.no)+
     '<div style="font-family:Barlow Condensed,sans-serif;font-size:11px;color:var(--dim);margin-bottom:12px">Based on runs, SR, wickets, economy, match situation & game-changing impact</div>'+
     ratingCards();
 }
@@ -3217,7 +3262,8 @@ function _drawMoments(m){
     }).join('');
   }
 
-  var t1=TEAMS[m.t1],t2=TEAMS[m.t2];
+  // Derive colors from inn.team, not m.t1/m.t2
+  var c1=TEAMS[m.inn1.team]||TEAMS[m.t1], c2=TEAMS[m.inn2.team]||TEAMS[m.t2];
 
   // Build 6 highlight cards dynamically from match moments
   var inn1Moms = (m.inn1&&m.inn1.moments)||[];
@@ -3238,9 +3284,9 @@ function _drawMoments(m){
   el.innerHTML=
     resultBanner(m)+
     gridHTML+
-    (inn1Moms.length ? chartTitle(m.inn1.team+' 1st Innings — Match Timeline',t1?t1.color:'var(--gold)')+
+    (inn1Moms.length ? chartTitle(m.inn1.team+' 1st Innings — Match Timeline',c1?c1.color:'var(--gold)')+
       '<div style="margin-bottom:24px">'+timeline(inn1Moms)+'</div>' : '')+
-    (inn2Moms.length ? chartTitle(m.inn2.team+' 2nd Innings — Match Timeline',t2?t2.color:'var(--green)')+
+    (inn2Moms.length ? chartTitle(m.inn2.team+' 2nd Innings — Match Timeline',c2?c2.color:'var(--green)')+
       timeline(inn2Moms) : '');
 }
 
