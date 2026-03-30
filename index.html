@@ -17,15 +17,10 @@ nav button{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:
 nav button:hover{color:var(--txt);background:var(--s2)}
 nav button.on{color:var(--gold);background:rgba(240,165,0,.1)}
 .nav-right{margin-left:auto;display:flex;align-items:center;gap:6px;flex-shrink:0}
-.api-input{font-family:'DM Sans',sans-serif;font-size:12px;background:var(--s2);border:1px solid var(--bd);color:var(--txt);padding:5px 10px;border-radius:4px;width:170px;outline:none}
+
 .api-input:focus{border-color:var(--gold)}
 .api-input::placeholder{color:var(--dim)}
-.api-save{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:5px 10px;border-radius:4px;border:1px solid var(--bd2);background:var(--s2);color:var(--dim2);cursor:pointer;transition:.15s;white-space:nowrap}
-.api-save:hover{border-color:var(--gold);color:var(--gold)}
-.view{display:none;max-width:920px;margin:0 auto;padding:22px 18px}
-.view.on{display:block}
-.sh{margin-bottom:16px}
-.sh h2{font-family:'Teko',sans-serif;font-size:28px;font-weight:700;letter-spacing:-.3px;line-height:1}
+.api-save{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:5px 10px;border-radius:4px;border:1px solid var(-font-family:'Teko',sans-serif;font-size:28px;font-weight:700;letter-spacing:-.3px;line-height:1}
 .sh p{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--dim);margin-top:3px}
 /* ── LIVE TILE ── */
 .live-tile{background:var(--s1);border:1px solid var(--bd);border-radius:10px;margin-bottom:22px;position:relative;overflow:hidden;transition:border-color .2s}
@@ -302,7 +297,7 @@ nav button.on{color:var(--gold);background:rgba(240,165,0,.1)}
 .ipanel{display:none}
 .ipanel.on{display:block}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:8px}
-.pcard{background:var(--s1);border:1px solid var(--bd);border-radius:7px;padding:12px;transition:.14s;display:flex;flex-direction:column;align-items:center;text-align:center}
+.pcard{background:var(--s1);border:1px solid var(--bd);border-radius:7px;padding:12px;transition:.14s;display:flex;flex-direction:column;align-items:center;text-align:center;min-height:140px;justify-content:space-between}
 .pcard:hover{background:var(--s2);border-color:var(--bd2)}
 .prole{font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px}
 .pname{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;line-height:1.2;color:var(--txt)}
@@ -491,8 +486,7 @@ nav button.on{color:var(--gold);background:rgba(240,165,0,.1)}
     <button id="nb-scores" onclick="go('scores')">Scorecards</button>
   </div>
   <div class="nav-right">
-    <input class="api-input" id="api-key-input" type="text" placeholder="cricapi.com key…" autocomplete="off">
-    <button class="api-save" onclick="saveKey()">Save</button>
+    <input id="api-key-input" type="hidden" value="">
   </div>
 </nav>
 <div class="view on" id="view-home">
@@ -1489,7 +1483,7 @@ const MATCHES = [{
     t1:'MI', t2:'KKR', status:'completed',
     toss:'KKR won toss, elected to bat', result:'MI won by 6 wickets',
     t1score:'224/4', t1ov:'19.1', t2score:'220/4', t2ov:'20',
-    pom:'Shardul Thakur 3/39 (4 ov) — match-winning spell',
+    pom:'Ryan Rickelton 81(43) SR 188.37',
     inn1:{
       team:'KKR', total:'220/4', overs:20, runs:220,
       batting:[
@@ -3696,7 +3690,31 @@ function renderTeamDetail(abbr){
   const ORDER=['Batsman','WK-Batsman','All-Rounder','Bowler'];
   const byRole={};ORDER.forEach(r=>{byRole[r]=[];});
   t.squad.forEach(p=>{if(byRole[p.r])byRole[p.r].push(p);});
-  const playersHTML=ORDER.flatMap(r=>byRole[r]).map(p=>'<div class="pcard">'+playerPhoto(p.n,abbr,40,'margin-bottom:8px')+'<div class="prole" style="color:'+(RC[p.r]||'#aaa')+';margin-top:4px">'+p.r+'</div><div class="pname">'+p.n+'</div><div class="pnat">'+p.c+'</div></div>').join('');
+  const playersHTML=(function(){
+    var stats = buildPlayerStats();
+    var batMap = {}; stats.bat.forEach(function(p){ batMap[p.name+p.team]=p; });
+    var bowlMap = {}; stats.bowl.forEach(function(p){ bowlMap[p.name+p.team]=p; });
+    return ORDER.flatMap(function(r){return byRole[r];}).map(function(p){
+      var bs = batMap[p.n+abbr];
+      var bw = bowlMap[p.n+abbr];
+      var statLine = '';
+      var statParts = [];
+      if(bs && bs.runs > 0){
+        statParts.push('<span style="color:var(--gold);font-weight:700">'+bs.runs+'</span><span style="color:var(--dim);font-size:9px"> runs</span>');
+        if(bs.hs > 0) statParts.push('<span style="color:var(--dim2);font-size:9px">HS '+bs.hs+(bs.hsNo?'*':'')+'</span>');
+      }
+      if(bw && bw.wkts > 0){
+        statParts.push('<span style="color:#22c55e;font-weight:700">'+bw.wkts+'</span><span style="color:var(--dim);font-size:9px"> wkts</span>');
+        if(bw.best) statParts.push('<span style="color:var(--dim2);font-size:9px">Best '+bw.best+'</span>');
+      }
+      if(statParts.length){
+        statLine = '<div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:5px;padding-top:5px;border-top:1px solid var(--bd)">'+statParts.join('<span style="color:var(--bd2);font-size:9px;align-self:center">·</span>')+'</div>';
+      } else {
+        statLine = '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;color:var(--dim);margin-top:5px;padding-top:5px;border-top:1px solid var(--bd);letter-spacing:1px">YET TO PLAY</div>';
+      }
+      return '<div class="pcard">'+playerPhoto(p.n,abbr,40,'margin-bottom:8px')+'<div class="prole" style="color:'+(RC[p.r]||'#aaa')+';margin-top:4px">'+p.r+'</div><div class="pname">'+p.n+'</div><div class="pnat">'+p.c+'</div>'+statLine+'</div>';
+    }).join('');
+  })();
   const g={};teamMatches.forEach(m=>{if(!g[m.d])g[m.d]=[];g[m.d].push(m);});
   let schedHTML='';
   for(const[d,ms]of Object.entries(g)){schedHTML+='<div class="date-sep'+(d===TODAY?' today':'')+'">'+ms[0].date+(d===TODAY?' -- Today':'')+'</div>';ms.forEach(m=>{schedHTML+=mRow(m,'');});}
