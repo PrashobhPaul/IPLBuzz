@@ -789,7 +789,7 @@ const TODAY=(function(){
   var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   return months[now.getMonth()]+' '+now.getDate();
 })();
-let API_KEY=localStorage.getItem('cricapi_key')||'';
+let API_KEY=localStorage.getItem('cricapi_key')||'a7402ce9-871c-4dee-813a-5484b141ef5a';
 var _akEl=document.getElementById('api-key-input');if(_akEl)_akEl.value=API_KEY;
 function saveKey(){API_KEY=document.getElementById('api-key-input').value.trim();localStorage.setItem('cricapi_key',API_KEY);startAutoRefresh();renderLivePanel();}
 
@@ -2476,35 +2476,35 @@ function _drawForecast(m){
       },
       venue:{
         name:'Barsapara Cricket Stadium, Guwahati',
-        season:'IPL \u00b7 From 5 Matches',
+        season:'IPL 2025 \u00b7 From 5 Matches',
         batFirst:3, batSecond:2
       },
       avgFirstInnings:{
         score:'175',
-        label:'Average 1st Innings Score at Guwahati (IPL history)'
+        label:'Average 1st Innings Score at Barsapara (5 IPL Matches)'
       },
       ppTrend:{
-        label:'Avg PP Score at Guwahati (IPL history)',
-        avg:'46/1',
-        note:'Guwahati tends to produce <b style=\"color:var(--gold)\">measured powerplays</b> before the scoring accelerates in the middle and death overs. Teams posting 175+ have a strong record here.'
+        label:'Avg PP Score at Barsapara Cricket Stadium (IPL 2025)',
+        avg:'53/1',
+        note:'The average powerplay score at Barsapara is <b style=\"color:var(--gold)\">53/1</b> based on IPL 2025 data. Teams that set up a strong powerplay foundation tend to post totals above the venue average of 175.'
       },
       impactPlayer:{
         name:'Sanju Samson',
         team:'CSK',
-        stat1:{label:'T20 Avg (since 2025)',value:'33.54'},
-        stat2:{label:'T20 Strike Rate',value:'149.19'},
-        note:'Returns to Guwahati in CSK yellow after leaving RR where he was captain. T20 World Cup Player of Tournament. His ground knowledge and hunger to prove a point against his former franchise makes him the match\u2019s most dangerous batter.'
+        stat1:{label:'T20 WC 2026 Matches', value:'5'},
+        stat2:{label:'T20 WC 2026 Runs', value:'321'},
+        note:'Player of the T20 World Cup 2026 \u2014 321 runs in just 5 matches. Returns to Guwahati in CSK yellow after leaving RR where he was captain. His ground knowledge and hunger to prove a point makes him the most dangerous batter on show today.'
       },
       keyMatchup:{
         batter:'Shimron Hetmyer',
         bowler:'Khaleel Ahmed',
-        note:'Hetmyer has 51 runs off 25 balls vs Khaleel at SR 204, dismissed only once. A nightmare matchup for the DC left-armer if he features today.'
+        note:'Hetmyer has 51 runs off 25 balls vs Khaleel at SR 204, dismissed only once. A nightmare matchup for the left-armer if he features today.'
       },
       winMeter:{
-        t1pct:48, t2pct:52,
+        t1pct:45, t2pct:55,
         t1label:'RR', t2label:'CSK',
         t1color:'#e0339d', t2color:'#c8a400',
-        reason:'CSK hold a 52-48 edge despite RR\u2019s home advantage at Guwahati. Sanju Samson\u2019s T20 World Cup form and CSK\u2019s experience in knockout situations tips the balance. The venue trend of batting first winning 60% of games means the toss will be decisive. RR\u2019s home crowd and familiarity with conditions keep this close.'
+        reason:'CSK hold a 55-45 edge on the Edge Meter. Sanju Samson\u2019s T20 WC 2026 form (321 runs in 5 games) and CSK\u2019s squad depth tips the balance. The venue favours batting first (60% win rate) so the toss will be crucial. RR\u2019s home advantage at Guwahati keeps this competitive.'
       }
     }
   };
