@@ -209,11 +209,51 @@ if(sessionStorage.getItem('iplbuzz_admin')==='1'){
 // ═══ TEAMS (reference only for schedule) ═══
 var TEAMS={RCB:'Royal Challengers Bengaluru',MI:'Mumbai Indians',CSK:'Chennai Super Kings',KKR:'Kolkata Knight Riders',SRH:'Sunrisers Hyderabad',RR:'Rajasthan Royals',PBKS:'Punjab Kings',DC:'Delhi Capitals',GT:'Gujarat Titans',LSG:'Lucknow Super Giants'};
 
+// ═══ DEFAULT SCHEDULE (fallback if localStorage empty) ═══
+var DEFAULT_SCHEDULE=[
+{no:1,date:'Sat, Mar 28',d:'Mar 28',t1:'RCB',t2:'SRH',time:'7:30 PM',result:'RCB won by 6 wkts',t1score:'203/4',t2score:'201/9',completed:true},
+{no:2,date:'Sun, Mar 29',d:'Mar 29',t1:'MI',t2:'KKR',time:'7:30 PM',venue:'Wankhede Stadium, Mumbai',completed:true,result:'MI won by 6 wkts',t1score:'224/4',t1ov:'19.1',t2score:'220/4',t2ov:'20'},
+{no:3,date:'Mon, Mar 30',d:'Mar 30',t1:'RR',t2:'CSK',time:'7:30 PM',venue:'Barsapara Cricket Stadium, Guwahati'},
+{no:4,date:'Tue, Mar 31',d:'Mar 31',t1:'PBKS',t2:'GT',time:'7:30 PM'},
+{no:5,date:'Wed, Apr 1',d:'Apr 1',t1:'LSG',t2:'DC',time:'7:30 PM'},
+{no:6,date:'Thu, Apr 2',d:'Apr 2',t1:'KKR',t2:'SRH',time:'7:30 PM'},
+{no:7,date:'Fri, Apr 3',d:'Apr 3',t1:'CSK',t2:'PBKS',time:'7:30 PM'},
+{no:8,date:'Sat, Apr 4',d:'Apr 4',t1:'DC',t2:'MI',time:'3:30 PM'},
+{no:9,date:'Sat, Apr 4',d:'Apr 4',t1:'GT',t2:'RR',time:'7:30 PM'},
+{no:10,date:'Sun, Apr 5',d:'Apr 5',t1:'SRH',t2:'LSG',time:'3:30 PM'},
+{no:11,date:'Sun, Apr 5',d:'Apr 5',t1:'RCB',t2:'CSK',time:'7:30 PM'},
+{no:12,date:'Mon, Apr 6',d:'Apr 6',t1:'KKR',t2:'PBKS',time:'7:30 PM'},
+{no:13,date:'Tue, Apr 7',d:'Apr 7',t1:'RR',t2:'MI',time:'7:30 PM'},
+{no:14,date:'Wed, Apr 8',d:'Apr 8',t1:'DC',t2:'GT',time:'7:30 PM'},
+{no:15,date:'Thu, Apr 9',d:'Apr 9',t1:'KKR',t2:'LSG',time:'7:30 PM'},
+{no:16,date:'Fri, Apr 10',d:'Apr 10',t1:'RR',t2:'RCB',time:'7:30 PM'},
+{no:17,date:'Sat, Apr 11',d:'Apr 11',t1:'PBKS',t2:'SRH',time:'3:30 PM'},
+{no:18,date:'Sat, Apr 11',d:'Apr 11',t1:'CSK',t2:'DC',time:'7:30 PM'},
+{no:19,date:'Sun, Apr 12',d:'Apr 12',t1:'LSG',t2:'GT',time:'3:30 PM'},
+{no:20,date:'Sun, Apr 12',d:'Apr 12',t1:'MI',t2:'RCB',time:'7:30 PM'},
+{no:21,date:'Mon, Apr 13',d:'Apr 13',t1:'SRH',t2:'RR',time:'7:30 PM'},
+{no:22,date:'Tue, Apr 14',d:'Apr 14',t1:'CSK',t2:'KKR',time:'7:30 PM'},
+{no:23,date:'Wed, Apr 15',d:'Apr 15',t1:'RCB',t2:'LSG',time:'7:30 PM'},
+{no:24,date:'Thu, Apr 16',d:'Apr 16',t1:'MI',t2:'PBKS',time:'7:30 PM'},
+{no:25,date:'Fri, Apr 17',d:'Apr 17',t1:'GT',t2:'KKR',time:'7:30 PM'},
+{no:26,date:'Sat, Apr 18',d:'Apr 18',t1:'RCB',t2:'DC',time:'3:30 PM'},
+{no:27,date:'Sat, Apr 18',d:'Apr 18',t1:'SRH',t2:'CSK',time:'7:30 PM'},
+{no:28,date:'Sun, Apr 19',d:'Apr 19',t1:'KKR',t2:'RR',time:'3:30 PM'},
+{no:29,date:'Sun, Apr 19',d:'Apr 19',t1:'PBKS',t2:'LSG',time:'7:30 PM'},
+{no:30,date:'Mon, Apr 20',d:'Apr 20',t1:'GT',t2:'MI',time:'7:30 PM'}
+];
+
 // ═══ STORAGE HELPERS ═══
 function sGet(k){try{var d=localStorage.getItem('iplbuzz_'+k);return d?JSON.parse(d):null;}catch(e){return null;}}
 function sSet(k,v){try{localStorage.setItem('iplbuzz_'+k,JSON.stringify(v));}catch(e){}}
 function getMatches(){return sGet('matches')||[];}
-function getSchedule(){return sGet('schedule')||[];}
+function getSchedule(){
+  var s=sGet('schedule');
+  if(s&&s.length)return s;
+  // Seed default schedule into localStorage
+  sSet('schedule',DEFAULT_SCHEDULE);
+  return DEFAULT_SCHEDULE;
+}
 function getPoints(){return sGet('points')||[];}
 
 // ═══ INIT ═══
@@ -374,48 +414,117 @@ function previewJSON(){
 }
 
 // ═══ CRICAPI FETCH ═══
+var TEAM_ALIASES={'Royal Challengers Bengaluru':'RCB','Royal Challengers Bangalore':'RCB','Mumbai Indians':'MI','Chennai Super Kings':'CSK','Kolkata Knight Riders':'KKR','Sunrisers Hyderabad':'SRH','Rajasthan Royals':'RR','Punjab Kings':'PBKS','Delhi Capitals':'DC','Gujarat Titans':'GT','Lucknow Super Giants':'LSG'};
+
+function matchTeamAbbr(name){
+  if(!name)return '';
+  // Direct match
+  if(TEAMS[name])return name;
+  // Alias lookup
+  if(TEAM_ALIASES[name])return TEAM_ALIASES[name];
+  // Partial match
+  var lower=name.toLowerCase();
+  for(var alias in TEAM_ALIASES){
+    if(lower.includes(alias.toLowerCase().split(' ')[0]))return TEAM_ALIASES[alias];
+  }
+  return name;
+}
+
 function fetchCricAPI(){
   var key=document.getElementById('api-key').value.trim();
   if(!key){flash('api-status','Enter API key','err');return;}
   localStorage.setItem('cricapi_key',key);
-  flash('api-status','Fetching...','ok');
+  flash('api-status','Fetching from CricAPI...','ok');
   fetch('https://api.cricapi.com/v1/currentMatches?apikey='+key+'&offset=0')
     .then(function(r){return r.json();})
     .then(function(j){
       if(j.status!=='success'){flash('api-status','API error: '+(j.reason||'unknown'),'err');return;}
       var data=j.data||[];
       var ipl=data.filter(function(m){return(m.name||'').toLowerCase().includes('ipl');});
-      var stored=0;
+      var stored=0,liveCount=0;
+      var resultsHTML='';
+
       ipl.forEach(function(m){
-        if(!m.matchEnded&&m.status!=='Match over')return;
-        var ti=m.teamInfo||[],a1=(ti[0]||{}).shortname||'',a2=(ti[1]||{}).shortname||'';
+        var ti=m.teamInfo||[];
+        var a1=matchTeamAbbr((ti[0]||{}).shortname||(ti[0]||{}).name||'');
+        var a2=matchTeamAbbr((ti[1]||{}).shortname||(ti[1]||{}).name||'');
+        var scores=m.score||[];
+        var s1=scores[0]?(scores[0].r+'/'+scores[0].w+' ('+scores[0].o+' ov)'):'—';
+        var s2=scores[1]?(scores[1].r+'/'+scores[1].w+' ('+scores[1].o+' ov)'):'—';
+        var isComplete=m.matchEnded||m.status==='Match over';
+        var statusColor=isComplete?'var(--green)':'var(--gold)';
+        var statusLabel=isComplete?'COMPLETED':'LIVE';
+
+        resultsHTML+='<div style="background:var(--s2);border:1px solid var(--bd);border-left:3px solid '+statusColor+';border-radius:6px;padding:10px 14px;margin-bottom:6px">'+
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'+
+            '<span style="font-family:Teko,sans-serif;font-size:18px;font-weight:700">'+a1+' vs '+a2+'</span>'+
+            '<span style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:'+statusColor+';background:'+statusColor+'18;border:1px solid '+statusColor+'44;padding:2px 8px;border-radius:3px">'+statusLabel+'</span>'+
+          '</div>'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:13px;color:var(--dim2)">'+a1+': '+s1+' &nbsp;·&nbsp; '+a2+': '+s2+'</div>'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--txt);margin-top:3px;font-weight:700">'+(m.status||'')+'</div>'+
+        '</div>';
+
+        if(!isComplete){liveCount++;return;}
+
+        // Find matching schedule entry
         var sched=getSchedule();
-        var sc=sched.find(function(s){return(s.t1===a1&&s.t2===a2)||(s.t1===a2&&s.t2===a1);});
-        if(!sc)return;
+        var sc=sched.find(function(s){
+          return (s.t1===a1&&s.t2===a2)||(s.t1===a2&&s.t2===a1);
+        });
+        if(!sc){
+          resultsHTML+='<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;color:var(--red);margin-top:-4px;margin-bottom:6px">⚠ No schedule match found for '+a1+' vs '+a2+'</div>';
+          return;
+        }
+
+        // Check if we already have detailed data
         var matches=getMatches();
         var existing=matches.find(function(x){return x.no===sc.no;});
-        if(existing&&existing.inn1&&existing.inn1.batting&&existing.inn1.batting.length>0)return;
-        // Auto-store basic match data
-        var scores=m.score||[];
+        if(existing&&existing.inn1&&existing.inn1.batting&&existing.inn1.batting.length>0){
+          resultsHTML+='<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;color:var(--green);margin-top:-4px;margin-bottom:6px">✓ Already stored with full scorecard (M'+sc.no+')</div>';
+          return;
+        }
+
+        // Auto-store
         sc.completed=true;sc.result=m.status||'';
-        if(scores[0]){sc.t1score=scores[0].r+'/'+scores[0].w;sc.t1ov=String(scores[0].o);}
-        if(scores[1]){sc.t2score=scores[1].r+'/'+scores[1].w;sc.t2ov=String(scores[1].o);}
+        if(scores[0]){
+          // Determine which score belongs to which team
+          var sc0team=matchTeamAbbr((scores[0].inning||'').split(' Inning')[0]);
+          var sc1team=scores[1]?matchTeamAbbr((scores[1].inning||'').split(' Inning')[0]):'';
+          if(sc0team===sc.t1){
+            sc.t1score=scores[0].r+'/'+scores[0].w;sc.t1ov=String(scores[0].o);
+            if(scores[1]){sc.t2score=scores[1].r+'/'+scores[1].w;sc.t2ov=String(scores[1].o);}
+          } else if(sc0team===sc.t2){
+            sc.t2score=scores[0].r+'/'+scores[0].w;sc.t2ov=String(scores[0].o);
+            if(scores[1]){sc.t1score=scores[1].r+'/'+scores[1].w;sc.t1ov=String(scores[1].o);}
+          } else {
+            // Fallback: first score = t1
+            sc.t1score=scores[0].r+'/'+scores[0].w;sc.t1ov=String(scores[0].o);
+            if(scores[1]){sc.t2score=scores[1].r+'/'+scores[1].w;sc.t2ov=String(scores[1].o);}
+          }
+        }
         sSet('schedule',sched);
+
+        var inn1Team=a1,inn2Team=a2;
+        var inn1Runs=(scores[0]||{}).r||0,inn2Runs=(scores[1]||{}).r||0;
+        var inn1Ov=parseFloat((scores[0]||{}).o)||20,inn2Ov=parseFloat((scores[1]||{}).o)||20;
+
         var entry={id:'m'+sc.no,no:sc.no,date:sc.date,venue:m.venue||sc.venue||'',
           t1:sc.t1,t2:sc.t2,status:'completed',toss:'',result:m.status||'',pom:'',
           t1score:sc.t1score||'',t1ov:sc.t1ov||'20',t2score:sc.t2score||'',t2ov:sc.t2ov||'20',
-          inn1:{team:a1,total:sc.t1score||'',overs:parseFloat(sc.t1ov)||20,runs:(scores[0]||{}).r||0,batting:[],extras:{b:0,lb:0,w:0,nb:0,total:0},bowling:[]},
-          inn2:{team:a2,total:sc.t2score||'',overs:parseFloat(sc.t2ov)||20,runs:(scores[1]||{}).r||0,batting:[],extras:{b:0,lb:0,w:0,nb:0,total:0},bowling:[]}};
+          inn1:{team:inn1Team,total:sc.t1score||'',overs:inn1Ov,runs:inn1Runs,batting:[],extras:{b:0,lb:0,w:0,nb:0,total:0},bowling:[]},
+          inn2:{team:inn2Team,total:sc.t2score||'',overs:inn2Ov,runs:inn2Runs,batting:[],extras:{b:0,lb:0,w:0,nb:0,total:0},bowling:[]}};
+
         if(existing){var i=matches.indexOf(existing);matches[i]=entry;}else matches.push(entry);
+        matches.sort(function(a,b){return a.no-b.no;});
+        sSet('matches',matches);
         stored++;
+        resultsHTML+='<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;color:var(--gold);margin-top:-4px;margin-bottom:6px">⬆ Auto-stored as Match '+sc.no+' (add batting/bowling via form above)</div>';
       });
-      if(stored>0){
-        var matches=getMatches();matches.sort(function(a,b){return a.no-b.no;});sSet('matches',matches);
-        recalcPoints();
-      }
+
+      if(stored>0)recalcPoints();
       renderStatus();renderGrid();
-      flash('api-status','Found '+ipl.length+' IPL matches, auto-stored '+stored+' new.','ok');
-      document.getElementById('api-results').innerHTML='<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--dim2)">'+ipl.map(function(m){return '<div style="padding:4px 0;border-bottom:1px solid var(--bd)">'+m.name+' — <b style="color:var(--txt)">'+(m.status||'')+'</b></div>';}).join('')+'</div>';
+      flash('api-status','Found '+ipl.length+' IPL matches ('+liveCount+' live, '+stored+' newly stored)','ok');
+      document.getElementById('api-results').innerHTML=resultsHTML||'<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--dim2)">No IPL matches found in API response.</div>';
     })
     .catch(function(e){flash('api-status','Fetch error: '+e.message,'err');});
 }

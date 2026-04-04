@@ -3812,6 +3812,11 @@ function switchTab(name,btn){
     if(ss){var ps=JSON.parse(ss);if(ps&&ps.length)SCHEDULE=ps;}
     if(sp){var pp=JSON.parse(sp);if(pp&&pp.length)POINTS=pp;}
     if(sn){var pn=JSON.parse(sn);if(pn&&pn.length)NEWSLETTERS=pn;}
+    // Seed defaults into localStorage if first visit
+    if(!sm)localStorage.setItem('iplbuzz_matches',JSON.stringify(MATCHES));
+    if(!ss)localStorage.setItem('iplbuzz_schedule',JSON.stringify(SCHEDULE));
+    if(!sp)localStorage.setItem('iplbuzz_points',JSON.stringify(POINTS));
+    if(!sn)localStorage.setItem('iplbuzz_newsletters',JSON.stringify(NEWSLETTERS));
     console.log('[IPLBuzz] Loaded '+MATCHES.length+' matches from storage');
   } catch(e){console.warn('[IPLBuzz] Storage load error:',e);}
 
