@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IPL 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&family=DM+Sans:wght@400;500&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#07080c;--s1:#0d0f17;--s2:#141720;--bd:#222840;--bd2:#2c3555;--gold:#f0a500;--red:#e0341a;--green:#1db954;--txt:#dde1ee;--dim:#606880;--dim2:#9099b4}
@@ -568,17 +565,40 @@ var DataStore = {
   FB_READY: false,
   db: null,
 
-  // ── Firebase setup (call after page load) ──────────────────────────
+  // ── Firebase setup (loads SDK dynamically) ──────────────────────────
   initFirebase: function(config) {
+    var self = this;
     try {
-      if (typeof firebase !== 'undefined' && config && config.apiKey) {
-        firebase.initializeApp(config);
-        this.db = firebase.database();
-        this.FB_READY = true;
-        console.log('[DataStore] Firebase connected');
-        this.syncFromFirebase();
+      if (!config || !config.apiKey || !config.databaseURL) return;
+      // If already loaded
+      if (typeof firebase !== 'undefined') {
+        self._connectFirebase(config);
+        return;
       }
+      // Load SDK dynamically
+      var s1 = document.createElement('script');
+      s1.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js';
+      s1.onload = function() {
+        var s2 = document.createElement('script');
+        s2.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js';
+        s2.onload = function() { self._connectFirebase(config); };
+        s2.onerror = function() { console.warn('[DataStore] Firebase DB SDK failed to load'); };
+        document.head.appendChild(s2);
+      };
+      s1.onerror = function() { console.warn('[DataStore] Firebase App SDK failed to load'); };
+      document.head.appendChild(s1);
     } catch(e) { console.warn('[DataStore] Firebase init failed:', e); }
+  },
+
+  _connectFirebase: function(config) {
+    try {
+      if (typeof firebase === 'undefined') return;
+      if (!firebase.apps.length) firebase.initializeApp(config);
+      this.db = firebase.database();
+      this.FB_READY = true;
+      console.log('[DataStore] Firebase connected');
+      this.syncFromFirebase();
+    } catch(e) { console.warn('[DataStore] Firebase connect failed:', e); }
   },
 
   // ── Save to localStorage ───────────────────────────────────────────
@@ -1560,7 +1580,7 @@ async function refreshLive(){
 
   const matches=await fetchLive();
   // Phase 2: Auto-extract completed match data
-  if(matches) syncLiveToData(matches);
+  try { if(matches) syncLiveToData(matches); } catch(e) { console.warn('syncLiveToData error:', e); }
   const m=findIPL(matches);
   const el=document.getElementById('live-panel-wrap');
   if(!el){if(btn){btn.disabled=false;btn.textContent='↻ Refresh';}return;}
@@ -4231,8 +4251,10 @@ function switchTab(name,btn){
   nextAd();document.querySelectorAll('.itab').forEach(b=>b.classList.remove('on'));document.querySelectorAll('.ipanel').forEach(p=>p.classList.remove('on'));btn.classList.add('on');document.getElementById('ipanel-'+name).classList.add('on');}
 (function init(){
   // ── Load persisted data (localStorage → overwrite defaults if exists) ──
-  DataStore.seedIfEmpty();
-  DataStore.loadAll();
+  try {
+    DataStore.seedIfEmpty();
+    DataStore.loadAll();
+  } catch(e) { console.warn('[init] DataStore load error:', e); }
 
   const bar=document.getElementById('sched-filters');
   ['ALL',...Object.keys(TEAMS)].forEach(abbr=>{const b=document.createElement('button');b.className='fbtn'+(abbr==='ALL'?' on':'');b.textContent=abbr==='ALL'?'All Teams':abbr;b.onclick=()=>filterSched(abbr,b);bar.appendChild(b);});
@@ -4262,11 +4284,15 @@ function switchTab(name,btn){
     homeHTML+='<div class="date-sep" style="margin-top:10px">Up Next</div>';
     afterNext.slice(0,2).forEach(function(m){homeHTML+=mRow(m,"go('schedule')");});
   }
-  renderHomePage();renderSchedule();renderPoints();renderTeamCards('home-teams','home');renderTeamCards('teams-list','teams');renderMatchList();renderScorecardsPage();
+  try {
+    renderHomePage();renderSchedule();renderPoints();renderTeamCards('home-teams','home');renderTeamCards('teams-list','teams');renderMatchList();renderScorecardsPage();
+  } catch(e) { console.warn('[init] Render error:', e); }
 
   // ── Auto-connect Firebase if config exists ──
-  var fbCfg=DataStore.loadLocal('firebase_config');
-  if(fbCfg&&fbCfg.apiKey)DataStore.initFirebase(fbCfg);
+  try {
+    var fbCfg=DataStore.loadLocal('firebase_config');
+    if(fbCfg&&fbCfg.apiKey)DataStore.initFirebase(fbCfg);
+  } catch(e) { console.warn('[init] Firebase auto-connect error:', e); }
 })();
 
 
