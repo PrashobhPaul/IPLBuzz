@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IPL 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&family=DM+Sans:wght@400;500&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#07080c;--s1:#0d0f17;--s2:#141720;--bd:#222840;--bd2:#2c3555;--gold:#f0a500;--red:#e0341a;--green:#1db954;--txt:#dde1ee;--dim:#606880;--dim2:#9099b4}
@@ -471,6 +474,31 @@ nav button.on{color:var(--gold);background:rgba(240,165,0,.1)}
 .typing-dots span:nth-child(3){animation-delay:.4s}
 @keyframes tdot{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
 @media(max-width:420px){#chat-panel{width:calc(100vw - 16px);right:8px;bottom:80px}}
+
+/* ── ADMIN PANEL ── */
+.admin-w{max-width:920px;margin:0 auto;padding:22px 18px}
+.admin-card{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:18px 20px;margin-bottom:14px}
+.admin-card h3{font-family:Teko,sans-serif;font-size:20px;font-weight:700;color:var(--gold);margin-bottom:12px}
+.admin-field{margin-bottom:12px}
+.admin-field label{font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);display:block;margin-bottom:4px}
+.admin-field input,.admin-field select,.admin-field textarea{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:8px 12px;font-family:Barlow Condensed,sans-serif;font-size:14px;color:var(--txt);outline:none;transition:.14s}
+.admin-field input:focus,.admin-field select:focus,.admin-field textarea:focus{border-color:var(--gold)}
+.admin-field textarea{min-height:120px;resize:vertical;font-family:'DM Sans',monospace;font-size:12px}
+.admin-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.admin-btn{font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:8px 18px;border-radius:6px;border:none;cursor:pointer;transition:.14s}
+.admin-btn-primary{background:var(--gold);color:#000}.admin-btn-primary:hover{background:#ffcc44}
+.admin-btn-danger{background:var(--red);color:#fff}.admin-btn-danger:hover{background:#ff4444}
+.admin-btn-outline{background:transparent;border:1px solid var(--bd2);color:var(--dim2)}.admin-btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.admin-status{font-family:Barlow Condensed,sans-serif;font-size:12px;padding:8px 14px;border-radius:6px;margin-top:10px;display:none}
+.admin-status.success{display:block;background:rgba(29,185,84,.1);border:1px solid rgba(29,185,84,.3);color:var(--green)}
+.admin-status.error{display:block;background:rgba(224,52,26,.1);border:1px solid rgba(224,52,26,.3);color:var(--red)}
+.admin-match-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:14px}
+.admin-match-item{background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:10px;cursor:pointer;transition:.14s;font-family:Barlow Condensed,sans-serif;font-size:13px}
+.admin-match-item:hover{border-color:var(--gold);background:var(--s1)}
+.admin-match-item.stored{border-left:3px solid var(--green)}
+.admin-match-item.missing{border-left:3px solid var(--red);opacity:.7}
+.firebase-cfg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:500px){.firebase-cfg{grid-template-columns:1fr}.admin-row{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -484,6 +512,7 @@ nav button.on{color:var(--gold);background:rgba(240,165,0,.1)}
     <button id="nb-matches" onclick="go('matches')">Matches</button>
     <button id="nb-stats" onclick="go('stats')">Stats</button>
     <button id="nb-scores" onclick="go('scores')">Scorecards</button>
+    <button id="nb-admin" onclick="go('admin')" style="color:var(--red)">Admin</button>
   </div>
   <div class="nav-right">
     <input id="api-key-input" type="hidden" value="">
@@ -531,6 +560,224 @@ nav button.on{color:var(--gold);background:rgba(240,165,0,.1)}
   <div id="team-content"></div>
 </div>
 <script>
+
+// ═══════════════════════════════════════════════════════════════════════
+// DATASTORE — Persistence layer (localStorage + Firebase)
+// ═══════════════════════════════════════════════════════════════════════
+var DataStore = {
+  FB_READY: false,
+  db: null,
+
+  // ── Firebase setup (call after page load) ──────────────────────────
+  initFirebase: function(config) {
+    try {
+      if (typeof firebase !== 'undefined' && config && config.apiKey) {
+        firebase.initializeApp(config);
+        this.db = firebase.database();
+        this.FB_READY = true;
+        console.log('[DataStore] Firebase connected');
+        this.syncFromFirebase();
+      }
+    } catch(e) { console.warn('[DataStore] Firebase init failed:', e); }
+  },
+
+  // ── Save to localStorage ───────────────────────────────────────────
+  saveLocal: function(key, data) {
+    try { localStorage.setItem('iplbuzz_' + key, JSON.stringify(data)); }
+    catch(e) { console.warn('[DataStore] localStorage save failed:', e); }
+  },
+  loadLocal: function(key) {
+    try {
+      var d = localStorage.getItem('iplbuzz_' + key);
+      return d ? JSON.parse(d) : null;
+    } catch(e) { return null; }
+  },
+
+  // ── Save to Firebase ───────────────────────────────────────────────
+  saveFirebase: function(key, data) {
+    if (!this.FB_READY || !this.db) return;
+    try { this.db.ref('iplbuzz/' + key).set(data); }
+    catch(e) { console.warn('[DataStore] Firebase save failed:', e); }
+  },
+
+  // ── Combined save ──────────────────────────────────────────────────
+  save: function(key, data) {
+    this.saveLocal(key, data);
+    this.saveFirebase(key, data);
+  },
+
+  // ── Save current state ─────────────────────────────────────────────
+  saveMatches: function() { this.save('matches', MATCHES); },
+  saveSchedule: function() { this.save('schedule', SCHEDULE); },
+  savePoints: function() { this.save('points', POINTS); },
+  saveNewsletters: function() { this.save('newsletters', NEWSLETTERS); },
+  saveAll: function() {
+    this.saveMatches(); this.saveSchedule();
+    this.savePoints(); this.saveNewsletters();
+  },
+
+  // ── Load from localStorage on startup ──────────────────────────────
+  loadAll: function() {
+    var m = this.loadLocal('matches');
+    var s = this.loadLocal('schedule');
+    var p = this.loadLocal('points');
+    var n = this.loadLocal('newsletters');
+    if (m && m.length) MATCHES = m;
+    if (s && s.length) SCHEDULE = s;
+    if (p && p.length) POINTS = p;
+    if (n && n.length) NEWSLETTERS = n;
+    console.log('[DataStore] Loaded — ' + MATCHES.length + ' matches, ' +
+      SCHEDULE.filter(function(s){return s.completed;}).length + ' completed');
+  },
+
+  // ── Seed defaults (first-time setup) ───────────────────────────────
+  seedIfEmpty: function() {
+    if (!this.loadLocal('matches')) {
+      console.log('[DataStore] First run — seeding default data');
+      this.saveAll();
+    }
+  },
+
+  // ── Sync from Firebase (async, overwrites local if newer) ──────────
+  syncFromFirebase: function() {
+    if (!this.FB_READY || !this.db) return;
+    var self = this;
+    this.db.ref('iplbuzz').once('value').then(function(snap) {
+      var d = snap.val();
+      if (!d) {
+        // Firebase empty — push local data up
+        console.log('[DataStore] Firebase empty — pushing local data');
+        self.saveAll();
+        return;
+      }
+      if (d.matches && d.matches.length > MATCHES.length) {
+        MATCHES = d.matches;
+        self.saveLocal('matches', MATCHES);
+      }
+      if (d.schedule) { SCHEDULE = d.schedule; self.saveLocal('schedule', SCHEDULE); }
+      if (d.points) { POINTS = d.points; self.saveLocal('points', POINTS); }
+      if (d.newsletters && d.newsletters.length > NEWSLETTERS.length) {
+        NEWSLETTERS = d.newsletters;
+        self.saveLocal('newsletters', NEWSLETTERS);
+      }
+      console.log('[DataStore] Synced from Firebase — ' + MATCHES.length + ' matches');
+      // Re-render everything with fresh data
+      if (typeof refreshAllViews === 'function') refreshAllViews();
+    }).catch(function(e) { console.warn('[DataStore] Firebase sync failed:', e); });
+  },
+
+  // ── Add a completed match ──────────────────────────────────────────
+  addMatch: function(matchData) {
+    // Check if match already exists
+    var existing = MATCHES.findIndex(function(m) { return m.id === matchData.id; });
+    if (existing >= 0) {
+      MATCHES[existing] = matchData;
+    } else {
+      MATCHES.push(matchData);
+    }
+    // Update SCHEDULE
+    var sched = SCHEDULE.find(function(s) { return s.no === matchData.no; });
+    if (sched) {
+      sched.completed = true;
+      sched.result = matchData.result;
+      sched.t1score = matchData.t1score;
+      sched.t2score = matchData.t2score;
+      sched.t1ov = matchData.t1ov || '20';
+      sched.t2ov = matchData.t2ov || '20';
+    }
+    this.saveMatches();
+    this.saveSchedule();
+  },
+
+  // ── Update points table ────────────────────────────────────────────
+  updatePoints: function(pointsArray) {
+    POINTS = pointsArray;
+    this.savePoints();
+  },
+
+  // ── Recalculate points table from MATCHES + SCHEDULE ───────────────
+  recalcPoints: function() {
+    var teamStats = {};
+    Object.keys(TEAMS).forEach(function(t) {
+      teamStats[t] = { team:t, m:0, w:0, l:0, nr:0, pts:0, nrr:'0.000',
+        runsSc:0, ovsFaced:0, runsCon:0, ovsBowled:0 };
+    });
+
+    SCHEDULE.forEach(function(s) {
+      if (!s.completed || !s.result) return;
+      var t1s = teamStats[s.t1], t2s = teamStats[s.t2];
+      if (!t1s || !t2s) return;
+      t1s.m++; t2s.m++;
+
+      // Parse result to find winner
+      var winner = null;
+      if (s.result.indexOf(s.t1) === 0 && s.result.indexOf('won') > 0) winner = s.t1;
+      else if (s.result.indexOf(s.t2) === 0 && s.result.indexOf('won') > 0) winner = s.t2;
+      // Check for full team name
+      if (!winner) {
+        var t1Name = TEAMS[s.t1] ? TEAMS[s.t1].name : '';
+        var t2Name = TEAMS[s.t2] ? TEAMS[s.t2].name : '';
+        if (t1Name && s.result.indexOf(t1Name) >= 0) winner = s.t1;
+        else if (t2Name && s.result.indexOf(t2Name) >= 0) winner = s.t2;
+      }
+
+      if (winner) {
+        var loser = winner === s.t1 ? s.t2 : s.t1;
+        teamStats[winner].w++; teamStats[winner].pts += 2;
+        teamStats[loser].l++;
+      } else {
+        t1s.nr++; t2s.nr++; t1s.pts++; t2s.pts++;
+      }
+
+      // NRR calculation from match data
+      var match = MATCHES.find(function(m) { return m.no === s.no; });
+      if (match && match.inn1 && match.inn2) {
+        var inn1Team = match.inn1.team, inn2Team = match.inn2.team;
+        var inn1Runs = match.inn1.runs || parseInt(match.inn1.total) || 0;
+        var inn2Runs = match.inn2.runs || parseInt(match.inn2.total) || 0;
+        var inn1Overs = parseFloat(match.inn1.overs) || 20;
+        var inn2Overs = parseFloat(match.inn2.overs) || parseFloat(match.t2ov) || 20;
+
+        // Team that batted first
+        var t1Abbr = inn1Team, t2Abbr = inn2Team;
+        if (teamStats[t1Abbr]) {
+          teamStats[t1Abbr].runsSc += inn1Runs;
+          teamStats[t1Abbr].ovsFaced += inn1Overs;
+          teamStats[t1Abbr].runsCon += inn2Runs;
+          teamStats[t1Abbr].ovsBowled += inn2Overs;
+        }
+        if (teamStats[t2Abbr]) {
+          teamStats[t2Abbr].runsSc += inn2Runs;
+          teamStats[t2Abbr].ovsFaced += inn2Overs;
+          teamStats[t2Abbr].runsCon += inn1Runs;
+          teamStats[t2Abbr].ovsBowled += inn1Overs;
+        }
+      }
+    });
+
+    // Compute NRR
+    Object.values(teamStats).forEach(function(t) {
+      if (t.ovsFaced > 0 && t.ovsBowled > 0) {
+        var nrr = (t.runsSc / t.ovsFaced) - (t.runsCon / t.ovsBowled);
+        t.nrr = (nrr >= 0 ? '+' : '') + nrr.toFixed(3);
+      }
+    });
+
+    POINTS = Object.values(teamStats);
+    this.savePoints();
+    return POINTS;
+  }
+};
+
+// ── Refresh all rendered views ─────────────────────────────────────
+function refreshAllViews() {
+  try {
+    renderHomePage(); renderSchedule(); renderPoints();
+    renderTeamCards('home-teams','home'); renderTeamCards('teams-list','teams');
+    renderMatchList(); renderScorecardsPage();
+    if (typeof renderStats === 'function') renderStats();
+  } catch(e) { console.warn('refreshAllViews:', e); }
+}
 
 const TEAMS={
 RCB:{logo:'logos/rcb.png',name:'Royal Challengers Bengaluru',city:'Bengaluru',color:'#c9112e',captain:'Rajat Patidar',coach:'Andy Flower',titles:1,runnerups:3,titleYears:'2025',squad:[
@@ -584,7 +831,7 @@ LSG:{logo:'logos/lsg.png',name:'Lucknow Super Giants',city:'Lucknow',color:'#00a
 {n:'Rishabh Pant',r:'WK-Batsman',c:'India'},{n:'Matthew Breetzke',r:'WK-Batsman',c:'South Africa'},{n:'Nicholas Pooran',r:'WK-Batsman',c:'West Indies'},{n:'Mukul Choudhary',r:'WK-Batsman',c:'India'},{n:'Josh Inglis',r:'WK-Batsman',c:'Australia'},
 {n:'Akash Maharaj Singh',r:'Bowler',c:'India'},{n:'Avesh Khan',r:'Bowler',c:'India'},{n:'Mohammed Shami',r:'Bowler',c:'India'},{n:'Prince Yadav',r:'Bowler',c:'India'},{n:'Mohsin Khan',r:'Bowler',c:'India'},{n:'Digvesh Singh Rathi',r:'Bowler',c:'India'},{n:'Manimaran Siddharth',r:'Bowler',c:'India'},{n:'Mayank Prabhu Yadav',r:'Bowler',c:'India'},{n:'Anrich Nortje',r:'Bowler',c:'South Africa'},{n:'Naman Tiwari',r:'Bowler',c:'India'}]}
 };
-const SCHEDULE=[
+let SCHEDULE=[
 {no:1,date:'Sat, Mar 28',d:'Mar 28',t1:'RCB',t2:'SRH',time:'7:30 PM',result:'RCB won by 6 wkts',t1score:'203/4',t2score:'201/9',completed:true},
 {no:2,date:'Sun, Mar 29',d:'Mar 29',t1:'MI',t2:'KKR',time:'7:30 PM',venue:'Wankhede Stadium, Mumbai',completed:true,result:'MI won by 6 wkts',t1score:'224/4',t1ov:'19.1',t2score:'220/4',t2ov:'20'},
 {no:3,date:'Mon, Mar 30',d:'Mar 30',t1:'RR',t2:'CSK',time:'7:30 PM',venue:'Barsapara Cricket Stadium, Guwahati'},
@@ -616,7 +863,7 @@ const SCHEDULE=[
 {no:29,date:'Sun, Apr 19',d:'Apr 19',t1:'PBKS',t2:'LSG',time:'7:30 PM'},
 {no:30,date:'Mon, Apr 20',d:'Apr 20',t1:'GT',t2:'MI',time:'7:30 PM'}
 ];
-const POINTS=[
+let POINTS=[
   {team:'RCB', m:1,w:1,l:0,nr:0,pts:2,nrr:'+2.900'},
   {team:'MI',  m:1,w:1,l:0,nr:0,pts:2,nrr:'+0.600'},
   {team:'LSG', m:0,w:0,l:0,nr:0,pts:0,nrr:'0.000'},
@@ -628,7 +875,7 @@ const POINTS=[
   {team:'KKR', m:1,w:0,l:1,nr:0,pts:0,nrr:'-0.600'},
   {team:'SRH', m:1,w:0,l:1,nr:0,pts:0,nrr:'-2.900'},
 ];
-const NEWSLETTERS=[
+let NEWSLETTERS=[
   {
     team:'RCB',
     date:'Mar 28, 2026',
@@ -877,7 +1124,177 @@ document.addEventListener('visibilitychange',()=>{
     if(staleSecs>REFRESH_INTERVAL/1000)refreshLive();
   }
 });
-function findIPL(list){if(!list)return null;return list.find(m=>{var nm=(m.name||'').toLowerCase();if(nm.includes('ipl')||nm.includes('indian premier league'))return true;if((m.teamInfo||[]).some(t=>Object.keys(TEAMS).includes(t.shortname)))return true;var teams=m.teams||[];if(teams.some(t=>{var s=(t||'').toLowerCase();return Object.values(TEAMS).some(tm=>(tm.name||'').toLowerCase().includes(s)||s.includes((tm.name||'').split(' ')[0].toLowerCase()));}))return true;return false;})||null;}
+function findIPL(list){if(!list)return null;return list.find(m=>(m.name||'').toLowerCase().includes('ipl')||(m.teamInfo||[]).some(t=>Object.keys(TEAMS).includes(t.shortname)))||null;}
+
+// ═══════════════════════════════════════════════════════════════════════
+// PHASE 2 — syncLiveToData: Auto-extract completed match data from CricAPI
+// ═══════════════════════════════════════════════════════════════════════
+function syncLiveToData(apiMatches){
+  if(!apiMatches||!apiMatches.length)return;
+  var updated=false;
+  apiMatches.forEach(function(m){
+    // Only process completed IPL matches
+    if(!m.matchEnded && m.status!=='Match over')return;
+    var name=(m.name||'').toLowerCase();
+    if(!name.includes('ipl'))return;
+
+    // Map API team names to our abbreviations
+    var ti=m.teamInfo||[];
+    var apiT1=ti[0]||{}, apiT2=ti[1]||{};
+    var abbr1=apiT1.shortname||'', abbr2=apiT2.shortname||'';
+    if(!TEAMS[abbr1]||!TEAMS[abbr2])return;
+
+    // Find matching SCHEDULE entry
+    var sched=SCHEDULE.find(function(s){
+      return (s.t1===abbr1&&s.t2===abbr2)||(s.t1===abbr2&&s.t2===abbr1);
+    });
+    if(!sched)return;
+
+    // Skip if we already have full match data with batting arrays
+    var existing=MATCHES.find(function(x){return x.no===sched.no;});
+    if(existing&&existing.inn1&&existing.inn1.batting&&existing.inn1.batting.length>0)return;
+
+    // Extract scores from CricAPI
+    var sc=m.score||[];
+    // Parse score entries — each has: inning, r (runs), w (wickets), o (overs)
+    var inn1Data=null, inn2Data=null;
+    sc.forEach(function(s){
+      var inning=(s.inning||'').toLowerCase();
+      // Determine which team's innings this is
+      var team=null;
+      if(inning.includes(apiT1.name.toLowerCase().split(' ')[0]))team=abbr1;
+      else if(inning.includes(apiT2.name.toLowerCase().split(' ')[0]))team=abbr2;
+      if(!team)return;
+
+      var data={team:team, runs:s.r||0, wickets:s.w||0, overs:s.o||0};
+      if(inning.includes('inning 1')||inning.includes('1st'))inn1Data=data;
+      else if(inning.includes('inning 2')||inning.includes('2nd'))inn2Data=data;
+      // Fallback: first entry = inn1, second = inn2
+      if(!inn1Data)inn1Data=data;
+      else if(!inn2Data&&data.team!==inn1Data.team)inn2Data=data;
+    });
+
+    if(!inn1Data||!inn2Data)return;
+
+    // Build basic match structure (Tier 1 — no batting/bowling arrays yet)
+    var t1Score, t2Score, t1Ov, t2Ov;
+    if(inn1Data.team===sched.t1){
+      t1Score=inn1Data.runs+'/'+inn1Data.wickets; t1Ov=String(inn1Data.overs);
+      t2Score=inn2Data.runs+'/'+inn2Data.wickets; t2Ov=String(inn2Data.overs);
+    } else {
+      t2Score=inn1Data.runs+'/'+inn1Data.wickets; t2Ov=String(inn1Data.overs);
+      t1Score=inn2Data.runs+'/'+inn2Data.wickets; t1Ov=String(inn2Data.overs);
+    }
+
+    var result=m.status||'';
+
+    // Update SCHEDULE
+    sched.completed=true;
+    sched.result=result;
+    sched.t1score=t1Score;
+    sched.t2score=t2Score;
+    sched.t1ov=t1Ov;
+    sched.t2ov=t2Ov;
+
+    // Create basic match entry (Tier 1 — scorecard data can be added via admin)
+    var matchEntry={
+      id:'m'+sched.no, no:sched.no, date:sched.date,
+      venue:m.venue||sched.venue||'',
+      t1:sched.t1, t2:sched.t2, status:'completed',
+      toss:'', result:result, pom:'',
+      t1score:t1Score, t1ov:t1Ov,
+      t2score:t2Score, t2ov:t2Ov,
+      inn1:{
+        team:inn1Data.team,
+        total:inn1Data.runs+'/'+inn1Data.wickets,
+        overs:inn1Data.overs,
+        runs:inn1Data.runs,
+        batting:[], extras:{b:0,lb:0,w:0,nb:0,total:0}, bowling:[]
+      },
+      inn2:{
+        team:inn2Data.team,
+        total:inn2Data.runs+'/'+inn2Data.wickets,
+        overs:inn2Data.overs,
+        runs:inn2Data.runs,
+        batting:[], extras:{b:0,lb:0,w:0,nb:0,total:0}, bowling:[]
+      }
+    };
+
+    // Try to extract scorecard if available (CricAPI premium)
+    if(m.scorecard&&m.scorecard.length){
+      m.scorecard.forEach(function(sc,idx){
+        var inn=idx===0?matchEntry.inn1:matchEntry.inn2;
+        if(sc.batting&&sc.batting.length){
+          inn.batting=sc.batting.map(function(b){
+            return {
+              n:b.batsman||b.name||'',
+              d:b.dismissal||b['dismissal-text']||'not out',
+              r:b.r||b.runs||0, b:b.b||b.balls||0,
+              f:b['4s']||b.fours||0, s:b['6s']||b.sixes||0
+            };
+          });
+        }
+        if(sc.bowling&&sc.bowling.length){
+          inn.bowling=sc.bowling.map(function(b){
+            return {
+              n:b.bowler||b.name||'',
+              o:b.o||b.overs||0, r:b.r||b.runs||0,
+              w:b.w||b.wickets||0, wd:b.wd||0, nb:b.nb||0
+            };
+          });
+        }
+        if(sc.extras){
+          inn.extras={
+            b:sc.extras.b||0, lb:sc.extras.lb||0,
+            w:sc.extras.w||0, nb:sc.extras.nb||0,
+            total:sc.extras.t||sc.extras.total||0
+          };
+        }
+      });
+    }
+
+    if(existing){
+      // Update existing entry but preserve any manually-entered tier 2 data
+      var idx=MATCHES.indexOf(existing);
+      if(existing.inn1&&existing.inn1.overR)matchEntry.inn1.overR=existing.inn1.overR;
+      if(existing.inn1&&existing.inn1.overW)matchEntry.inn1.overW=existing.inn1.overW;
+      if(existing.inn1&&existing.inn1.pships)matchEntry.inn1.pships=existing.inn1.pships;
+      if(existing.inn1&&existing.inn1.fow)matchEntry.inn1.fow=existing.inn1.fow;
+      if(existing.inn1&&existing.inn1.moments)matchEntry.inn1.moments=existing.inn1.moments;
+      if(existing.inn2&&existing.inn2.overR)matchEntry.inn2.overR=existing.inn2.overR;
+      if(existing.inn2&&existing.inn2.overW)matchEntry.inn2.overW=existing.inn2.overW;
+      if(existing.inn2&&existing.inn2.pships)matchEntry.inn2.pships=existing.inn2.pships;
+      if(existing.inn2&&existing.inn2.fow)matchEntry.inn2.fow=existing.inn2.fow;
+      if(existing.inn2&&existing.inn2.moments)matchEntry.inn2.moments=existing.inn2.moments;
+      if(existing.ratings)matchEntry.ratings=existing.ratings;
+      // Preserve manually entered batting/bowling if API didn't provide
+      if(matchEntry.inn1.batting.length===0&&existing.inn1&&existing.inn1.batting.length>0){
+        matchEntry.inn1.batting=existing.inn1.batting;
+        matchEntry.inn1.bowling=existing.inn1.bowling;
+        matchEntry.inn1.extras=existing.inn1.extras;
+      }
+      if(matchEntry.inn2.batting.length===0&&existing.inn2&&existing.inn2.batting.length>0){
+        matchEntry.inn2.batting=existing.inn2.batting;
+        matchEntry.inn2.bowling=existing.inn2.bowling;
+        matchEntry.inn2.extras=existing.inn2.extras;
+      }
+      MATCHES[idx]=matchEntry;
+    } else {
+      MATCHES.push(matchEntry);
+    }
+    updated=true;
+    console.log('[syncLiveToData] Auto-stored Match '+sched.no+': '+sched.t1+' vs '+sched.t2+' → '+result);
+  });
+
+  if(updated){
+    // Sort matches by number
+    MATCHES.sort(function(a,b){return a.no-b.no;});
+    DataStore.recalcPoints();
+    DataStore.saveAll();
+    refreshAllViews();
+  }
+}
+
 let tileExpanded=false;
 function toggleTile(){
   tileExpanded=!tileExpanded;
@@ -1142,6 +1559,8 @@ async function refreshLive(){
   if(isLiveMatchActive) nextAd();
 
   const matches=await fetchLive();
+  // Phase 2: Auto-extract completed match data
+  if(matches) syncLiveToData(matches);
   const m=findIPL(matches);
   const el=document.getElementById('live-panel-wrap');
   if(!el){if(btn){btn.disabled=false;btn.textContent='↻ Refresh';}return;}
@@ -1351,7 +1770,7 @@ function renderAdCard(containerId) {
 // ═══════════════════════════════════════════════════════════════════════
 // MATCH DATA — complete IPL 2026 Match 1
 // ═══════════════════════════════════════════════════════════════════════
-const MATCHES = [{
+let MATCHES = [{
   id:'m1', no:1, date:'Sat, Mar 28 2026',
   venue:'M. Chinnaswamy Stadium, Bengaluru',
   t1:'SRH', t2:'RCB', status:'completed',
@@ -2345,12 +2764,12 @@ function renderMatchDetail(m){
       '<div class="md-hero-title">Match '+m.no+' · IPL 2026 · '+m.date+'</div>'+
       '<div class="md-scores">'+
         '<div class="md-team"><div class="md-tname">'+(t1&&t1.logo?'<img src="'+t1.logo+'" style="width:32px;height:32px;border-radius:50%;object-fit:contain;margin-right:8px;vertical-align:middle">':'<div class="tdot" style="background:'+t1.color+'"></div>')+m.t1+'</div>'+
-          '<div class="md-score">'+(m.t1score?m.t1score+' <small>('+m.t1ov+' ov)</small>':'<span style="color:var(--dim)">—</span>')+'</div></div>'+
+          '<div class="md-score">'+m.t1score+' <small>('+m.t1ov+' ov)</small></div></div>'+
         '<div class="md-vs">vs</div>'+
         '<div class="md-team"><div class="md-tname">'+(t2&&t2.logo?'<img src="'+t2.logo+'" style="width:32px;height:32px;border-radius:50%;object-fit:contain;margin-right:8px;vertical-align:middle">':'<div class="tdot" style="background:'+t2.color+'"></div>')+m.t2+'</div>'+
-          '<div class="md-score" style="color:var(--green)">'+(m.t2score?m.t2score+' <small>('+m.t2ov+' ov)</small>':'<span style="color:var(--dim)">—</span>')+'</div></div>'+
+          '<div class="md-score" style="color:var(--green)">'+m.t2score+' <small>('+m.t2ov+' ov)</small></div></div>'+
       '</div>'+
-      (m.status==='completed'&&m.result?'<div class="md-result-bar"><div class="md-result-txt">🏆 '+m.result+'</div></div>':'<div class="md-result-bar" style="background:rgba(240,165,0,.08);border-color:rgba(240,165,0,.25)"><div class="md-result-txt" style="color:var(--gold)">⏳ Match not yet played</div></div>')+
+      '<div class="md-result-bar"><div class="md-result-txt">🏆 '+m.result+'</div></div>'+
       '<div class="md-meta-row">'+
         '<div class="md-meta-item">📍 <b>'+m.venue+'</b></div>'+
         '<div class="md-meta-item">🪙 <b>'+m.toss+'</b></div>'+
@@ -2740,22 +3159,14 @@ function _drawForecast(m){
         '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:6px">Analysis Basis</div>'+
         '<div style="font-size:13px;color:var(--dim2);line-height:1.7">'+(wm.reason||wm.note||'Pre-match prediction based on H2H record, venue trends, form and squad strength.')+'</div>'+
       '</div>'+
-      // Actual result — only show for completed matches
-      (m.status==='completed'&&m.result?
+      // Actual result
       '<div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:7px;padding:12px 14px;display:flex;align-items:center;gap:10px">'+
         '<div style="font-size:20px">🎯</div>'+
         '<div>'+
           '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:3px">Actual Result</div>'+
           '<div style="font-family:Teko,sans-serif;font-size:17px;font-weight:700;color:var(--txt)">'+m.result+'</div>'+
         '</div>'+
-      '</div>':
-      '<div style="background:rgba(240,165,0,.08);border:1px solid rgba(240,165,0,.25);border-radius:7px;padding:12px 14px;display:flex;align-items:center;gap:10px">'+
-        '<div style="font-size:20px">⏳</div>'+
-        '<div>'+
-          '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:3px">Match Pending</div>'+
-          '<div style="font-family:Teko,sans-serif;font-size:15px;font-weight:700;color:var(--dim2)">Result will appear after the match is played</div>'+
-        '</div>'+
-      '</div>')+
+      '</div>'+
     '</div>';
 
   el.innerHTML=
@@ -2827,13 +3238,12 @@ function _drawSC(m){
       '<span style="color:var(--dim);font-weight:700">DNB: </span>'+inn.dnb.join(', ')+'</div>';
   }
 
-  // Derive colors from inn.team, not m.t1/m.t2 (inn1 may not be t1)
-  var c1=TEAMS[m.inn1.team]||TEAMS[m.t1], c2=TEAMS[m.inn2.team]||TEAMS[m.t2];
+  var t1c=TEAMS[m.inn1.team]||TEAMS[m.t1],t2c=TEAMS[m.inn2.team]||TEAMS[m.t2];
   el.innerHTML=
     resultBanner(m)+
-    innTitle(m.inn1.team+' Innings',m.inn1.total,m.inn1.overs,c1.color)+
-    batTable(m.inn1)+bowlTable(m.inn1)+fowRow(m.inn1)+dnbRow(m.inn1)+
-    innTitle(m.inn2.team+' Innings',m.inn2.total,m.inn2.overs,c2.color)+
+    innTitle(m.inn1.team+' Innings',m.inn1.total,m.inn1.overs,(t1c||{}).color)+
+    batTable(m.inn1)+bowlTable(m.inn1)+fowRow(m.inn1)+
+    innTitle(m.inn2.team+' Innings',m.inn2.total,m.inn2.overs,(t2c||{}).color)+
     batTable(m.inn2)+bowlTable(m.inn2)+dnbRow(m.inn2)+fowRow(m.inn2);
 }
 
@@ -2903,53 +3313,39 @@ function _drawWorm(m){
     '</svg></div>';
   }
 
-  // Dynamically compute colors from inn.team, not m.t1/m.t2
-  var c1=TEAMS[m.inn1.team]||TEAMS[m.t1], c2=TEAMS[m.inn2.team]||TEAMS[m.t2];
-
-  // Compute phase stats dynamically from overR/overW
-  function phaseStats(inn){
-    var oR=inn.overR||[], oW=inn.overW||[];
-    var totalOv=oR.length;
-    var ppEnd=Math.min(6,totalOv), midEnd=Math.min(15,totalOv), deathEnd=totalOv;
-    function sumSlice(arr,a,b){var s=0;for(var i=a;i<b;i++)s+=(arr[i]||0);return s;}
-    var ppR=sumSlice(oR,0,ppEnd), ppW=sumSlice(oW,0,ppEnd);
-    var midR=sumSlice(oR,ppEnd,midEnd), midW=sumSlice(oW,ppEnd,midEnd);
-    var deathR=sumSlice(oR,midEnd,deathEnd), deathW=sumSlice(oW,midEnd,deathEnd);
-    var ppOv=ppEnd, midOv=midEnd-ppEnd, deathOv=deathEnd-midEnd;
-    return {
-      pp:{r:ppR,w:ppW,rr:ppOv>0?(ppR/ppOv).toFixed(1):'0',ov:'1–'+ppEnd},
-      mid:{r:midR,w:midW,rr:midOv>0?(midR/midOv).toFixed(1):'0',ov:(ppEnd+1)+'–'+midEnd},
-      death:{r:deathR,w:deathW,rr:deathOv>0?(deathR/deathOv).toFixed(1):'0',ov:(midEnd+1)+'–'+deathEnd}
-    };
-  }
-  function phaseCards(inn,isChase){
-    var ps=phaseStats(inn);
-    var totalOv=(inn.overR||[]).length;
-    // For short chases, label final phase differently
-    if(isChase && totalOv<20){
-      return '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 24px">'+
-        phaseCard('Powerplay',ps.pp.ov,ps.pp.r,ps.pp.w,ps.pp.rr,'#3b82f6')+
-        phaseCard('Middle',ps.mid.ov,ps.mid.r,ps.mid.w,ps.mid.rr,'#f59e0b')+
-        phaseCard('Final',ps.death.ov,ps.death.r,ps.death.w,ps.death.rr,'#22c55e')+
-      '</div>';
+  // ── Dynamic phase computation from overR/overW ─────────────────────
+  function phaseCards(inn){
+    if(!inn.overR||!inn.overR.length) return '';
+    var overR=inn.overR, overW=inn.overW||[];
+    var totalOvs=overR.length;
+    // PP: overs 1-6, Middle: 7-15, Death: 16-20
+    var ppEnd=Math.min(6,totalOvs), midEnd=Math.min(15,totalOvs), deathEnd=totalOvs;
+    var ppR=0,ppW=0,midR=0,midW=0,deathR=0,deathW=0;
+    for(var i=0;i<totalOvs;i++){
+      if(i<6){ppR+=overR[i];ppW+=(overW[i]||0);}
+      else if(i<15){midR+=overR[i];midW+=(overW[i]||0);}
+      else{deathR+=overR[i];deathW+=(overW[i]||0);}
     }
-    return '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 24px">'+
-      phaseCard('Powerplay',ps.pp.ov,ps.pp.r,ps.pp.w,ps.pp.rr,'#3b82f6')+
-      phaseCard('Middle',ps.mid.ov,ps.mid.r,ps.mid.w,ps.mid.rr,'#f59e0b')+
-      phaseCard('Death',ps.death.ov,ps.death.r,ps.death.w,ps.death.rr,'#e0341a')+
-    '</div>';
+    var ppOvs=ppEnd, midOvs=midEnd-6, deathOvs=deathEnd-15;
+    var ppRR=ppOvs>0?(ppR/ppOvs).toFixed(1):'0.0';
+    var midRR=midOvs>0?(midR/midOvs).toFixed(1):'0.0';
+    var deathRR=deathOvs>0?(deathR/deathOvs).toFixed(1):'0.0';
+    var cards=phaseCard('Powerplay','1–'+ppEnd,ppR,ppW,ppRR,'#3b82f6');
+    if(midOvs>0) cards+=phaseCard('Middle','7–'+midEnd,midR,midW,midRR,'#f59e0b');
+    if(deathOvs>0) cards+=phaseCard('Death','16–'+deathEnd,deathR,deathW,deathRR,'#e0341a');
+    return '<div style="display:grid;grid-template-columns:repeat('+(1+(midOvs>0?1:0)+(deathOvs>0?1:0))+',1fr);gap:8px;margin:12px 0 24px">'+cards+'</div>';
   }
-  var maxOv1=(m.inn1.overR||[]).length||20;
-  var maxOv2=(m.inn2.overR||[]).length||20;
+
+  var t1c=TEAMS[m.inn1.team]||TEAMS[m.t1],t2c=TEAMS[m.inn2.team]||TEAMS[m.t2];
   el.innerHTML=
     resultBanner(m)+
     legend()+
-    chartTitle(m.inn1.team+' 1st Innings — Run Progression',c1.color)+
-    wormSVG(m.inn1,c1.color,maxOv1)+
-    phaseCards(m.inn1,false)+
-    chartTitle(m.inn2.team+' 2nd Innings — Run Progression',c2.color)+
-    wormSVG(m.inn2,c2.color,maxOv2)+
-    phaseCards(m.inn2,true);
+    chartTitle(m.inn1.team+' 1st Innings — Run Progression',(t1c||{}).color)+
+    wormSVG(m.inn1,(t1c||{}).color,20)+
+    phaseCards(m.inn1)+
+    chartTitle(m.inn2.team+' 2nd Innings — Run Progression',(t2c||{}).color)+
+    wormSVG(m.inn2,(t2c||{}).color,Math.ceil(parseFloat(m.t2ov)||20))+
+    phaseCards(m.inn2);
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -3040,24 +3436,21 @@ function _drawOvers(m){
     '</div>';
   }
 
-  // Derive colors from inn.team, not m.t1/m.t2
-  var c1=TEAMS[m.inn1.team]||TEAMS[m.t1], c2=TEAMS[m.inn2.team]||TEAMS[m.t2];
-  // Bowling team is the opposite of batting team
-  var bowl1Team=m.inn2.team, bowl2Team=m.inn1.team;
-  var maxOv1=(m.inn1.overR||[]).length||20;
-  var maxOv2=(m.inn2.overR||[]).length||20;
+  var t1c=TEAMS[m.inn1.team]||TEAMS[m.t1],t2c=TEAMS[m.inn2.team]||TEAMS[m.t2];
+  var bowlTeam1=m.inn2?m.inn2.team:m.t2, bowlTeam2=m.inn1?m.inn1.team:m.t1;
+  var inn2Ovs=Math.ceil(parseFloat(m.t2ov)||parseFloat(m.inn2.overs)||20);
   el.innerHTML=
     resultBanner(m)+
     legend()+
-    chartTitle(m.inn1.team+' 1st Innings — Runs Per Over',c1.color)+
-    overBarChart(m.inn1,maxOv1)+
-    chartTitle(bowl1Team+' Bowling Economy Analysis')+
+    chartTitle(m.inn1.team+' 1st Innings — Runs Per Over',(t1c||{}).color)+
+    overBarChart(m.inn1,20)+
+    chartTitle(bowlTeam1+' Bowling Economy Analysis')+
     econBars(m.inn1)+
     chartTitle(m.inn1.team+' Boundary Breakdown')+
     bdryBreakdown(m.inn1)+
-    chartTitle(m.inn2.team+' 2nd Innings — Runs Per Over',c2.color)+
-    overBarChart(m.inn2,maxOv2)+
-    chartTitle(bowl2Team+' Bowling vs '+m.inn2.team+' Chase')+
+    chartTitle(m.inn2.team+' 2nd Innings — Runs Per Over',(t2c||{}).color)+
+    overBarChart(m.inn2,inn2Ovs)+
+    chartTitle(bowlTeam2+' Bowling Economy Analysis')+
     econBars(m.inn2)+
     chartTitle(m.inn2.team+' Boundary Breakdown')+
     bdryBreakdown(m.inn2);
@@ -3117,8 +3510,7 @@ function _drawPS(m){
       '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:16px">'+chips+'</div>';
   }
 
-  // Derive colors from inn.team, not m.t1/m.t2
-  var c1=TEAMS[m.inn1.team]||TEAMS[m.t1], c2=TEAMS[m.inn2.team]||TEAMS[m.t2];
+  var t1c=TEAMS[m.inn1.team]||TEAMS[m.t1],t2c=TEAMS[m.inn2.team]||TEAMS[m.t2];
   el.innerHTML=
     resultBanner(m)+
     '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;color:var(--dim);margin-bottom:10px">'+
@@ -3126,29 +3518,29 @@ function _drawPS(m){
       '<span style="color:#22c55e">■ 40–79 (solid) </span>'+
       '<span style="color:#9099b4">■ &lt;40</span>'+
     '</div>'+
-    chartTitle(m.inn1.team+' Partnerships — 1st Innings',c1.color)+
-    psChart(m.inn1.pships,m.inn1.runs,c1.color)+
+    chartTitle(m.inn1.team+' Partnerships — 1st Innings',(t1c||{}).color)+
+    psChart(m.inn1.pships,m.inn1.runs,(t1c||{}).color)+
     (function(){
       // Dynamic best partnership highlight for inn1
       var allPs = (m.inn1.pships||[]).slice();
       if(!allPs.length) return '';
       var best = allPs.reduce(function(a,b){return b.r>a.r?b:a;},allPs[0]);
       var rr = best.b>0?(best.r/best.b*6).toFixed(1):'—';
-      var teamColor = c1 ? c1.color : 'var(--gold)';
+      var teamColor = t1c ? t1c.color : 'var(--gold)';
       return '<div style="background:var(--s1);border:1px solid rgba(240,165,0,.3);border-left:3px solid '+teamColor+';border-radius:8px;padding:14px;margin-bottom:22px">'+
         '<div style="font-family:Barlow Condensed,sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:'+teamColor+';margin-bottom:5px">'+m.inn1.team+' Best Partnership</div>'+
         '<div style="font-family:Teko,sans-serif;font-size:20px;font-weight:700;margin-bottom:4px">'+best.p1+' & '+best.p2+' · '+best.r+' runs ('+best.b+' balls) · RR '+rr+'</div>'+
         '<div style="font-size:13px;color:var(--dim2);line-height:1.7">Wicket '+best.wkt+' partnership — the defining stand of the '+m.inn1.team+' innings. Contributed <b style="color:var(--gold)">'+(m.inn1.runs>0?((best.r/m.inn1.runs*100).toFixed(0)):'—')+'%</b> of the total runs.</div>'+
       '</div>';
     })()+
-    chartTitle(m.inn2.team+' Partnerships — 2nd Innings',c2.color)+
-    psChart(m.inn2.pships,m.inn2.runs,c2.color)+
+    chartTitle(m.inn2.team+' Partnerships — 2nd Innings',(t2c||{}).color)+
+    psChart(m.inn2.pships,m.inn2.runs,(t2c||{}).color)+
     (function(){
       if(!m.inn2||!m.inn2.pships||!m.inn2.pships.length) return '';
       var ps2=m.inn2.pships;
       var best2=ps2.reduce(function(a,b){return b.r>a.r?b:a;},ps2[0]);
       var rr2=best2.b>0?(best2.r/best2.b*6).toFixed(1):'—';
-      var teamCol2=c2?c2.color:'var(--green)';
+      var teamCol2=t2c?t2c.color:'var(--green)';
       return '<div style="background:var(--s1);border:1px solid '+teamCol2+'44;border-left:3px solid '+teamCol2+';border-radius:8px;padding:14px">'+
         '<div style="font-family:Barlow Condensed,sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:'+teamCol2+';margin-bottom:5px">'+m.inn2.team+' Best Partnership</div>'+
         '<div style="font-family:Teko,sans-serif;font-size:20px;font-weight:700;margin-bottom:4px">'+best2.p1+' & '+best2.p2+' · '+best2.r+' runs ('+best2.b+' balls) · RR '+rr2+'</div>'+
@@ -3217,8 +3609,7 @@ function _drawPlayers(m){
     '</div>';
   }
 
-  // Derive colors from inn.team, not m.t1/m.t2
-  var c1=TEAMS[m.inn1.team]||TEAMS[m.t1], c2=TEAMS[m.inn2.team]||TEAMS[m.t2];
+  var t1c=TEAMS[m.inn1.team]||TEAMS[m.t1],t2c=TEAMS[m.inn2.team]||TEAMS[m.t2];
   el.innerHTML=
     resultBanner(m)+
     '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;color:var(--dim);margin-bottom:8px">'+
@@ -3227,10 +3618,10 @@ function _drawPlayers(m){
       '<span style="color:#9099b4">■ SR 75–124 </span>'+
       '<span style="color:#e0341a">■ SR &lt;75</span>'+
     '</div>'+
-    chartTitle('Batting Strike Rate — '+m.inn1.team+' 1st Innings',c1.color)+
-    srChart(m.inn1,c1.color)+
-    chartTitle('Batting Strike Rate — '+m.inn2.team+' 2nd Innings',c2.color)+
-    srChart(m.inn2,c2.color)+
+    chartTitle('Batting Strike Rate — '+m.inn1.team+' 1st Innings',(t1c||{}).color)+
+    srChart(m.inn1,(t1c||{}).color)+
+    chartTitle('Batting Strike Rate — '+m.inn2.team+' 2nd Innings',(t2c||{}).color)+
+    srChart(m.inn2,(t2c||{}).color)+
     chartTitle('Player Impact Ratings · Match '+m.no)+
     '<div style="font-family:Barlow Condensed,sans-serif;font-size:11px;color:var(--dim);margin-bottom:12px">Based on runs, SR, wickets, economy, match situation & game-changing impact</div>'+
     ratingCards();
@@ -3262,8 +3653,7 @@ function _drawMoments(m){
     }).join('');
   }
 
-  // Derive colors from inn.team, not m.t1/m.t2
-  var c1=TEAMS[m.inn1.team]||TEAMS[m.t1], c2=TEAMS[m.inn2.team]||TEAMS[m.t2];
+  var t1c=TEAMS[m.inn1.team]||TEAMS[m.t1],t2c=TEAMS[m.inn2.team]||TEAMS[m.t2];
 
   // Build 6 highlight cards dynamically from match moments
   var inn1Moms = (m.inn1&&m.inn1.moments)||[];
@@ -3276,7 +3666,7 @@ function _drawMoments(m){
       var ovStr = String(km.ov||'').split('-')[0];
       return '<div style="background:var(--s1);border:1px solid var(--bd);border-radius:7px;padding:12px;display:flex;gap:10px;align-items:flex-start">'+
         '<div style="font-family:Teko,sans-serif;font-size:13px;font-weight:700;color:var(--gold);line-height:1;flex-shrink:0;padding-top:2px">Ov '+ovStr+'</div>'+
-        '<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--dim2);line-height:1.4">'+km.desc+'</div>'+
+        '<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--dim2);line-height:1.4">'+(km.desc||km.d||'')+'</div>'+
       '</div>';
     }).join('')+
     '</div>' : '';
@@ -3284,9 +3674,9 @@ function _drawMoments(m){
   el.innerHTML=
     resultBanner(m)+
     gridHTML+
-    (inn1Moms.length ? chartTitle(m.inn1.team+' 1st Innings — Match Timeline',c1?c1.color:'var(--gold)')+
+    (inn1Moms.length ? chartTitle(m.inn1.team+' 1st Innings — Match Timeline',t1c?t1c.color:'var(--gold)')+
       '<div style="margin-bottom:24px">'+timeline(inn1Moms)+'</div>' : '')+
-    (inn2Moms.length ? chartTitle(m.inn2.team+' 2nd Innings — Match Timeline',c2?c2.color:'var(--green)')+
+    (inn2Moms.length ? chartTitle(m.inn2.team+' 2nd Innings — Match Timeline',t2c?t2c.color:'var(--green)')+
       timeline(inn2Moms) : '');
 }
 
@@ -3676,6 +4066,7 @@ function go(id){
   if(id==='home'){setTimeout(renderHomePage,0);setTimeout(renderCapAndPredictor,100);}if(id==='matches') setTimeout(renderMatchList,0);
   if(id==='scores')  setTimeout(renderScorecardsPage,0);
   if(id==='stats')   setTimeout(renderStats,0);
+  if(id==='admin')   setTimeout(renderAdminPanel,0);
 }
 function openTeam(abbr,from){prevView=from||'teams';go('team');document.getElementById('nb-teams').classList.add('on');document.getElementById('back-btn').onclick=()=>go(prevView);renderTeamDetail(abbr);}
 function mRow(m,fn){
@@ -3839,6 +4230,10 @@ function renderTeamDetail(abbr){
 function switchTab(name,btn){
   nextAd();document.querySelectorAll('.itab').forEach(b=>b.classList.remove('on'));document.querySelectorAll('.ipanel').forEach(p=>p.classList.remove('on'));btn.classList.add('on');document.getElementById('ipanel-'+name).classList.add('on');}
 (function init(){
+  // ── Load persisted data (localStorage → overwrite defaults if exists) ──
+  DataStore.seedIfEmpty();
+  DataStore.loadAll();
+
   const bar=document.getElementById('sched-filters');
   ['ALL',...Object.keys(TEAMS)].forEach(abbr=>{const b=document.createElement('button');b.className='fbtn'+(abbr==='ALL'?' on':'');b.textContent=abbr==='ALL'?'All Teams':abbr;b.onclick=()=>filterSched(abbr,b);bar.appendChild(b);});
   // Home: completed → today → next → upcoming (all date-aware)
@@ -3868,7 +4263,334 @@ function switchTab(name,btn){
     afterNext.slice(0,2).forEach(function(m){homeHTML+=mRow(m,"go('schedule')");});
   }
   renderHomePage();renderSchedule();renderPoints();renderTeamCards('home-teams','home');renderTeamCards('teams-list','teams');renderMatchList();renderScorecardsPage();
+
+  // ── Auto-connect Firebase if config exists ──
+  var fbCfg=DataStore.loadLocal('firebase_config');
+  if(fbCfg&&fbCfg.apiKey)DataStore.initFirebase(fbCfg);
 })();
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// ADMIN PANEL — Match data entry, persistence management
+// ═══════════════════════════════════════════════════════════════════════
+function renderAdminPanel(){
+  // Data status
+  var statusEl=document.getElementById('admin-data-status');
+  if(statusEl){
+    var stored=MATCHES.length;
+    var completed=SCHEDULE.filter(function(s){return s.completed;}).length;
+    var stats=buildPlayerStats();
+    statusEl.innerHTML=
+      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px">'+
+        '<div style="background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:10px;text-align:center">'+
+          '<div style="font-family:Teko,sans-serif;font-size:28px;font-weight:700;color:var(--gold)">'+stored+'</div>'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;color:var(--dim);letter-spacing:1.5px">MATCHES STORED</div></div>'+
+        '<div style="background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:10px;text-align:center">'+
+          '<div style="font-family:Teko,sans-serif;font-size:28px;font-weight:700;color:var(--green)">'+completed+'</div>'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;color:var(--dim);letter-spacing:1.5px">SCHEDULE COMPLETED</div></div>'+
+        '<div style="background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:10px;text-align:center">'+
+          '<div style="font-family:Teko,sans-serif;font-size:28px;font-weight:700;color:#3b82f6">'+stats.bat.length+'</div>'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;color:var(--dim);letter-spacing:1.5px">BATTERS TRACKED</div></div>'+
+        '<div style="background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:10px;text-align:center">'+
+          '<div style="font-family:Teko,sans-serif;font-size:28px;font-weight:700;color:#a855f7">'+stats.bowl.length+'</div>'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;color:var(--dim);letter-spacing:1.5px">BOWLERS TRACKED</div></div>'+
+        '<div style="background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:10px;text-align:center">'+
+          '<div style="font-family:Teko,sans-serif;font-size:28px;font-weight:700;color:'+(DataStore.FB_READY?'var(--green)':'var(--red)')+'">'+
+            (DataStore.FB_READY?'ON':'OFF')+'</div>'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;color:var(--dim);letter-spacing:1.5px">FIREBASE</div></div>'+
+        '<div style="background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:10px;text-align:center">'+
+          '<div style="font-family:Teko,sans-serif;font-size:28px;font-weight:700;color:var(--txt)">ON</div>'+
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;color:var(--dim);letter-spacing:1.5px">LOCALSTORAGE</div></div>'+
+      '</div>';
+  }
+  // Match grid
+  var gridEl=document.getElementById('admin-match-grid');
+  var selEl=document.getElementById('adm-match-no');
+  if(gridEl && selEl){
+    var gridHTML='', selHTML='<option value="">— Select match —</option>';
+    SCHEDULE.forEach(function(s){
+      var hasData=MATCHES.some(function(m){return m.no===s.no;});
+      gridHTML+='<div class="admin-match-item '+(hasData?'stored':'missing')+'" onclick="document.getElementById(\'adm-match-no\').value=\''+s.no+'\';adminLoadMatch(\''+s.no+'\')">'+
+        '<div style="font-weight:700;color:'+(hasData?'var(--green)':'var(--red)')+'">M'+s.no+' '+(hasData?'✓':'✗')+'</div>'+
+        '<div style="color:var(--dim2);font-size:11px">'+s.t1+' vs '+s.t2+' · '+s.date+'</div>'+
+      '</div>';
+      selHTML+='<option value="'+s.no+'"'+(hasData?' style="color:#22c55e"':'')+'>Match '+s.no+' — '+s.t1+' vs '+s.t2+' · '+s.date+(hasData?' ✓':'')+'</option>';
+    });
+    gridEl.innerHTML=gridHTML;
+    selEl.innerHTML=selHTML;
+  }
+  // Load firebase config from localStorage
+  var fbCfg=DataStore.loadLocal('firebase_config');
+  if(fbCfg){
+    if(document.getElementById('fb-apiKey'))document.getElementById('fb-apiKey').value=fbCfg.apiKey||'';
+    if(document.getElementById('fb-authDomain'))document.getElementById('fb-authDomain').value=fbCfg.authDomain||'';
+    if(document.getElementById('fb-databaseURL'))document.getElementById('fb-databaseURL').value=fbCfg.databaseURL||'';
+    if(document.getElementById('fb-projectId'))document.getElementById('fb-projectId').value=fbCfg.projectId||'';
+  }
+}
+
+function adminLoadMatch(no){
+  no=parseInt(no);
+  if(!no){document.getElementById('admin-match-form').style.display='none';return;}
+  document.getElementById('admin-match-form').style.display='block';
+  var s=SCHEDULE.find(function(x){return x.no===no;});
+  if(!s)return;
+  document.getElementById('adm-t1').value=s.t1;
+  document.getElementById('adm-t2').value=s.t2;
+  document.getElementById('adm-venue').value=s.venue||'';
+  document.getElementById('adm-date').value=s.date;
+  // Check if match data already exists
+  var existing=MATCHES.find(function(m){return m.no===no;});
+  if(existing){
+    document.getElementById('adm-toss').value=existing.toss||'';
+    document.getElementById('adm-result').value=existing.result||'';
+    document.getElementById('adm-pom').value=existing.pom||'';
+    document.getElementById('adm-t1score').value=existing.t1score||'';
+    document.getElementById('adm-t1ov').value=existing.t1ov||'';
+    document.getElementById('adm-t2score').value=existing.t2score||'';
+    document.getElementById('adm-t2ov').value=existing.t2ov||'';
+    document.getElementById('adm-bat-first').value=(existing.inn1&&existing.inn1.team===s.t2)?'t2':'t1';
+    // Fill innings data
+    if(existing.inn1){
+      document.getElementById('adm-inn1-bat').value=JSON.stringify(existing.inn1.batting||[],null,1);
+      document.getElementById('adm-inn1-extras').value=JSON.stringify(existing.inn1.extras||{});
+      document.getElementById('adm-inn1-bowl').value=JSON.stringify(existing.inn1.bowling||[],null,1);
+      if(existing.inn1.overR)document.getElementById('adm-inn1-overR').value=existing.inn1.overR.join(',');
+      if(existing.inn1.overW)document.getElementById('adm-inn1-overW').value=existing.inn1.overW.join(',');
+      if(existing.inn1.pships)document.getElementById('adm-inn1-pships').value=JSON.stringify(existing.inn1.pships,null,1);
+      if(existing.inn1.fow)document.getElementById('adm-inn1-fow').value=JSON.stringify(existing.inn1.fow,null,1);
+      if(existing.inn1.moments)document.getElementById('adm-inn1-moments').value=JSON.stringify(existing.inn1.moments,null,1);
+    }
+    if(existing.inn2){
+      document.getElementById('adm-inn2-bat').value=JSON.stringify(existing.inn2.batting||[],null,1);
+      document.getElementById('adm-inn2-extras').value=JSON.stringify(existing.inn2.extras||{});
+      document.getElementById('adm-inn2-bowl').value=JSON.stringify(existing.inn2.bowling||[],null,1);
+      if(existing.inn2.overR)document.getElementById('adm-inn2-overR').value=existing.inn2.overR.join(',');
+      if(existing.inn2.overW)document.getElementById('adm-inn2-overW').value=existing.inn2.overW.join(',');
+      if(existing.inn2.pships)document.getElementById('adm-inn2-pships').value=JSON.stringify(existing.inn2.pships,null,1);
+      if(existing.inn2.fow)document.getElementById('adm-inn2-fow').value=JSON.stringify(existing.inn2.fow,null,1);
+      if(existing.inn2.moments)document.getElementById('adm-inn2-moments').value=JSON.stringify(existing.inn2.moments,null,1);
+    }
+    if(existing.ratings)document.getElementById('adm-ratings').value=JSON.stringify(existing.ratings,null,1);
+  } else {
+    // Clear fields
+    ['adm-toss','adm-result','adm-pom','adm-t1score','adm-t1ov','adm-t2score','adm-t2ov',
+     'adm-inn1-bat','adm-inn1-extras','adm-inn1-bowl','adm-inn2-bat','adm-inn2-extras','adm-inn2-bowl',
+     'adm-inn1-overR','adm-inn1-overW','adm-inn2-overR','adm-inn2-overW',
+     'adm-inn1-pships','adm-inn2-pships','adm-inn1-fow','adm-inn2-fow',
+     'adm-inn1-moments','adm-inn2-moments','adm-ratings'].forEach(function(id){
+      var el=document.getElementById(id);if(el)el.value='';
+    });
+    document.getElementById('adm-bat-first').value='t1';
+  }
+}
+
+function safeJSON(str,fallback){
+  if(!str||!str.trim())return fallback;
+  try{return JSON.parse(str);}catch(e){return fallback;}
+}
+function csvToNums(str){
+  if(!str||!str.trim())return null;
+  return str.split(',').map(function(x){return parseInt(x.trim())||0;});
+}
+
+function adminBuildMatch(){
+  var no=parseInt(document.getElementById('adm-match-no').value);
+  var s=SCHEDULE.find(function(x){return x.no===no;});
+  if(!s)return null;
+  var t1=s.t1, t2=s.t2;
+  var batFirst=document.getElementById('adm-bat-first').value;
+  var inn1Team=batFirst==='t2'?t2:t1;
+  var inn2Team=batFirst==='t2'?t1:t2;
+  var t1score=document.getElementById('adm-t1score').value.trim();
+  var t2score=document.getElementById('adm-t2score').value.trim();
+  var t1ov=document.getElementById('adm-t1ov').value.trim()||'20';
+  var t2ov=document.getElementById('adm-t2ov').value.trim()||'20';
+
+  // Parse innings 1
+  var inn1Bat=safeJSON(document.getElementById('adm-inn1-bat').value,[]);
+  var inn1Extras=safeJSON(document.getElementById('adm-inn1-extras').value,{b:0,lb:0,w:0,nb:0,total:0});
+  var inn1Bowl=safeJSON(document.getElementById('adm-inn1-bowl').value,[]);
+  // Compute total from batting + extras
+  var inn1BatRuns=inn1Bat.reduce(function(a,b){return a+b.r;},0);
+  var inn1Total=inn1BatRuns+(inn1Extras.total||0);
+  var inn1Wkts=inn1Bat.filter(function(b){return b.d!=='not out';}).length;
+  // Determine which is inn1 score
+  var inn1Score=(inn1Team===t1)?t1score:t2score;
+  var inn1Ov=(inn1Team===t1)?t1ov:t2ov;
+  var inn2Score=(inn2Team===t1)?t1score:t2score;
+  var inn2Ov=(inn2Team===t1)?t1ov:t2ov;
+
+  var inn1={
+    team:inn1Team,
+    total:inn1Score||inn1Total+'/'+inn1Wkts,
+    overs:parseFloat(inn1Ov)||20,
+    runs:inn1Total,
+    batting:inn1Bat,
+    extras:inn1Extras,
+    bowling:inn1Bowl
+  };
+  // Tier 2 data
+  var oR1=csvToNums(document.getElementById('adm-inn1-overR').value);
+  var oW1=csvToNums(document.getElementById('adm-inn1-overW').value);
+  if(oR1)inn1.overR=oR1; if(oW1)inn1.overW=oW1;
+  var ps1=safeJSON(document.getElementById('adm-inn1-pships').value,null);
+  if(ps1)inn1.pships=ps1;
+  var fow1=safeJSON(document.getElementById('adm-inn1-fow').value,null);
+  if(fow1)inn1.fow=fow1;
+  var mom1=safeJSON(document.getElementById('adm-inn1-moments').value,null);
+  if(mom1)inn1.moments=mom1;
+
+  // Parse innings 2
+  var inn2Bat=safeJSON(document.getElementById('adm-inn2-bat').value,[]);
+  var inn2Extras=safeJSON(document.getElementById('adm-inn2-extras').value,{b:0,lb:0,w:0,nb:0,total:0});
+  var inn2Bowl=safeJSON(document.getElementById('adm-inn2-bowl').value,[]);
+  var inn2BatRuns=inn2Bat.reduce(function(a,b){return a+b.r;},0);
+  var inn2Total=inn2BatRuns+(inn2Extras.total||0);
+  var inn2Wkts=inn2Bat.filter(function(b){return b.d!=='not out';}).length;
+
+  var inn2={
+    team:inn2Team,
+    total:inn2Score||inn2Total+'/'+inn2Wkts,
+    overs:parseFloat(inn2Ov)||20,
+    runs:inn2Total,
+    batting:inn2Bat,
+    extras:inn2Extras,
+    bowling:inn2Bowl
+  };
+  var oR2=csvToNums(document.getElementById('adm-inn2-overR').value);
+  var oW2=csvToNums(document.getElementById('adm-inn2-overW').value);
+  if(oR2)inn2.overR=oR2; if(oW2)inn2.overW=oW2;
+  var ps2=safeJSON(document.getElementById('adm-inn2-pships').value,null);
+  if(ps2)inn2.pships=ps2;
+  var fow2=safeJSON(document.getElementById('adm-inn2-fow').value,null);
+  if(fow2)inn2.fow=fow2;
+  var mom2=safeJSON(document.getElementById('adm-inn2-moments').value,null);
+  if(mom2)inn2.moments=mom2;
+
+  var ratings=safeJSON(document.getElementById('adm-ratings').value,null);
+
+  var match={
+    id:'m'+no, no:no, date:s.date,
+    venue:document.getElementById('adm-venue').value.trim()||s.venue||'',
+    t1:t1, t2:t2, status:'completed',
+    toss:document.getElementById('adm-toss').value.trim(),
+    result:document.getElementById('adm-result').value.trim(),
+    pom:document.getElementById('adm-pom').value.trim(),
+    t1score:t1score, t1ov:t1ov,
+    t2score:t2score, t2ov:t2ov,
+    inn1:inn1, inn2:inn2
+  };
+  if(ratings)match.ratings=ratings;
+  return match;
+}
+
+function adminSaveMatch(){
+  var match=adminBuildMatch();
+  if(!match){showAdminStatus('admin-save-status','Select a match first','error');return;}
+  if(!match.result){showAdminStatus('admin-save-status','Result is required','error');return;}
+  DataStore.addMatch(match);
+  DataStore.recalcPoints();
+  DataStore.saveAll();
+  refreshAllViews();
+  renderAdminPanel();
+  showAdminStatus('admin-save-status','Match '+match.no+' saved successfully! '+MATCHES.length+' matches stored.','success');
+}
+
+function adminPreview(){
+  var match=adminBuildMatch();
+  var el=document.getElementById('admin-preview');
+  if(el){
+    el.style.display='block';
+    el.textContent=JSON.stringify(match,null,2);
+  }
+}
+
+function adminRecalcPoints(){
+  DataStore.recalcPoints();
+  refreshAllViews();
+  showAdminStatus('admin-points-status','Points table recalculated from '+SCHEDULE.filter(function(s){return s.completed;}).length+' completed matches','success');
+}
+
+function adminConnectFirebase(){
+  var cfg={
+    apiKey:document.getElementById('fb-apiKey').value.trim(),
+    authDomain:document.getElementById('fb-authDomain').value.trim(),
+    databaseURL:document.getElementById('fb-databaseURL').value.trim(),
+    projectId:document.getElementById('fb-projectId').value.trim()
+  };
+  if(!cfg.apiKey||!cfg.databaseURL){
+    showAdminStatus('admin-fb-status','API Key and Database URL are required','error');return;
+  }
+  DataStore.saveLocal('firebase_config',cfg);
+  DataStore.initFirebase(cfg);
+  setTimeout(function(){
+    if(DataStore.FB_READY){
+      showAdminStatus('admin-fb-status','Firebase connected! Data will sync automatically.','success');
+      renderAdminPanel();
+    } else {
+      showAdminStatus('admin-fb-status','Connection failed. Check your config.','error');
+    }
+  },2000);
+}
+
+function adminExportData(){
+  var data={
+    matches:MATCHES, schedule:SCHEDULE,
+    points:POINTS, newsletters:NEWSLETTERS,
+    exportDate:new Date().toISOString(), version:'iplbuzz-v2'
+  };
+  var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download='iplbuzz-data-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();URL.revokeObjectURL(url);
+  showAdminStatus('admin-fb-status','Data exported successfully','success');
+}
+
+function adminImportData(){
+  document.getElementById('admin-import-file').click();
+}
+function adminHandleImport(event){
+  var file=event.target.files[0];
+  if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var data=JSON.parse(e.target.result);
+      if(data.matches)MATCHES=data.matches;
+      if(data.schedule)SCHEDULE=data.schedule;
+      if(data.points)POINTS=data.points;
+      if(data.newsletters)NEWSLETTERS=data.newsletters;
+      DataStore.saveAll();
+      refreshAllViews();
+      renderAdminPanel();
+      showAdminStatus('admin-fb-status','Imported '+MATCHES.length+' matches successfully!','success');
+    }catch(err){
+      showAdminStatus('admin-fb-status','Import failed: '+err.message,'error');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value='';
+}
+
+function adminResetData(){
+  if(!confirm('This will delete ALL stored data and reload defaults. Are you sure?'))return;
+  localStorage.removeItem('iplbuzz_matches');
+  localStorage.removeItem('iplbuzz_schedule');
+  localStorage.removeItem('iplbuzz_points');
+  localStorage.removeItem('iplbuzz_newsletters');
+  location.reload();
+}
+
+function showAdminStatus(id,msg,type){
+  var el=document.getElementById(id);
+  if(!el)return;
+  el.className='admin-status '+type;
+  el.textContent=msg;
+  el.style.display='block';
+  setTimeout(function(){el.style.display='none';},5000);
+}
 
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -4099,6 +4821,195 @@ function quickChat(msg){
       <button class="atab" onclick="switchStatTab('bowl-sr',this)">Bowl SR</button>
     </div>
     <div id="stats-content"></div>
+  </div>
+</div>
+
+<!-- ═══ ADMIN PANEL ═══ -->
+<div class="view" id="view-admin">
+  <div class="admin-w">
+    <div class="sh"><h2>Admin Panel</h2><p>Enter match data · Manage persistence</p></div>
+
+    <!-- Data status -->
+    <div class="admin-card" style="border-top:3px solid var(--green)">
+      <h3>Data Status</h3>
+      <div id="admin-data-status"></div>
+    </div>
+
+    <!-- Quick entry: select match to enter data -->
+    <div class="admin-card" style="border-top:3px solid var(--gold)">
+      <h3>Enter Match Scorecard</h3>
+      <div style="font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--dim2);margin-bottom:12px">
+        Select a match to enter or edit its data. Green = data stored. Red = missing.
+      </div>
+      <div id="admin-match-grid" class="admin-match-list"></div>
+
+      <div class="admin-field">
+        <label>Match Number</label>
+        <select id="adm-match-no" onchange="adminLoadMatch(this.value)">
+          <option value="">— Select match —</option>
+        </select>
+      </div>
+
+      <div id="admin-match-form" style="display:none">
+        <div class="admin-row" style="margin-bottom:12px">
+          <div class="admin-field"><label>Team 1 (Home)</label><input id="adm-t1" readonly></div>
+          <div class="admin-field"><label>Team 2 (Away)</label><input id="adm-t2" readonly></div>
+          <div class="admin-field"><label>Venue</label><input id="adm-venue" placeholder="e.g. Wankhede Stadium, Mumbai"></div>
+          <div class="admin-field"><label>Date</label><input id="adm-date" readonly></div>
+        </div>
+
+        <div class="admin-row" style="margin-bottom:12px">
+          <div class="admin-field"><label>Toss</label><input id="adm-toss" placeholder="e.g. RCB won toss · elected to field"></div>
+          <div class="admin-field"><label>Result</label><input id="adm-result" placeholder="e.g. RCB won by 6 wickets"></div>
+          <div class="admin-field"><label>Player of Match</label><input id="adm-pom" placeholder="e.g. Virat Kohli · 69*(38)"></div>
+        </div>
+
+        <div class="admin-row" style="margin-bottom:12px">
+          <div class="admin-field"><label>Team 1 Score</label><input id="adm-t1score" placeholder="e.g. 201/9"></div>
+          <div class="admin-field"><label>Team 1 Overs</label><input id="adm-t1ov" placeholder="e.g. 20"></div>
+          <div class="admin-field"><label>Team 2 Score</label><input id="adm-t2score" placeholder="e.g. 203/4"></div>
+          <div class="admin-field"><label>Team 2 Overs</label><input id="adm-t2ov" placeholder="e.g. 15.4"></div>
+        </div>
+
+        <div class="admin-field">
+          <label>Batting First Team (who batted in innings 1?)</label>
+          <select id="adm-bat-first">
+            <option value="t1">Team 1 (Home)</option>
+            <option value="t2">Team 2 (Away)</option>
+          </select>
+        </div>
+
+        <!-- Innings 1 Data -->
+        <div class="admin-card" style="border-left:3px solid #3b82f6;background:var(--s2)">
+          <h3 style="color:#3b82f6">1st Innings Data</h3>
+          <div class="admin-field">
+            <label>Batting (JSON array — each: {n, d, r, b, f, s} — optional: cap, wk)</label>
+            <textarea id="adm-inn1-bat" placeholder='[{"n":"Player Name","d":"c Fielder b Bowler","r":80,"b":38,"f":13,"s":0}]'></textarea>
+          </div>
+          <div class="admin-field">
+            <label>Extras (JSON: {b, lb, w, nb, total})</label>
+            <input id="adm-inn1-extras" placeholder='{"b":0,"lb":2,"w":10,"nb":2,"total":14}'>
+          </div>
+          <div class="admin-field">
+            <label>Bowling (JSON array — each: {n, o, r, w, wd, nb})</label>
+            <textarea id="adm-inn1-bowl" placeholder='[{"n":"Bowler Name","o":4,"r":22,"w":3,"wd":1,"nb":0}]'></textarea>
+          </div>
+        </div>
+
+        <!-- Innings 2 Data -->
+        <div class="admin-card" style="border-left:3px solid #22c55e;background:var(--s2)">
+          <h3 style="color:#22c55e">2nd Innings Data</h3>
+          <div class="admin-field">
+            <label>Batting (JSON array)</label>
+            <textarea id="adm-inn2-bat" placeholder='[{"n":"Player Name","d":"not out","r":69,"b":38,"f":5,"s":5}]'></textarea>
+          </div>
+          <div class="admin-field">
+            <label>Extras (JSON)</label>
+            <input id="adm-inn2-extras" placeholder='{"b":9,"lb":2,"w":7,"nb":0,"total":18}'>
+          </div>
+          <div class="admin-field">
+            <label>Bowling (JSON array)</label>
+            <textarea id="adm-inn2-bowl" placeholder='[{"n":"Bowler Name","o":4,"r":28,"w":1,"wd":2,"nb":0}]'></textarea>
+          </div>
+        </div>
+
+        <!-- Tier 2: enrichment data (optional) -->
+        <div class="admin-card" style="border-left:3px solid var(--gold);background:var(--s2)">
+          <h3>Tier 2 — Enrichment (Optional)</h3>
+          <div style="font-family:Barlow Condensed,sans-serif;font-size:11px;color:var(--dim2);margin-bottom:10px">
+            Add over-by-over data, partnerships, FOW, moments & ratings for full analytics. Leave blank to skip.
+          </div>
+          <div class="admin-field">
+            <label>Inn 1 Over Runs (comma-sep, e.g. 4,3,5,8,6,12,...)</label>
+            <input id="adm-inn1-overR" placeholder="4,3,5,8,6,12,11,8,14,8,12,15,21,9,7,10,9,9,16,14">
+          </div>
+          <div class="admin-field">
+            <label>Inn 1 Over Wickets (comma-sep, e.g. 0,2,0,0,0,1,...)</label>
+            <input id="adm-inn1-overW" placeholder="0,2,0,0,0,1,0,0,0,1,0,0,0,1,1,1,1,1,1,1">
+          </div>
+          <div class="admin-field">
+            <label>Inn 2 Over Runs (comma-sep)</label>
+            <input id="adm-inn2-overR">
+          </div>
+          <div class="admin-field">
+            <label>Inn 2 Over Wickets (comma-sep)</label>
+            <input id="adm-inn2-overW">
+          </div>
+          <div class="admin-field">
+            <label>Inn 1 Partnerships (JSON array — {wkt, p1, p2, r, b})</label>
+            <textarea id="adm-inn1-pships" style="min-height:60px"></textarea>
+          </div>
+          <div class="admin-field">
+            <label>Inn 2 Partnerships (JSON array)</label>
+            <textarea id="adm-inn2-pships" style="min-height:60px"></textarea>
+          </div>
+          <div class="admin-field">
+            <label>Inn 1 Fall of Wickets (JSON array — {wkt, r, ov, bat})</label>
+            <textarea id="adm-inn1-fow" style="min-height:60px"></textarea>
+          </div>
+          <div class="admin-field">
+            <label>Inn 2 Fall of Wickets (JSON array)</label>
+            <textarea id="adm-inn2-fow" style="min-height:60px"></textarea>
+          </div>
+          <div class="admin-field">
+            <label>Inn 1 Key Moments (JSON array — {ov, i, t, d})</label>
+            <textarea id="adm-inn1-moments" style="min-height:60px"></textarea>
+          </div>
+          <div class="admin-field">
+            <label>Inn 2 Key Moments (JSON array)</label>
+            <textarea id="adm-inn2-moments" style="min-height:60px"></textarea>
+          </div>
+          <div class="admin-field">
+            <label>Player Ratings (JSON array — {n, t, role, v, note})</label>
+            <textarea id="adm-ratings" style="min-height:60px"></textarea>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:14px">
+          <button class="admin-btn admin-btn-primary" onclick="adminSaveMatch()">Save Match Data</button>
+          <button class="admin-btn admin-btn-outline" onclick="adminPreview()">Preview JSON</button>
+        </div>
+        <div id="admin-save-status" class="admin-status"></div>
+        <pre id="admin-preview" style="display:none;background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:12px;margin-top:10px;font-size:11px;color:var(--dim2);overflow-x:auto;max-height:300px"></pre>
+      </div>
+    </div>
+
+    <!-- Points Table Editor -->
+    <div class="admin-card" style="border-top:3px solid #a855f7">
+      <h3 style="color:#a855f7">Recalculate Points Table</h3>
+      <div style="font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--dim2);margin-bottom:10px">
+        Auto-compute points, wins, losses and NRR from stored match data.
+      </div>
+      <button class="admin-btn admin-btn-primary" onclick="adminRecalcPoints()">Recalculate Points</button>
+      <div id="admin-points-status" class="admin-status"></div>
+    </div>
+
+    <!-- Firebase Config -->
+    <div class="admin-card" style="border-top:3px solid #3b82f6">
+      <h3 style="color:#3b82f6">Firebase Configuration</h3>
+      <div style="font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--dim2);margin-bottom:10px">
+        Connect to Firebase Realtime Database for cloud persistence. Leave blank to use localStorage only.
+      </div>
+      <div class="firebase-cfg">
+        <div class="admin-field"><label>API Key</label><input id="fb-apiKey" placeholder="AIza..."></div>
+        <div class="admin-field"><label>Auth Domain</label><input id="fb-authDomain" placeholder="your-app.firebaseapp.com"></div>
+        <div class="admin-field"><label>Database URL</label><input id="fb-databaseURL" placeholder="https://your-app-default-rtdb.firebaseio.com"></div>
+        <div class="admin-field"><label>Project ID</label><input id="fb-projectId" placeholder="your-app"></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:10px">
+        <button class="admin-btn admin-btn-primary" onclick="adminConnectFirebase()">Connect Firebase</button>
+        <button class="admin-btn admin-btn-outline" onclick="adminExportData()">Export All Data (JSON)</button>
+        <button class="admin-btn admin-btn-outline" onclick="adminImportData()">Import Data</button>
+      </div>
+      <input type="file" id="admin-import-file" accept=".json" style="display:none" onchange="adminHandleImport(event)">
+      <div id="admin-fb-status" class="admin-status"></div>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="admin-card" style="border-top:3px solid var(--red)">
+      <h3 style="color:var(--red)">Danger Zone</h3>
+      <button class="admin-btn admin-btn-danger" onclick="adminResetData()">Reset All Data to Defaults</button>
+    </div>
   </div>
 </div>
 
