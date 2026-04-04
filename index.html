@@ -485,6 +485,7 @@ body{padding-bottom:62px}
   <span class="brand" onclick="go('home')">IPL <b>2026</b></span>
   <div class="nav-right"><input id="api-key-input" type="hidden" value=""></div>
 </nav>
+<div id="fb-debug" style="background:#1a1a2e;color:var(--gold);font-family:Barlow Condensed,sans-serif;font-size:11px;padding:4px 16px;text-align:center;letter-spacing:1px">[FB] Initializing...</div>
 <div class="btabs">
   <button class="btab on" id="nb-home" onclick="go('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></button>
   <button class="btab" id="nb-schedule" onclick="go('schedule')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>Schedule</span></button>
@@ -495,6 +496,7 @@ body{padding-bottom:62px}
   <button class="btab" id="nb-scores" onclick="go('scores')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>Cards</span></button>
 </div>
 <div class="view on" id="view-home">
+  <div id="live-panel-wrap" style="margin-bottom:16px"></div>
   <div id="home-main"></div>
   <div id="home-caps" style="margin-bottom:16px"></div>
   <div id="home-predictor" style="margin-bottom:20px"></div>
@@ -563,13 +565,18 @@ var FB={
   },
   connect:function(cfg){
     try{
-      if(typeof firebase==='undefined')return;
+      if(typeof firebase==='undefined'){this.log('Firebase SDK not loaded');return;}
       if(!firebase.apps.length)firebase.initializeApp(cfg);
       this.db=firebase.database();
       this.ready=true;
-      console.log('[FB] Connected — listening for updates');
+      this.log('Firebase connected! Listening...');
       this.listen();
-    }catch(e){console.warn('[FB] Connect error:',e);}
+    }catch(e){this.log('Connect error: '+e.message);}
+  },
+  log:function(msg){
+    console.log('[FB] '+msg);
+    var d=document.getElementById('fb-debug');
+    if(d)d.textContent='[FB] '+msg;
   },
   listen:function(){
     if(!this.db)return;
@@ -613,7 +620,7 @@ function refreshAllViews(){
   try{
     renderHomePage();renderSchedule();renderPoints();
     renderTeamCards('home-teams','home');renderTeamCards('teams-list','teams');
-    renderMatchList();renderScorecardsPage();
+    renderMatchList();renderScorecardsPage();renderLivePanel();
   }catch(e){console.warn('[Refresh]',e);}
 }
 
@@ -1100,111 +1107,10 @@ function buildScorecardHTML(m){
 function renderLivePanel(){
   var el=document.getElementById('live-panel-wrap');
   if(!el)return;
-  if(!API_KEY){
-    el.innerHTML=
-      '<div class="live-tile" style="border-color:rgba(34,197,94,.4)">'+
-        '<div class="live-tile-header" onclick="toggleTile()">'+
-          // Result badge
-          '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'+
-            '<div style="background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.4);border-radius:5px;padding:3px 10px;font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--green)">MATCH RESULT</div>'+
-            '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;color:var(--dim);letter-spacing:1px">Match 1 · Mar 28 2026 · M Chinnaswamy Stadium</div>'+
-          '</div>'+
-          // Scores row
-          '<div class="live-scores-row">'+
-            '<div class="live-team-score">'+
-              '<div class="live-tname"><div class="tdot" style="background:#f26522"></div>SRH</div>'+
-              '<div class="live-sc" style="color:var(--dim2)">201/9 <small>(20 ov)</small></div>'+
-            '</div>'+
-            '<div class="live-vs">vs</div>'+
-            '<div class="live-team-score">'+
-              '<div class="live-tname"><div class="tdot" style="background:#c9112e"></div>RCB</div>'+
-              '<div class="live-sc" style="color:var(--green)">203/4 <small>(15.4 ov)</small></div>'+
-            '</div>'+
-          '</div>'+
-          // Win message
-          '<div style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);border-radius:6px;padding:9px 14px;margin-top:10px">'+
-            '<div style="font-family:Teko,sans-serif;font-size:18px;font-weight:700;color:var(--green);line-height:1">'+
-              '🏆 RCB won by 6 wickets (15.4 ov)'+
-            '</div>'+
-            '<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--dim2);margin-top:4px;line-height:1.5">'+
-              'Kohli 69*(38) · Padikkal 61(26) · Duffy 3/22 · Kishan 80(38)'+
-            '</div>'+
-            '<div style="font-family:Barlow Condensed,sans-serif;font-size:11px;color:var(--dim);margin-top:3px">'+
-              'Player of Match: Virat Kohli · SR 181.6 · 5 fours · 5 sixes'+
-            '</div>'+
-          '</div>'+
-          // Expand hint
-          '<div class="live-expand-row" style="margin-top:10px">'+
-            '<span class="expand-hint">'+
-              '<span id="expand-hint-txt2">Full Scorecard ▼</span>'+
-              '<span class="expand-arrow" id="expand-arrow2"></span>'+
-            '</span>'+
-            '<span style="font-family:Barlow Condensed,sans-serif;font-size:10px;color:var(--dim)">'+
-              '→ Matches tab for charts & analytics'+
-            '</span>'+
-          '</div>'+
-        '</div>'+
-        // Expandable detail — both innings
-        '<div class="live-detail" id="live-detail2">'+
-          // SRH innings
-          '<div class="sc-section">'+
-            '<div class="sc-section-title">SRH 1st Innings · 201/9 (20 ov)</div>'+
-            '<table class="sc-table">'+
-              '<thead><tr><th>Batter</th><th>R</th><th>B</th><th>4s</th><th>6s</th><th>SR</th></tr></thead>'+
-              '<tbody>'+
-                '<tr><td><span class="sc-name">Abhishek Sharma</span><span class="sc-note">c Padikkal b Duffy</span></td><td>2</td><td class="sc-balls">4</td><td>0</td><td>0</td><td>50.0</td></tr>'+
-                '<tr><td><span class="sc-name">Travis Head</span><span class="sc-note">c Salt b Duffy</span></td><td>4</td><td class="sc-balls">7</td><td>0</td><td>0</td><td>57.1</td></tr>'+
-                '<tr><td><span class="sc-name">⭐ Ishan Kishan †©</span><span class="sc-note">c Salt b Abhinandan Singh</span></td><td class="sc-batting">80</td><td class="sc-balls">38</td><td>13</td><td>0</td><td class="sc-highlight">210.5</td></tr>'+
-                '<tr><td><span class="sc-name">Heinrich Klaasen</span><span class="sc-note">c Padikkal b Shepherd</span></td><td class="sc-batting">31</td><td class="sc-balls">22</td><td>3</td><td>1</td><td>140.9</td></tr>'+
-                '<tr><td><span class="sc-name">Nitish K Reddy</span><span class="sc-note">c Padikkal b Duffy</span></td><td>0</td><td class="sc-balls">3</td><td>0</td><td>0</td><td>0.0</td></tr>'+
-                '<tr><td><span class="sc-name">⭐ Aniket Verma</span><span class="sc-note">c Kohli b Shepherd</span></td><td class="sc-batting">43</td><td class="sc-balls">17</td><td>5</td><td>2</td><td class="sc-highlight">252.9</td></tr>'+
-                '<tr><td><span class="sc-name">Salil Arora</span><span class="sc-note">c Padikkal b Suyash</span></td><td>9</td><td class="sc-balls">6</td><td>0</td><td>1</td><td>150.0</td></tr>'+
-                '<tr><td><span class="sc-name">Harsh Dubey</span><span class="sc-note">c sub b Shepherd</span></td><td>3</td><td class="sc-balls">3</td><td>0</td><td>0</td><td>100.0</td></tr>'+
-                '<tr><td><span class="sc-name">Harshal Patel</span><span class="sc-note">c Padikkal b Bhuvneshwar</span></td><td>0</td><td class="sc-balls">2</td><td>0</td><td>0</td><td>0.0</td></tr>'+
-                '<tr><td><span class="sc-name">David Payne</span><span class="sc-note">not out</span></td><td>8</td><td class="sc-balls">5</td><td>1</td><td>0</td><td>160.0</td></tr>'+
-                '<tr><td><span class="sc-name">Jaydev Unadkat</span><span class="sc-note">not out</span></td><td>3</td><td class="sc-balls">3</td><td>0</td><td>0</td><td>100.0</td></tr>'+
-                '<tr style="border-top:1px solid var(--bd)"><td colspan="2" style="color:var(--dim2);font-size:12px">Extras</td><td colspan="4" style="text-align:left;color:var(--dim2);font-size:11px">b 0 · lb 2 · w 10 · nb 2 = 14</td></tr>'+
-                '<tr style="font-weight:700"><td colspan="2">Total</td><td colspan="4" style="text-align:left">201/9 (20 ov)</td></tr>'+
-              '</tbody>'+
-            '</table>'+
-            '<div style="font-family:Barlow Condensed,sans-serif;font-size:11px;color:var(--dim2);margin-top:8px;line-height:1.8">'+
-              '<b style="color:var(--dim)">Bowling:</b> Duffy 4-0-22-3 ⭐ · Abhinandan 2-0-24-1 · Bhuvneshwar 4-0-28-1 · Suyash 4-0-45-1 · Shepherd 4-0-54-3 · Krunal 2-0-28-0'+
-            '</div>'+
-          '</div>'+
-          // RCB innings
-          '<div class="sc-section" style="margin-top:16px">'+
-            '<div class="sc-section-title" style="color:var(--green)">RCB 2nd Innings · 203/4 (15.4 ov) 🏆</div>'+
-            '<table class="sc-table">'+
-              '<thead><tr><th>Batter</th><th>R</th><th>B</th><th>4s</th><th>6s</th><th>SR</th></tr></thead>'+
-              '<tbody>'+
-                '<tr><td><span class="sc-name">Phil Salt</span><span class="sc-note">c Klaasen b Unadkat</span></td><td>8</td><td class="sc-balls">7</td><td>2</td><td>0</td><td>114.3</td></tr>'+
-                '<tr><td><span class="sc-name">⭐ Virat Kohli*</span><span class="sc-note">not out · Player of Match</span></td><td class="sc-batting">69</td><td class="sc-balls">38</td><td>5</td><td>5</td><td class="sc-highlight">181.6</td></tr>'+
-                '<tr><td><span class="sc-name">⭐ Devdutt Padikkal</span><span class="sc-note">c Klaasen b Harsh Dubey</span></td><td class="sc-batting">61</td><td class="sc-balls">26</td><td>7</td><td>4</td><td class="sc-highlight">234.6</td></tr>'+
-                '<tr><td><span class="sc-name">Rajat Patidar (c)</span><span class="sc-note">c Harsh Dubey b Payne</span></td><td class="sc-batting">31</td><td class="sc-balls">12</td><td>2</td><td>3</td><td class="sc-highlight">258.3</td></tr>'+
-                '<tr><td><span class="sc-name">Jitesh Sharma †</span><span class="sc-note">c Unadkat b Payne</span></td><td>0</td><td class="sc-balls">1</td><td>0</td><td>0</td><td>0.0</td></tr>'+
-                '<tr><td><span class="sc-name">Tim David*</span><span class="sc-note">not out</span></td><td>16</td><td class="sc-balls">10</td><td>1</td><td>1</td><td>160.0</td></tr>'+
-                '<tr style="border-top:1px solid var(--bd)"><td colspan="2" style="color:var(--dim2);font-size:12px">Extras</td><td colspan="4" style="text-align:left;color:var(--dim2);font-size:11px">b 9 · lb 2 · w 7 · nb 0 = 18</td></tr>'+
-                '<tr style="font-weight:700;color:var(--green)"><td colspan="2">Total</td><td colspan="4" style="text-align:left">203/4 (15.4 ov) · Won by 6 wkts</td></tr>'+
-              '</tbody>'+
-            '</table>'+
-            '<div style="font-family:Barlow Condensed,sans-serif;font-size:11px;color:var(--dim2);margin-top:8px;line-height:1.8">'+
-              '<b style="color:var(--dim)">Bowling:</b> Nitish 2-0-19-0 · Unadkat 3-0-29-1 · Payne 3-0-35-2 · Harsh Dubey 3-0-35-1 · Malinga 2-0-35-0 · Harshal 2.4-0-39-0'+
-            '</div>'+
-            '<div style="font-family:Barlow Condensed,sans-serif;font-size:11px;color:var(--dim2);margin-top:6px;line-height:1.8">'+
-              '<b style="color:var(--dim)">FOW:</b> 1/9 Salt (1.1) · 2/110 Padikkal (8.4) · 3/163 Patidar (12.2) · 4/163 Jitesh (12.3)'+
-            '</div>'+
-            '<div style="font-family:Barlow Condensed,sans-serif;font-size:11px;color:var(--dim2);margin-top:6px">'+
-              '<b style="color:var(--dim)">PP:</b> 76/1 in 6 ov (RR 12.67) · <b style="color:var(--dim)">DNB:</b> Shepherd, Krunal, Bhuvneshwar, Abhinandan, Duffy, Suyash'+
-            '</div>'+
-          '</div>'+
-        '</div>'+
-      '</div>';
-    return;
-  }
   el.innerHTML=
     '<div class="live-tile">'+
       '<div class="live-tile-header">'+
-        '<div class="live-tag"><div class="live-dot" style="background:var(--dim2);animation:none"></div>Live Score</div>'+
+        '<div class="live-tag"><div class="live-dot"></div>Live Score</div>'+
         '<div class="live-msg" id="live-msg">Connecting to live feed...</div>'+
       '</div>'+
     '</div>';
@@ -3968,7 +3874,7 @@ function switchTab(name,btn){
     homeHTML+='<div class="date-sep" style="margin-top:10px">Up Next</div>';
     afterNext.slice(0,2).forEach(function(m){homeHTML+=mRow(m,"go('schedule')");});
   }
-  renderHomePage();renderSchedule();renderPoints();renderTeamCards('home-teams','home');renderTeamCards('teams-list','teams');renderMatchList();renderScorecardsPage();
+  renderHomePage();renderSchedule();renderPoints();renderTeamCards('home-teams','home');renderTeamCards('teams-list','teams');renderMatchList();renderScorecardsPage();renderLivePanel();
 })();
 
 
