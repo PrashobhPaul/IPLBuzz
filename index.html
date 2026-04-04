@@ -537,6 +537,86 @@ body{padding-bottom:62px}
 </div>
 <script>
 
+// ═══════════════════════════════════════════════════════════════════════
+// FIREBASE BACKEND — Real-time data for all users
+// ═══════════════════════════════════════════════════════════════════════
+var FB={
+  ready:false, db:null,
+  init:function(){
+    // Hardcoded Firebase config — no localStorage dependency
+    var cfg={
+      apiKey:"AIzaSyC2MvTO5dbDycCQoZbi9EhLTv7DenH6vMk",
+      authDomain:"iplbuzz-2de05.firebaseapp.com",
+      databaseURL:"https://iplbuzz-2de05-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId:"iplbuzz-2de05"
+    };
+    var self=this;
+    var s1=document.createElement('script');
+    s1.src='https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js';
+    s1.onload=function(){
+      var s2=document.createElement('script');
+      s2.src='https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js';
+      s2.onload=function(){self.connect(cfg);};
+      document.head.appendChild(s2);
+    };
+    document.head.appendChild(s1);
+  },
+  connect:function(cfg){
+    try{
+      if(typeof firebase==='undefined')return;
+      if(!firebase.apps.length)firebase.initializeApp(cfg);
+      this.db=firebase.database();
+      this.ready=true;
+      console.log('[FB] Connected — listening for updates');
+      this.listen();
+    }catch(e){console.warn('[FB] Connect error:',e);}
+  },
+  listen:function(){
+    if(!this.db)return;
+    var db=this.db;
+    // Live match data — real-time
+    db.ref('iplbuzz/live').on('value',function(snap){
+      var d=snap.val();
+      if(!d||!d.data)return;
+      try{localStorage.setItem('iplbuzz_live',JSON.stringify(d));}catch(e){}
+      if(typeof renderLiveFromData==='function')renderLiveFromData(d);
+    });
+    // Matches — update when admin saves
+    db.ref('iplbuzz/matches').on('value',function(snap){
+      var d=snap.val();
+      if(d&&Array.isArray(d)&&d.length){
+        MATCHES=d;
+        try{localStorage.setItem('iplbuzz_matches',JSON.stringify(d));}catch(e){}
+        if(typeof refreshAllViews==='function')refreshAllViews();
+      }
+    });
+    // Schedule
+    db.ref('iplbuzz/schedule').on('value',function(snap){
+      var d=snap.val();
+      if(d&&Array.isArray(d)&&d.length){
+        SCHEDULE=d;
+        try{localStorage.setItem('iplbuzz_schedule',JSON.stringify(d));}catch(e){}
+      }
+    });
+    // Points
+    db.ref('iplbuzz/points').on('value',function(snap){
+      var d=snap.val();
+      if(d&&Array.isArray(d)&&d.length){
+        POINTS=d;
+        try{localStorage.setItem('iplbuzz_points',JSON.stringify(d));}catch(e){}
+      }
+    });
+  }
+};
+
+function refreshAllViews(){
+  try{
+    renderHomePage();renderSchedule();renderPoints();
+    renderTeamCards('home-teams','home');renderTeamCards('teams-list','teams');
+    renderMatchList();renderScorecardsPage();
+  }catch(e){console.warn('[Refresh]',e);}
+}
+
 const TEAMS={
 RCB:{logo:'logos/rcb.png',name:'Royal Challengers Bengaluru',city:'Bengaluru',color:'#c9112e',captain:'Rajat Patidar',coach:'Andy Flower',titles:1,runnerups:3,titleYears:'2025',squad:[
 {n:'Rajat Patidar',r:'Batsman',c:'India'},{n:'Tim David',r:'Batsman',c:'Singapore'},{n:'Virat Kohli',r:'Batsman',c:'India'},{n:'Devdutt Padikkal',r:'Batsman',c:'India'},
@@ -1125,9 +1205,46 @@ function renderLivePanel(){
     '<div class="live-tile">'+
       '<div class="live-tile-header">'+
         '<div class="live-tag"><div class="live-dot" style="background:var(--dim2);animation:none"></div>Live Score</div>'+
-        '<div class="live-msg" id="live-msg">Live scores update automatically during matches.</div>'+
+        '<div class="live-msg" id="live-msg">Connecting to live feed...</div>'+
       '</div>'+
     '</div>';
+  // Try cached data immediately (Firebase will override when connected)
+  try{
+    var raw=localStorage.getItem('iplbuzz_live');
+    if(raw)renderLiveFromData(JSON.parse(raw));
+  }catch(e){}
+}
+
+function renderLiveFromData(cached){
+  if(!cached||!cached.data)return;
+  var matches=cached.data;
+  var m=findIPL(matches);
+  var el=document.getElementById('live-panel-wrap');
+  if(!el)return;
+  var age=Date.now()-(cached.ts||0);
+  var ageStr=age<60000?'just now':age<300000?Math.floor(age/60000)+'m ago':new Date(cached.ts).toLocaleTimeString();
+
+  if(!m){
+    var next=SCHEDULE.find(function(s){return !s.completed;});
+    el.innerHTML='<div class="live-tile">'+
+      '<div class="live-tile-header">'+
+        '<div class="live-tag" style="color:var(--dim2)"><div class="live-dot" style="background:var(--dim2);animation:none"></div>No Live Match</div>'+
+        '<div class="live-msg">'+(next?'<b style="color:var(--gold)">Next: Match '+next.no+' — '+next.t1+' vs '+next.t2+' · '+next.date+' '+next.time+' IST</b>':'Season complete.')+'</div>'+
+        '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;color:var(--dim);margin-top:6px">Updated '+ageStr+'</div>'+
+      '</div></div>';
+    return;
+  }
+
+  el.innerHTML=buildScorecardHTML(m)+
+    '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;color:var(--dim);padding:4px 18px 8px">Updated '+ageStr+'</div>';
+  if(tileExpanded){
+    var det=document.getElementById('live-detail');
+    var arr=document.getElementById('expand-arrow');
+    var hint=document.getElementById('expand-hint-txt');
+    if(det)det.classList.add('open');
+    if(arr)arr.classList.add('open');
+    if(hint)hint.textContent='Hide details';
+  }
 }
 function manualRefresh(){
   stopAutoRefresh();
@@ -3819,6 +3936,9 @@ function switchTab(name,btn){
     if(!sn)localStorage.setItem('iplbuzz_newsletters',JSON.stringify(NEWSLETTERS));
     console.log('[IPLBuzz] Loaded '+MATCHES.length+' matches from storage');
   } catch(e){console.warn('[IPLBuzz] Storage load error:',e);}
+
+  // Connect to Firebase backend (if configured)
+  try{FB.init();}catch(e){console.warn('[FB] Init error:',e);}
 
   const bar=document.getElementById('sched-filters');
   ['ALL',...Object.keys(TEAMS)].forEach(abbr=>{const b=document.createElement('button');b.className='fbtn'+(abbr==='ALL'?' on':'');b.textContent=abbr==='ALL'?'All Teams':abbr;b.onclick=()=>filterSched(abbr,b);bar.appendChild(b);});
