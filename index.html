@@ -581,6 +581,7 @@ var FB={
   listen:function(){
     if(!this.db)return;
     var db=this.db;
+    function toArr(d){if(!d)return null;if(Array.isArray(d))return d;if(typeof d==='object')return Object.values(d);return null;}
     // Live match data — real-time
     db.ref('iplbuzz/live').on('value',function(snap){
       var d=snap.val();
@@ -590,8 +591,8 @@ var FB={
     });
     // Matches — update when admin saves
     db.ref('iplbuzz/matches').on('value',function(snap){
-      var d=snap.val();
-      if(d&&Array.isArray(d)&&d.length){
+      var d=toArr(snap.val());
+      if(d&&d.length){
         MATCHES=d;
         try{localStorage.setItem('iplbuzz_matches',JSON.stringify(d));}catch(e){}
         if(typeof refreshAllViews==='function')refreshAllViews();
@@ -599,16 +600,16 @@ var FB={
     });
     // Schedule
     db.ref('iplbuzz/schedule').on('value',function(snap){
-      var d=snap.val();
-      if(d&&Array.isArray(d)&&d.length){
+      var d=toArr(snap.val());
+      if(d&&d.length){
         SCHEDULE=d;
         try{localStorage.setItem('iplbuzz_schedule',JSON.stringify(d));}catch(e){}
       }
     });
     // Points
     db.ref('iplbuzz/points').on('value',function(snap){
-      var d=snap.val();
-      if(d&&Array.isArray(d)&&d.length){
+      var d=toArr(snap.val());
+      if(d&&d.length){
         POINTS=d;
         try{localStorage.setItem('iplbuzz_points',JSON.stringify(d));}catch(e){}
       }
