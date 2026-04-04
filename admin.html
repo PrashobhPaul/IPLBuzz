@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IPLBuzz Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&family=Barlow+Condensed:wght@400;600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#07080c;--s1:#0d0f17;--s2:#141720;--bd:#222840;--bd2:#2c3555;--gold:#f0a500;--red:#e0341a;--green:#1db954;--txt:#dde1ee;--dim:#606880;--dim2:#9099b4}
+body{background:var(--bg);color:var(--txt);font-family:'DM Sans',sans-serif;min-height:100vh}
+.top{background:var(--s1);border-bottom:1px solid var(--bd);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.brand{font-family:Teko,sans-serif;font-size:24px;font-weight:700;color:var(--txt);letter-spacing:-.5px}
+.brand b{color:var(--gold)}
+.brand small{font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;color:var(--red);margin-left:8px;text-transform:uppercase}
+.back{font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;color:var(--dim2);text-decoration:none;border:1px solid var(--bd);padding:5px 12px;border-radius:5px}
+.back:hover{border-color:var(--gold);color:var(--gold)}
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px}
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:18px 20px;margin-bottom:14px}
+.card h3{font-family:Teko,sans-serif;font-size:20px;font-weight:700;margin-bottom:12px}
+.field{margin-bottom:10px}
+.field label{font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);display:block;margin-bottom:3px}
+.field input,.field select,.field textarea{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:5px;padding:7px 10px;font-family:Barlow Condensed,sans-serif;font-size:14px;color:var(--txt);outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold)}
+.field textarea{min-height:100px;resize:vertical;font-family:monospace;font-size:11px}
+.row{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.btn{font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:8px 16px;border-radius:5px;border:none;cursor:pointer;transition:.14s}
+.btn-gold{background:var(--gold);color:#000}.btn-gold:hover{background:#ffcc44}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#ff4444}
+.btn-out{background:transparent;border:1px solid var(--bd2);color:var(--dim2)}.btn-out:hover{border-color:var(--gold);color:var(--gold)}
+.status{font-family:Barlow Condensed,sans-serif;font-size:12px;padding:8px 12px;border-radius:5px;margin-top:8px;display:none}
+.status.ok{display:block;background:rgba(29,185,84,.1);border:1px solid rgba(29,185,84,.3);color:var(--green)}
+.status.err{display:block;background:rgba(224,52,26,.1);border:1px solid rgba(224,52,26,.3);color:var(--red)}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;margin-bottom:12px}
+.mitem{background:var(--s2);border:1px solid var(--bd);border-radius:5px;padding:8px;cursor:pointer;transition:.14s;font-family:Barlow Condensed,sans-serif;font-size:12px;text-align:center}
+.mitem:hover{border-color:var(--gold)}
+.mitem.has{border-left:3px solid var(--green)}
+.mitem.no{border-left:3px solid var(--red);opacity:.6}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:14px}
+.stat-box{background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:10px;text-align:center}
+.stat-val{font-family:Teko,sans-serif;font-size:28px;font-weight:700;line-height:1}
+.stat-lbl{font-family:Barlow Condensed,sans-serif;font-size:9px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;margin-top:2px}
+/* Login gate */
+#gate{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center}
+#gate.hide{display:none}
+.gate-box{background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:30px;width:320px;text-align:center}
+.gate-box h2{font-family:Teko,sans-serif;font-size:28px;font-weight:700;color:var(--gold);margin-bottom:6px}
+.gate-box p{font-family:Barlow Condensed,sans-serif;font-size:13px;color:var(--dim2);margin-bottom:16px}
+.gate-box input{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:10px 14px;font-family:DM Sans,sans-serif;font-size:14px;color:var(--txt);outline:none;text-align:center;margin-bottom:12px}
+.gate-box input:focus{border-color:var(--gold)}
+@media(max-width:500px){.row{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<!-- PASSWORD GATE -->
+<div id="gate">
+  <div class="gate-box">
+    <h2>IPLBuzz Admin</h2>
+    <p>Enter admin password to continue</p>
+    <input type="password" id="gate-pw" placeholder="Password" onkeydown="if(event.key==='Enter')checkPw()">
+    <button class="btn btn-gold" onclick="checkPw()" style="width:100%">Unlock</button>
+    <div id="gate-err" style="color:var(--red);font-family:Barlow Condensed,sans-serif;font-size:12px;margin-top:8px"></div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="admin-panel" style="display:none">
+<div class="top">
+  <span class="brand">IPL <b>2026</b> <small>Admin</small></span>
+  <a href="index.html" class="back">← Back to App</a>
+</div>
+
+<div class="wrap">
+
+<!-- Status Dashboard -->
+<div class="card" style="border-top:3px solid var(--green)">
+  <h3 style="color:var(--green)">Data Status</h3>
+  <div id="status-grid" class="stat-grid"></div>
+</div>
+
+<!-- Match Grid -->
+<div class="card" style="border-top:3px solid var(--gold)">
+  <h3 style="color:var(--gold)">Enter Match Scorecard</h3>
+  <p style="font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--dim2);margin-bottom:10px">Green = stored, Red = missing. Click to enter/edit.</p>
+  <div id="match-grid" class="mgrid"></div>
+
+  <div class="field">
+    <label>Select Match</label>
+    <select id="sel-match" onchange="loadMatch(this.value)"><option value="">— Pick —</option></select>
+  </div>
+
+  <div id="match-form" style="display:none">
+    <div class="row" style="margin-bottom:10px">
+      <div class="field"><label>Team 1</label><input id="f-t1" readonly></div>
+      <div class="field"><label>Team 2</label><input id="f-t2" readonly></div>
+      <div class="field"><label>Venue</label><input id="f-venue"></div>
+      <div class="field"><label>Date</label><input id="f-date" readonly></div>
+    </div>
+    <div class="row" style="margin-bottom:10px">
+      <div class="field"><label>Toss</label><input id="f-toss" placeholder="RCB won toss · elected to field"></div>
+      <div class="field"><label>Result</label><input id="f-result" placeholder="RCB won by 6 wickets"></div>
+      <div class="field"><label>Player of Match</label><input id="f-pom" placeholder="Virat Kohli · 69*(38)"></div>
+    </div>
+    <div class="row" style="margin-bottom:10px">
+      <div class="field"><label>T1 Score</label><input id="f-t1s" placeholder="201/9"></div>
+      <div class="field"><label>T1 Overs</label><input id="f-t1ov" placeholder="20"></div>
+      <div class="field"><label>T2 Score</label><input id="f-t2s" placeholder="203/4"></div>
+      <div class="field"><label>T2 Overs</label><input id="f-t2ov" placeholder="15.4"></div>
+    </div>
+    <div class="field"><label>Who batted first?</label>
+      <select id="f-batfirst"><option value="t1">Team 1</option><option value="t2">Team 2</option></select>
+    </div>
+
+    <div class="card" style="border-left:3px solid #3b82f6;background:var(--s2)">
+      <h3 style="color:#3b82f6;font-size:17px">1st Innings</h3>
+      <div class="field"><label>Batting JSON [{n,d,r,b,f,s}]</label><textarea id="f-i1bat"></textarea></div>
+      <div class="field"><label>Extras {b,lb,w,nb,total}</label><input id="f-i1ext" placeholder='{"b":0,"lb":2,"w":10,"nb":2,"total":14}'></div>
+      <div class="field"><label>Bowling JSON [{n,o,r,w,wd,nb}]</label><textarea id="f-i1bowl"></textarea></div>
+    </div>
+    <div class="card" style="border-left:3px solid var(--green);background:var(--s2)">
+      <h3 style="color:var(--green);font-size:17px">2nd Innings</h3>
+      <div class="field"><label>Batting JSON</label><textarea id="f-i2bat"></textarea></div>
+      <div class="field"><label>Extras</label><input id="f-i2ext"></div>
+      <div class="field"><label>Bowling JSON</label><textarea id="f-i2bowl"></textarea></div>
+    </div>
+    <div class="card" style="border-left:3px solid var(--gold);background:var(--s2)">
+      <h3 style="color:var(--gold);font-size:17px">Tier 2 — Enrichment (Optional)</h3>
+      <p style="font-family:Barlow Condensed,sans-serif;font-size:11px;color:var(--dim2);margin-bottom:8px">For worm charts, partnerships, moments. Leave blank to skip.</p>
+      <div class="row">
+        <div class="field"><label>Inn1 Over Runs (csv)</label><input id="f-i1or"></div>
+        <div class="field"><label>Inn1 Over Wkts (csv)</label><input id="f-i1ow"></div>
+        <div class="field"><label>Inn2 Over Runs (csv)</label><input id="f-i2or"></div>
+        <div class="field"><label>Inn2 Over Wkts (csv)</label><input id="f-i2ow"></div>
+      </div>
+      <div class="field"><label>Inn1 Partnerships [{wkt,p1,p2,r,b}]</label><textarea id="f-i1ps" style="min-height:50px"></textarea></div>
+      <div class="field"><label>Inn2 Partnerships</label><textarea id="f-i2ps" style="min-height:50px"></textarea></div>
+      <div class="field"><label>Inn1 Fall of Wickets [{wkt,r,ov,bat}]</label><textarea id="f-i1fow" style="min-height:50px"></textarea></div>
+      <div class="field"><label>Inn2 Fall of Wickets</label><textarea id="f-i2fow" style="min-height:50px"></textarea></div>
+      <div class="field"><label>Inn1 Key Moments [{ov,i,t,d}]</label><textarea id="f-i1mom" style="min-height:50px"></textarea></div>
+      <div class="field"><label>Inn2 Key Moments</label><textarea id="f-i2mom" style="min-height:50px"></textarea></div>
+      <div class="field"><label>Player Ratings [{n,t,role,v,note}]</label><textarea id="f-ratings" style="min-height:50px"></textarea></div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn btn-gold" onclick="saveMatch()">Save Match</button>
+      <button class="btn btn-out" onclick="previewJSON()">Preview JSON</button>
+    </div>
+    <div id="save-status" class="status"></div>
+    <pre id="preview" style="display:none;background:var(--s2);border:1px solid var(--bd);border-radius:5px;padding:10px;margin-top:8px;font-size:10px;color:var(--dim2);overflow:auto;max-height:250px"></pre>
+  </div>
+</div>
+
+<!-- CricAPI Fetch -->
+<div class="card" style="border-top:3px solid #3b82f6">
+  <h3 style="color:#3b82f6">CricAPI — Fetch Live Data</h3>
+  <p style="font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--dim2);margin-bottom:10px">Fetch from CricAPI and auto-store completed IPL matches. Only YOU trigger API calls.</p>
+  <div class="field"><label>API Key</label><input id="api-key" placeholder="Your CricAPI key"></div>
+  <div style="display:flex;gap:8px;margin-top:8px">
+    <button class="btn btn-gold" onclick="fetchCricAPI()">Fetch Now</button>
+    <span id="api-count" style="font-family:Barlow Condensed,sans-serif;font-size:11px;color:var(--dim);align-self:center"></span>
+  </div>
+  <div id="api-status" class="status"></div>
+  <div id="api-results" style="margin-top:10px"></div>
+</div>
+
+<!-- Points Recalc -->
+<div class="card" style="border-top:3px solid #a855f7">
+  <h3 style="color:#a855f7">Recalculate Points Table</h3>
+  <button class="btn btn-gold" onclick="recalcPoints()">Recalculate from Matches</button>
+  <div id="pts-status" class="status"></div>
+</div>
+
+<!-- Export / Import -->
+<div class="card" style="border-top:3px solid var(--dim2)">
+  <h3>Data Management</h3>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn btn-out" onclick="exportData()">Export JSON</button>
+    <button class="btn btn-out" onclick="document.getElementById('imp-file').click()">Import JSON</button>
+    <button class="btn btn-red" onclick="resetData()">Reset All</button>
+  </div>
+  <input type="file" id="imp-file" accept=".json" style="display:none" onchange="importData(event)">
+  <div id="mgmt-status" class="status"></div>
+</div>
+
+</div><!-- /wrap -->
+</div><!-- /admin-panel -->
+
+<script>
+// ═══ PASSWORD GATE ═══
+var ADMIN_HASH='iplbuzz2026'; // Change this to your password
+function checkPw(){
+  var pw=document.getElementById('gate-pw').value;
+  if(pw===ADMIN_HASH){
+    document.getElementById('gate').classList.add('hide');
+    document.getElementById('admin-panel').style.display='block';
+    sessionStorage.setItem('iplbuzz_admin','1');
+    initAdmin();
+  } else {
+    document.getElementById('gate-err').textContent='Wrong password';
+  }
+}
+if(sessionStorage.getItem('iplbuzz_admin')==='1'){
+  document.getElementById('gate').classList.add('hide');
+  document.getElementById('admin-panel').style.display='block';
+  setTimeout(initAdmin,0);
+}
+
+// ═══ TEAMS (reference only for schedule) ═══
+var TEAMS={RCB:'Royal Challengers Bengaluru',MI:'Mumbai Indians',CSK:'Chennai Super Kings',KKR:'Kolkata Knight Riders',SRH:'Sunrisers Hyderabad',RR:'Rajasthan Royals',PBKS:'Punjab Kings',DC:'Delhi Capitals',GT:'Gujarat Titans',LSG:'Lucknow Super Giants'};
+
+// ═══ STORAGE HELPERS ═══
+function sGet(k){try{var d=localStorage.getItem('iplbuzz_'+k);return d?JSON.parse(d):null;}catch(e){return null;}}
+function sSet(k,v){try{localStorage.setItem('iplbuzz_'+k,JSON.stringify(v));}catch(e){}}
+function getMatches(){return sGet('matches')||[];}
+function getSchedule(){return sGet('schedule')||[];}
+function getPoints(){return sGet('points')||[];}
+
+// ═══ INIT ═══
+function initAdmin(){
+  var key=localStorage.getItem('cricapi_key')||'';
+  document.getElementById('api-key').value=key;
+  renderStatus();
+  renderGrid();
+}
+
+function renderStatus(){
+  var matches=getMatches(),sched=getSchedule(),pts=getPoints();
+  var completed=sched.filter(function(s){return s.completed;}).length;
+  document.getElementById('status-grid').innerHTML=
+    '<div class="stat-box"><div class="stat-val" style="color:var(--gold)">'+matches.length+'</div><div class="stat-lbl">Matches Stored</div></div>'+
+    '<div class="stat-box"><div class="stat-val" style="color:var(--green)">'+completed+'</div><div class="stat-lbl">Schedule Done</div></div>'+
+    '<div class="stat-box"><div class="stat-val" style="color:#3b82f6">'+sched.length+'</div><div class="stat-lbl">Total Fixtures</div></div>'+
+    '<div class="stat-box"><div class="stat-val" style="color:#a855f7">'+pts.length+'</div><div class="stat-lbl">Points Entries</div></div>';
+}
+
+function renderGrid(){
+  var sched=getSchedule(),matches=getMatches();
+  var gridH='',selH='<option value="">— Pick —</option>';
+  sched.forEach(function(s){
+    var has=matches.some(function(m){return m.no===s.no;});
+    gridH+='<div class="mitem '+(has?'has':'no')+'" onclick="document.getElementById(\'sel-match\').value=\''+s.no+'\';loadMatch(\''+s.no+'\')">'+
+      '<div style="font-weight:700;color:'+(has?'var(--green)':'var(--red)')+'">M'+s.no+' '+(has?'✓':'✗')+'</div>'+
+      '<div style="font-size:10px;color:var(--dim2)">'+s.t1+' v '+s.t2+'</div></div>';
+    selH+='<option value="'+s.no+'">M'+s.no+' '+s.t1+' v '+s.t2+(has?' ✓':'')+'</option>';
+  });
+  document.getElementById('match-grid').innerHTML=gridH;
+  document.getElementById('sel-match').innerHTML=selH;
+}
+
+function loadMatch(no){
+  no=parseInt(no);if(!no){document.getElementById('match-form').style.display='none';return;}
+  document.getElementById('match-form').style.display='block';
+  var sched=getSchedule(),matches=getMatches();
+  var s=sched.find(function(x){return x.no===no;});
+  if(!s)return;
+  document.getElementById('f-t1').value=s.t1;
+  document.getElementById('f-t2').value=s.t2;
+  document.getElementById('f-venue').value=s.venue||'';
+  document.getElementById('f-date').value=s.date||'';
+  var ex=matches.find(function(m){return m.no===no;});
+  if(ex){
+    document.getElementById('f-toss').value=ex.toss||'';
+    document.getElementById('f-result').value=ex.result||'';
+    document.getElementById('f-pom').value=ex.pom||'';
+    document.getElementById('f-t1s').value=ex.t1score||'';
+    document.getElementById('f-t1ov').value=ex.t1ov||'';
+    document.getElementById('f-t2s').value=ex.t2score||'';
+    document.getElementById('f-t2ov').value=ex.t2ov||'';
+    document.getElementById('f-batfirst').value=(ex.inn1&&ex.inn1.team===s.t2)?'t2':'t1';
+    if(ex.inn1){
+      document.getElementById('f-i1bat').value=JSON.stringify(ex.inn1.batting||[],null,1);
+      document.getElementById('f-i1ext').value=JSON.stringify(ex.inn1.extras||{});
+      document.getElementById('f-i1bowl').value=JSON.stringify(ex.inn1.bowling||[],null,1);
+      document.getElementById('f-i1or').value=(ex.inn1.overR||[]).join(',');
+      document.getElementById('f-i1ow').value=(ex.inn1.overW||[]).join(',');
+      document.getElementById('f-i1ps').value=ex.inn1.pships?JSON.stringify(ex.inn1.pships,null,1):'';
+      document.getElementById('f-i1fow').value=ex.inn1.fow?JSON.stringify(ex.inn1.fow,null,1):'';
+      document.getElementById('f-i1mom').value=ex.inn1.moments?JSON.stringify(ex.inn1.moments,null,1):'';
+    }
+    if(ex.inn2){
+      document.getElementById('f-i2bat').value=JSON.stringify(ex.inn2.batting||[],null,1);
+      document.getElementById('f-i2ext').value=JSON.stringify(ex.inn2.extras||{});
+      document.getElementById('f-i2bowl').value=JSON.stringify(ex.inn2.bowling||[],null,1);
+      document.getElementById('f-i2or').value=(ex.inn2.overR||[]).join(',');
+      document.getElementById('f-i2ow').value=(ex.inn2.overW||[]).join(',');
+      document.getElementById('f-i2ps').value=ex.inn2.pships?JSON.stringify(ex.inn2.pships,null,1):'';
+      document.getElementById('f-i2fow').value=ex.inn2.fow?JSON.stringify(ex.inn2.fow,null,1):'';
+      document.getElementById('f-i2mom').value=ex.inn2.moments?JSON.stringify(ex.inn2.moments,null,1):'';
+    }
+    document.getElementById('f-ratings').value=ex.ratings?JSON.stringify(ex.ratings,null,1):'';
+  } else {
+    ['f-toss','f-result','f-pom','f-t1s','f-t1ov','f-t2s','f-t2ov','f-i1bat','f-i1ext','f-i1bowl','f-i2bat','f-i2ext','f-i2bowl','f-i1or','f-i1ow','f-i2or','f-i2ow','f-i1ps','f-i2ps','f-i1fow','f-i2fow','f-i1mom','f-i2mom','f-ratings'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  }
+}
+
+function jp(s,fb){if(!s||!s.trim())return fb;try{return JSON.parse(s);}catch(e){return fb;}}
+function csv(s){if(!s||!s.trim())return null;return s.split(',').map(function(x){return parseInt(x.trim())||0;});}
+
+function buildMatch(){
+  var no=parseInt(document.getElementById('sel-match').value);
+  var sched=getSchedule();
+  var s=sched.find(function(x){return x.no===no;});
+  if(!s)return null;
+  var t1=s.t1,t2=s.t2,bf=document.getElementById('f-batfirst').value;
+  var i1t=bf==='t2'?t2:t1,i2t=bf==='t2'?t1:t2;
+  var t1s=document.getElementById('f-t1s').value.trim();
+  var t2s=document.getElementById('f-t2s').value.trim();
+  var t1ov=document.getElementById('f-t1ov').value.trim()||'20';
+  var t2ov=document.getElementById('f-t2ov').value.trim()||'20';
+
+  var i1bat=jp(document.getElementById('f-i1bat').value,[]);
+  var i1ext=jp(document.getElementById('f-i1ext').value,{b:0,lb:0,w:0,nb:0,total:0});
+  var i1bowl=jp(document.getElementById('f-i1bowl').value,[]);
+  var i1runs=i1bat.reduce(function(a,b){return a+(b.r||0);},0)+(i1ext.total||0);
+
+  var i2bat=jp(document.getElementById('f-i2bat').value,[]);
+  var i2ext=jp(document.getElementById('f-i2ext').value,{b:0,lb:0,w:0,nb:0,total:0});
+  var i2bowl=jp(document.getElementById('f-i2bowl').value,[]);
+  var i2runs=i2bat.reduce(function(a,b){return a+(b.r||0);},0)+(i2ext.total||0);
+
+  var i1sc=(i1t===t1)?t1s:t2s, i1ov=(i1t===t1)?t1ov:t2ov;
+  var i2sc=(i2t===t1)?t1s:t2s, i2ov_=(i2t===t1)?t1ov:t2ov;
+
+  var inn1={team:i1t,total:i1sc||'',overs:parseFloat(i1ov)||20,runs:i1runs,batting:i1bat,extras:i1ext,bowling:i1bowl};
+  var inn2={team:i2t,total:i2sc||'',overs:parseFloat(i2ov_)||20,runs:i2runs,batting:i2bat,extras:i2ext,bowling:i2bowl};
+
+  var or1=csv(document.getElementById('f-i1or').value);if(or1)inn1.overR=or1;
+  var ow1=csv(document.getElementById('f-i1ow').value);if(ow1)inn1.overW=ow1;
+  var or2=csv(document.getElementById('f-i2or').value);if(or2)inn2.overR=or2;
+  var ow2=csv(document.getElementById('f-i2ow').value);if(ow2)inn2.overW=ow2;
+  var ps1=jp(document.getElementById('f-i1ps').value,null);if(ps1)inn1.pships=ps1;
+  var ps2=jp(document.getElementById('f-i2ps').value,null);if(ps2)inn2.pships=ps2;
+  var fw1=jp(document.getElementById('f-i1fow').value,null);if(fw1)inn1.fow=fw1;
+  var fw2=jp(document.getElementById('f-i2fow').value,null);if(fw2)inn2.fow=fw2;
+  var mo1=jp(document.getElementById('f-i1mom').value,null);if(mo1)inn1.moments=mo1;
+  var mo2=jp(document.getElementById('f-i2mom').value,null);if(mo2)inn2.moments=mo2;
+  var ratings=jp(document.getElementById('f-ratings').value,null);
+
+  var match={id:'m'+no,no:no,date:s.date,venue:document.getElementById('f-venue').value.trim()||s.venue||'',
+    t1:t1,t2:t2,status:'completed',
+    toss:document.getElementById('f-toss').value.trim(),
+    result:document.getElementById('f-result').value.trim(),
+    pom:document.getElementById('f-pom').value.trim(),
+    t1score:t1s,t1ov:t1ov,t2score:t2s,t2ov:t2ov,
+    inn1:inn1,inn2:inn2};
+  if(ratings)match.ratings=ratings;
+  return match;
+}
+
+function saveMatch(){
+  var match=buildMatch();
+  if(!match){flash('save-status','Select a match first','err');return;}
+  if(!match.result){flash('save-status','Result is required','err');return;}
+  var matches=getMatches();
+  var idx=matches.findIndex(function(m){return m.no===match.no;});
+  if(idx>=0)matches[idx]=match;else matches.push(match);
+  matches.sort(function(a,b){return a.no-b.no;});
+  sSet('matches',matches);
+  // Update schedule
+  var sched=getSchedule();
+  var sc=sched.find(function(s){return s.no===match.no;});
+  if(sc){sc.completed=true;sc.result=match.result;sc.t1score=match.t1score;sc.t2score=match.t2score;sc.t1ov=match.t1ov;sc.t2ov=match.t2ov;}
+  sSet('schedule',sched);
+  recalcPoints();
+  renderStatus();renderGrid();
+  flash('save-status','Match '+match.no+' saved! Total: '+matches.length+' matches.','ok');
+}
+
+function previewJSON(){
+  var m=buildMatch();
+  var el=document.getElementById('preview');
+  el.style.display='block';el.textContent=JSON.stringify(m,null,2);
+}
+
+// ═══ CRICAPI FETCH ═══
+function fetchCricAPI(){
+  var key=document.getElementById('api-key').value.trim();
+  if(!key){flash('api-status','Enter API key','err');return;}
+  localStorage.setItem('cricapi_key',key);
+  flash('api-status','Fetching...','ok');
+  fetch('https://api.cricapi.com/v1/currentMatches?apikey='+key+'&offset=0')
+    .then(function(r){return r.json();})
+    .then(function(j){
+      if(j.status!=='success'){flash('api-status','API error: '+(j.reason||'unknown'),'err');return;}
+      var data=j.data||[];
+      var ipl=data.filter(function(m){return(m.name||'').toLowerCase().includes('ipl');});
+      var stored=0;
+      ipl.forEach(function(m){
+        if(!m.matchEnded&&m.status!=='Match over')return;
+        var ti=m.teamInfo||[],a1=(ti[0]||{}).shortname||'',a2=(ti[1]||{}).shortname||'';
+        var sched=getSchedule();
+        var sc=sched.find(function(s){return(s.t1===a1&&s.t2===a2)||(s.t1===a2&&s.t2===a1);});
+        if(!sc)return;
+        var matches=getMatches();
+        var existing=matches.find(function(x){return x.no===sc.no;});
+        if(existing&&existing.inn1&&existing.inn1.batting&&existing.inn1.batting.length>0)return;
+        // Auto-store basic match data
+        var scores=m.score||[];
+        sc.completed=true;sc.result=m.status||'';
+        if(scores[0]){sc.t1score=scores[0].r+'/'+scores[0].w;sc.t1ov=String(scores[0].o);}
+        if(scores[1]){sc.t2score=scores[1].r+'/'+scores[1].w;sc.t2ov=String(scores[1].o);}
+        sSet('schedule',sched);
+        var entry={id:'m'+sc.no,no:sc.no,date:sc.date,venue:m.venue||sc.venue||'',
+          t1:sc.t1,t2:sc.t2,status:'completed',toss:'',result:m.status||'',pom:'',
+          t1score:sc.t1score||'',t1ov:sc.t1ov||'20',t2score:sc.t2score||'',t2ov:sc.t2ov||'20',
+          inn1:{team:a1,total:sc.t1score||'',overs:parseFloat(sc.t1ov)||20,runs:(scores[0]||{}).r||0,batting:[],extras:{b:0,lb:0,w:0,nb:0,total:0},bowling:[]},
+          inn2:{team:a2,total:sc.t2score||'',overs:parseFloat(sc.t2ov)||20,runs:(scores[1]||{}).r||0,batting:[],extras:{b:0,lb:0,w:0,nb:0,total:0},bowling:[]}};
+        if(existing){var i=matches.indexOf(existing);matches[i]=entry;}else matches.push(entry);
+        stored++;
+      });
+      if(stored>0){
+        var matches=getMatches();matches.sort(function(a,b){return a.no-b.no;});sSet('matches',matches);
+        recalcPoints();
+      }
+      renderStatus();renderGrid();
+      flash('api-status','Found '+ipl.length+' IPL matches, auto-stored '+stored+' new.','ok');
+      document.getElementById('api-results').innerHTML='<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--dim2)">'+ipl.map(function(m){return '<div style="padding:4px 0;border-bottom:1px solid var(--bd)">'+m.name+' — <b style="color:var(--txt)">'+(m.status||'')+'</b></div>';}).join('')+'</div>';
+    })
+    .catch(function(e){flash('api-status','Fetch error: '+e.message,'err');});
+}
+
+// ═══ POINTS RECALC ═══
+function recalcPoints(){
+  var matches=getMatches(),sched=getSchedule();
+  var ts={};
+  Object.keys(TEAMS).forEach(function(t){ts[t]={team:t,m:0,w:0,l:0,nr:0,pts:0,nrr:'0.000',rS:0,oF:0,rC:0,oB:0};});
+  sched.forEach(function(s){
+    if(!s.completed||!s.result)return;
+    var a=ts[s.t1],b=ts[s.t2];if(!a||!b)return;
+    a.m++;b.m++;
+    var winner=null;
+    if(s.result.indexOf(s.t1)===0&&s.result.indexOf('won')>0)winner=s.t1;
+    else if(s.result.indexOf(s.t2)===0&&s.result.indexOf('won')>0)winner=s.t2;
+    if(winner){var loser=winner===s.t1?s.t2:s.t1;ts[winner].w++;ts[winner].pts+=2;ts[loser].l++;}
+    else{a.nr++;b.nr++;a.pts++;b.pts++;}
+    var match=matches.find(function(m){return m.no===s.no;});
+    if(match&&match.inn1&&match.inn2){
+      var i1t=match.inn1.team,i2t=match.inn2.team;
+      var r1=match.inn1.runs||parseInt(match.inn1.total)||0,r2=match.inn2.runs||parseInt(match.inn2.total)||0;
+      var o1=parseFloat(match.inn1.overs)||20,o2=parseFloat(match.inn2.overs)||parseFloat(match.t2ov)||20;
+      if(ts[i1t]){ts[i1t].rS+=r1;ts[i1t].oF+=o1;ts[i1t].rC+=r2;ts[i1t].oB+=o2;}
+      if(ts[i2t]){ts[i2t].rS+=r2;ts[i2t].oF+=o2;ts[i2t].rC+=r1;ts[i2t].oB+=o1;}
+    }
+  });
+  Object.values(ts).forEach(function(t){
+    if(t.oF>0&&t.oB>0){var n=(t.rS/t.oF)-(t.rC/t.oB);t.nrr=(n>=0?'+':'')+n.toFixed(3);}
+  });
+  sSet('points',Object.values(ts));
+  flash('pts-status','Points recalculated','ok');
+}
+
+// ═══ EXPORT / IMPORT / RESET ═══
+function exportData(){
+  var data={matches:getMatches(),schedule:getSchedule(),points:getPoints(),
+    newsletters:sGet('newsletters')||[],exported:new Date().toISOString()};
+  var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='iplbuzz-'+new Date().toISOString().slice(0,10)+'.json';a.click();
+  flash('mgmt-status','Exported','ok');
+}
+function importData(ev){
+  var f=ev.target.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(e){
+    try{
+      var d=JSON.parse(e.target.result);
+      if(d.matches)sSet('matches',d.matches);
+      if(d.schedule)sSet('schedule',d.schedule);
+      if(d.points)sSet('points',d.points);
+      if(d.newsletters)sSet('newsletters',d.newsletters);
+      renderStatus();renderGrid();
+      flash('mgmt-status','Imported '+((d.matches||[]).length)+' matches','ok');
+    }catch(err){flash('mgmt-status','Error: '+err.message,'err');}
+  };r.readAsText(f);ev.target.value='';
+}
+function resetData(){
+  if(!confirm('Delete ALL stored data?'))return;
+  ['matches','schedule','points','newsletters'].forEach(function(k){localStorage.removeItem('iplbuzz_'+k);});
+  location.reload();
+}
+
+function flash(id,msg,type){
+  var el=document.getElementById(id);if(!el)return;
+  el.className='status '+type;el.textContent=msg;el.style.display='block';
+  if(type==='ok')setTimeout(function(){el.style.display='none';},4000);
+}
+</script>
+</body>
+</html>
