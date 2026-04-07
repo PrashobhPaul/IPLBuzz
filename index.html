@@ -539,86 +539,76 @@ body{padding-bottom:62px}
 <script>
 
 // ═══════════════════════════════════════════════════════════════════════
-// FIREBASE BACKEND — Real-time data for all users
+// GOOGLE SHEETS BACKEND — Edit a spreadsheet, page auto-updates
 // ═══════════════════════════════════════════════════════════════════════
-var FB={
-  ready:false, db:null,
-  init:function(){
-    // Hardcoded Firebase config — no localStorage dependency
-    var cfg={
-      apiKey:"AIzaSyC2MvTO5dbDycCQoZbi9EhLTv7DenH6vMk",
-      authDomain:"iplbuzz-2de05.firebaseapp.com",
-      databaseURL:"https://iplbuzz-2de05-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId:"iplbuzz-2de05"
-    };
-    var self=this;
-    var s1=document.createElement('script');
-    s1.src='https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js';
-    s1.onload=function(){
-      var s2=document.createElement('script');
-      s2.src='https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js';
-      s2.onload=function(){self.connect(cfg);};
-      document.head.appendChild(s2);
-    };
-    document.head.appendChild(s1);
-  },
-  connect:function(cfg){
-    try{
-      if(typeof firebase==='undefined'){this.log('Firebase SDK not loaded');return;}
-      if(!firebase.apps.length)firebase.initializeApp(cfg);
-      this.db=firebase.database();
-      this.ready=true;
-      this.log('Firebase connected! Listening...');
-      this.listen();
-    }catch(e){this.log('Connect error: '+e.message);}
-  },
-  log:function(msg){
-    console.log('[FB] '+msg);
-    var d=document.getElementById('fb-debug');
-    if(d)d.textContent='[FB] '+msg;
-  },
-  listen:function(){
-    if(!this.db)return;
-    var db=this.db;
-    function toArr(d){if(!d)return null;if(Array.isArray(d))return d;if(typeof d==='object')return Object.values(d);return null;}
-    // Live match data — real-time
-    db.ref('iplbuzz/live').on('value',function(snap){
-      var d=snap.val();
-      if(!d||!d.data)return;
-      try{localStorage.setItem('iplbuzz_live',JSON.stringify(d));}catch(e){}
-      if(typeof renderLiveFromData==='function')renderLiveFromData(d);
-    });
-    // Matches — update when admin saves
-    db.ref('iplbuzz/matches').on('value',function(snap){
-      var d=toArr(snap.val());
-      if(d&&d.length){
-        MATCHES=d;
-        try{localStorage.setItem('iplbuzz_matches',JSON.stringify(d));}catch(e){}
-        if(typeof refreshAllViews==='function')refreshAllViews();
-      }
-    });
-    // Schedule — re-render UI on every Firebase update
-    db.ref('iplbuzz/schedule').on('value',function(snap){
-      var d=toArr(snap.val());
-      if(d&&d.length){
-        SCHEDULE=d;
-        try{localStorage.setItem('iplbuzz_schedule',JSON.stringify(d));}catch(e){}
-        self.log('Schedule updated ('+d.filter(function(m){return m.completed;}).length+' completed)');
-        if(typeof refreshAllViews==='function')refreshAllViews();
-      }
-    });
-    // Points — re-render UI on every Firebase update
-    db.ref('iplbuzz/points').on('value',function(snap){
-      var d=toArr(snap.val());
-      if(d&&d.length){
-        POINTS=d;
-        try{localStorage.setItem('iplbuzz_points',JSON.stringify(d));}catch(e){}
-        self.log('Points table updated');
-        if(typeof refreshAllViews==='function')refreshAllViews();
-      }
-    });
+// Paste your Google Sheet ID here (the long string in the URL between /d/ and /edit)
+var SHEETS_ID = '1wVcGhJN_8bVULVbMnCWQDmMDOzR0ZE6MHfW0XHBL8cw';
+
+async function _fetchSheet(tabName){
+  var url='https://docs.google.com/spreadsheets/d/'+SHEETS_ID+
+          '/gviz/tq?tqx=out:json&sheet='+encodeURIComponent(tabName);
+  var r=await fetch(url);
+  var text=await r.text();
+  // Strip JSONP wrapper that Google wraps around the JSON
+  var json=JSON.parse(text.replace(/^[^{]*{/,'{').replace(/}[^}]*$/,'}'));
+  if(!json.table||!json.table.rows)return[];
+  var cols=json.table.cols.map(function(c){return c.label||c.id;});
+  return json.table.rows
+    .map(function(row){
+      var obj={};
+      (row.c||[]).forEach(function(cell,i){
+        if(i<cols.length&&cols[i]) obj[cols[i]]=cell?cell.v:null;
+      });
+      return obj;
+    })
+    .filter(function(row){return row[cols[0]]!=null;}); // skip blank rows
+}
+
+async function loadFromSheets(){
+  if(!SHEETS_ID){console.log('[Sheets] No SHEETS_ID set — using hardcoded data');return;}
+  console.log('[Sheets] Fetching...');
+  try{
+    var results=await Promise.all([_fetchSheet('Schedule'),_fetchSheet('Points')]);
+    var sched=results[0], pts=results[1];
+    if(sched&&sched.length){
+      SCHEDULE=sched.map(function(r){
+        return {
+          no:+r.no||0,
+          date:r.date||'',
+          d:r.d||'',
+          t1:r.t1||'',
+          t2:r.t2||'',
+          time:r.time||'7:30 PM',
+          venue:r.venue||'',
+          completed:r.completed===true||String(r.completed).toLowerCase()==='true',
+          result:r.result||'',
+          t1score:r.t1score!=null?String(r.t1score):'',
+          t1ov:r.t1ov!=null?String(r.t1ov):'',
+          t2score:r.t2score!=null?String(r.t2score):'',
+          t2ov:r.t2ov!=null?String(r.t2ov):'',
+          nr:r.nr===true||String(r.nr).toLowerCase()==='true'
+        };
+      });
+      console.log('[Sheets] Schedule loaded: '+SCHEDULE.filter(function(m){return m.completed;}).length+' completed');
+    }
+    if(pts&&pts.length){
+      POINTS=pts.map(function(r){
+        return {
+          team:r.team||'',
+          m:+r.m||0,
+          w:+r.w||0,
+          l:+r.l||0,
+          nr:+r.nr||0,
+          pts:+r.pts||0,
+          nrr:r.nrr!=null?String(r.nrr):'0.000'
+        };
+      });
+      console.log('[Sheets] Points loaded: '+POINTS.length+' teams');
+    }
+  }catch(e){
+    console.warn('[Sheets] Load failed, using hardcoded data:',e);
   }
-};
+}
 
 function refreshAllViews(){
   try{
@@ -3855,56 +3845,15 @@ function renderTeamDetail(abbr){
 }
 function switchTab(name,btn){
   nextAd();document.querySelectorAll('.itab').forEach(b=>b.classList.remove('on'));document.querySelectorAll('.ipanel').forEach(p=>p.classList.remove('on'));btn.classList.add('on');document.getElementById('ipanel-'+name).classList.add('on');}
-(function init(){
-  // ── Load persisted data from admin panel (if any) ──────────────────
-  try {
-    var sm=localStorage.getItem('iplbuzz_matches');
-    var ss=localStorage.getItem('iplbuzz_schedule');
-    var sp=localStorage.getItem('iplbuzz_points');
-    var sn=localStorage.getItem('iplbuzz_newsletters');
-    if(sm){var pm=JSON.parse(sm);if(pm&&pm.length)MATCHES=pm;}
-    if(ss){var ps=JSON.parse(ss);if(ps&&ps.length)SCHEDULE=ps;}
-    if(sp){var pp=JSON.parse(sp);if(pp&&pp.length)POINTS=pp;}
-    if(sn){var pn=JSON.parse(sn);if(pn&&pn.length)NEWSLETTERS=pn;}
-    // Seed defaults into localStorage if first visit
-    if(!sm)localStorage.setItem('iplbuzz_matches',JSON.stringify(MATCHES));
-    if(!ss)localStorage.setItem('iplbuzz_schedule',JSON.stringify(SCHEDULE));
-    if(!sp)localStorage.setItem('iplbuzz_points',JSON.stringify(POINTS));
-    if(!sn)localStorage.setItem('iplbuzz_newsletters',JSON.stringify(NEWSLETTERS));
-    console.log('[IPLBuzz] Loaded '+MATCHES.length+' matches from storage');
-  } catch(e){console.warn('[IPLBuzz] Storage load error:',e);}
+(async function init(){
+  // ── Load from Google Sheets (source of truth) ─────────────────────
+  await loadFromSheets();
 
-  // Connect to Firebase backend (if configured)
-  try{FB.init();}catch(e){console.warn('[FB] Init error:',e);}
-
+  // ── Build schedule filter bar ──────────────────────────────────────
   const bar=document.getElementById('sched-filters');
   ['ALL',...Object.keys(TEAMS)].forEach(abbr=>{const b=document.createElement('button');b.className='fbtn'+(abbr==='ALL'?' on':'');b.textContent=abbr==='ALL'?'All Teams':abbr;b.onclick=()=>filterSched(abbr,b);bar.appendChild(b);});
-  // Home: completed → today → next → upcoming (all date-aware)
-  var completedMatches=SCHEDULE.filter(function(s){return s.completed;});
-  var todayMatches=SCHEDULE.filter(function(s){return !s.completed && s.d===TODAY;});
-  var upcomingMatches=SCHEDULE.filter(function(s){return !s.completed && s.d!==TODAY;});
-  var nextMatch=upcomingMatches[0];
-  var afterNext=upcomingMatches.slice(1,3);
-  var homeHTML='';
-  if(completedMatches.length){
-    homeHTML+='<div class="date-sep today" style="border-top:none;padding-top:0;margin-bottom:6px">Recent Results</div>';
-    completedMatches.slice(-2).forEach(function(m){homeHTML+=mRow(m,"openMatch('m"+m.no+"')");});
-  }
-  if(todayMatches.length){
-    homeHTML+='<div class="date-sep today" style="margin-top:10px"><div class="live-dot" style="display:inline-block;margin-right:6px"></div>Today\u2019s Match</div>';
-    todayMatches.forEach(function(m){homeHTML+=mRow(m,"go('schedule')");});
-  }
-  if(nextMatch && !todayMatches.length){
-    homeHTML+='<div class="date-sep" style="margin-top:10px">Next Fixture</div>';
-    homeHTML+=mRow(nextMatch,"go('schedule')");
-  } else if(nextMatch){
-    homeHTML+='<div class="date-sep" style="margin-top:10px">Coming Up</div>';
-    homeHTML+=mRow(nextMatch,"go('schedule')");
-  }
-  if(afterNext.length){
-    homeHTML+='<div class="date-sep" style="margin-top:10px">Up Next</div>';
-    afterNext.slice(0,2).forEach(function(m){homeHTML+=mRow(m,"go('schedule')");});
-  }
+
+  // ── Render everything ──────────────────────────────────────────────
   renderHomePage();renderSchedule();renderPoints();renderTeamCards('home-teams','home');renderTeamCards('teams-list','teams');renderMatchList();renderScorecardsPage();renderLivePanel();
 })();
 
