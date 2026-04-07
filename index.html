@@ -597,20 +597,24 @@ var FB={
         if(typeof refreshAllViews==='function')refreshAllViews();
       }
     });
-    // Schedule
+    // Schedule — re-render UI on every Firebase update
     db.ref('iplbuzz/schedule').on('value',function(snap){
       var d=toArr(snap.val());
       if(d&&d.length){
         SCHEDULE=d;
         try{localStorage.setItem('iplbuzz_schedule',JSON.stringify(d));}catch(e){}
+        self.log('Schedule updated ('+d.filter(function(m){return m.completed;}).length+' completed)');
+        if(typeof refreshAllViews==='function')refreshAllViews();
       }
     });
-    // Points
+    // Points — re-render UI on every Firebase update
     db.ref('iplbuzz/points').on('value',function(snap){
       var d=toArr(snap.val());
       if(d&&d.length){
         POINTS=d;
         try{localStorage.setItem('iplbuzz_points',JSON.stringify(d));}catch(e){}
+        self.log('Points table updated');
+        if(typeof refreshAllViews==='function')refreshAllViews();
       }
     });
   }
@@ -889,6 +893,11 @@ const DAILY_LIMIT=95; // keep 5 in reserve
 let cachedM=null,lastF=0;
 const REFRESH_INTERVAL=90000; // 90 seconds
 
+// ── CLOUDFLARE WORKER PROXY (set your worker URL here) ───────────────────────
+var CRICAPI_PROXY = localStorage.getItem('cricapi_proxy') || '';
+// If proxy is set, calls go through it: proxy?url=https://api.cricapi.com/...
+// Otherwise falls back to direct call (CORS may block in browser)
+
 async function fetchLive(){
   if(!API_KEY)return null;
   if(getCallCount()>=DAILY_LIMIT){
@@ -896,7 +905,9 @@ async function fetchLive(){
   }
   if(Date.now()-lastF<REFRESH_INTERVAL&&cachedM)return cachedM;
   try{
-    const r=await fetch('https://api.cricapi.com/v1/currentMatches?apikey='+API_KEY+'&offset=0');
+    var targetUrl='https://api.cricapi.com/v1/currentMatches?apikey='+API_KEY+'&offset=0';
+    var fetchUrl=CRICAPI_PROXY ? CRICAPI_PROXY+'?url='+encodeURIComponent(targetUrl) : targetUrl;
+    const r=await fetch(fetchUrl);
     const j=await r.json();
     if(j.status==='success'){cachedM=j.data||[];lastF=Date.now();incCallCount();return cachedM;}
     if(j.status==='failure'&&j.reason){console.warn('CricAPI:',j.reason);}

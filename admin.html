@@ -4,93 +4,549 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IPLBuzz Admin</title>
-<link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&family=Barlow+Condensed:wght@400;600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#07080c;--s1:#0d0f17;--s2:#141720;--bd:#222840;--bd2:#2c3555;--gold:#f0a500;--red:#e0341a;--green:#1db954;--txt:#dde1ee;--dim:#606880;--dim2:#9099b4}
-body{background:var(--bg);color:var(--txt);font-family:'DM Sans',sans-serif;min-height:100vh}
-.top{background:var(--s1);border-bottom:1px solid var(--bd);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.brand{font-family:Teko,sans-serif;font-size:24px;font-weight:700}.brand b{color:var(--gold)}
-.brand small{font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;color:var(--red);margin-left:8px;text-transform:uppercase}
-.back{font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;color:var(--dim2);text-decoration:none;border:1px solid var(--bd);padding:5px 12px;border-radius:5px}.back:hover{border-color:var(--gold);color:var(--gold)}
-.wrap{max-width:860px;margin:0 auto;padding:20px 16px}
-.card{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:18px 20px;margin-bottom:14px}
-.card h3{font-family:Teko,sans-serif;font-size:20px;font-weight:700;margin-bottom:12px}
-.field{margin-bottom:10px}.field label{font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);display:block;margin-bottom:3px}
-.field input,.field select,.field textarea{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:5px;padding:7px 10px;font-family:Barlow Condensed,sans-serif;font-size:14px;color:var(--txt);outline:none}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold)}
-.field textarea{min-height:100px;resize:vertical;font-family:monospace;font-size:11px}
-.row{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
-.btn{font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:8px 16px;border-radius:5px;border:none;cursor:pointer;transition:.14s}
-.btn-gold{background:var(--gold);color:#000}.btn-gold:hover{background:#ffcc44}
-.btn-red{background:var(--red);color:#fff}
-.btn-out{background:transparent;border:1px solid var(--bd2);color:var(--dim2)}.btn-out:hover{border-color:var(--gold);color:var(--gold)}
-.status{font-family:Barlow Condensed,sans-serif;font-size:12px;padding:8px 12px;border-radius:5px;margin-top:8px;display:none}
-.status.ok{display:block;background:rgba(29,185,84,.1);border:1px solid rgba(29,185,84,.3);color:var(--green)}
-.status.err{display:block;background:rgba(224,52,26,.1);border:1px solid rgba(224,52,26,.3);color:var(--red)}
-.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;margin-bottom:12px}
-.mitem{background:var(--s2);border:1px solid var(--bd);border-radius:5px;padding:8px;cursor:pointer;transition:.14s;font-family:Barlow Condensed,sans-serif;font-size:12px;text-align:center}
-.mitem:hover{border-color:var(--gold)}.mitem.has{border-left:3px solid var(--green)}.mitem.no{border-left:3px solid var(--red);opacity:.6}
-.sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:14px}
-.sb{background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:10px;text-align:center}
-.sv{font-family:Teko,sans-serif;font-size:28px;font-weight:700;line-height:1}
-.sl{font-family:Barlow Condensed,sans-serif;font-size:9px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;margin-top:2px}
-#gate{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center}
-#gate.hide{display:none}
-.gbox{background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:30px;width:320px;text-align:center}
-.gbox h2{font-family:Teko,sans-serif;font-size:28px;font-weight:700;color:var(--gold);margin-bottom:6px}
-.gbox p{font-family:Barlow Condensed,sans-serif;font-size:13px;color:var(--dim2);margin-bottom:16px}
-.gbox input{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:10px;font-size:14px;color:var(--txt);outline:none;text-align:center;margin-bottom:12px}
-.fb-ind{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
-@media(max-width:500px){.row{grid-template-columns:1fr 1fr}}
+body{background:var(--bg);color:var(--txt);font-family:'DM Sans',system-ui,sans-serif;min-height:100vh}
+@import url('https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&family=DM+Sans:wght@400;500&family=Barlow+Condensed:wght@400;600;700&display=swap');
+
+/* ── NAV ── */
+nav{display:flex;align-items:center;height:54px;padding:0 20px;background:var(--s1);border-bottom:1px solid var(--bd);gap:12px;position:sticky;top:0;z-index:100}
+.brand{font-family:Teko,sans-serif;font-size:22px;font-weight:700;color:var(--txt)}
+.brand b{color:var(--gold)}
+.badge{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:3px 8px;border-radius:4px;background:rgba(240,165,0,.15);color:var(--gold);border:1px solid rgba(240,165,0,.3)}
+#auth-status{margin-left:auto;font-family:'Barlow Condensed',sans-serif;font-size:12px;color:var(--dim2)}
+#sign-out-btn{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:5px 12px;border-radius:4px;border:1px solid var(--bd2);background:transparent;color:var(--dim2);cursor:pointer;display:none}
+#sign-out-btn:hover{background:var(--s2);color:var(--txt)}
+
+/* ── LAYOUT ── */
+.container{max-width:1200px;margin:0 auto;padding:20px 16px}
+.section{margin-bottom:32px}
+.section-title{font-family:Teko,sans-serif;font-size:22px;font-weight:700;color:var(--txt);margin-bottom:4px}
+.section-sub{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--dim);margin-bottom:16px}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin-bottom:24px}
+.tab-btn{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim2);background:none;border:none;cursor:pointer;padding:10px 16px;border-bottom:2px solid transparent;transition:.15s}
+.tab-btn:hover{color:var(--txt)}
+.tab-btn.on{color:var(--gold);border-bottom-color:var(--gold)}
+.tab-panel{display:none}
+.tab-panel.on{display:block}
+
+/* ── LOGIN ── */
+#login-box{max-width:380px;margin:80px auto;background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:32px}
+.login-title{font-family:Teko,sans-serif;font-size:28px;font-weight:700;margin-bottom:4px}
+.login-sub{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:24px}
+.field{margin-bottom:14px}
+.field label{display:block;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:5px}
+.field input{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:9px 12px;color:var(--txt);font-size:14px;outline:none;transition:.15s}
+.field input:focus{border-color:var(--gold)}
+.btn-primary{width:100%;background:var(--gold);color:#000;border:none;border-radius:6px;padding:10px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:.15s;margin-top:4px}
+.btn-primary:hover{background:#d4900a}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+#login-err{color:var(--red);font-family:'Barlow Condensed',sans-serif;font-size:12px;margin-top:10px;min-height:18px}
+
+/* ── SAVE BAR ── */
+.save-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.btn-save{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:8px 18px;border-radius:6px;border:none;background:var(--green);color:#000;cursor:pointer;transition:.15s}
+.btn-save:hover{background:#17a348}
+.btn-save:disabled{opacity:.5;cursor:not-allowed}
+.btn-secondary{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:7px 14px;border-radius:6px;border:1px solid var(--bd2);background:transparent;color:var(--dim2);cursor:pointer;transition:.15s}
+.btn-secondary:hover{background:var(--s2);color:var(--txt)}
+#save-status{font-family:'Barlow Condensed',sans-serif;font-size:12px;color:var(--dim2)}
+
+/* ── MATCH TABLE ── */
+.match-table{width:100%;border-collapse:separate;border-spacing:0 4px}
+.match-row{background:var(--s1);transition:.1s}
+.match-row.completed-row td:first-child{border-left:3px solid var(--green)}
+.match-row.upcoming-row td:first-child{border-left:3px solid var(--bd2)}
+.match-row.nr-row td:first-child{border-left:3px solid var(--gold)}
+.match-row td{padding:8px 10px;vertical-align:middle;border-top:1px solid var(--bd);border-bottom:1px solid var(--bd)}
+.match-row td:first-child{border-left:3px solid var(--bd2);border-radius:6px 0 0 6px}
+.match-row td:last-child{border-right:1px solid var(--bd);border-radius:0 6px 6px 0}
+.match-no{font-family:Teko,sans-serif;font-size:20px;font-weight:700;color:var(--gold);line-height:1}
+.match-date{font-family:'Barlow Condensed',sans-serif;font-size:10px;color:var(--dim);letter-spacing:1px}
+.teams{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--txt)}
+.mini-input{background:var(--s2);border:1px solid var(--bd);border-radius:5px;padding:5px 8px;color:var(--txt);font-family:'Barlow Condensed',sans-serif;font-size:13px;outline:none;transition:.15s;width:100%}
+.mini-input:focus{border-color:var(--gold)}
+.mini-input.result-input{min-width:160px}
+.score-cell{width:80px}
+.ov-cell{width:60px}
+.done-check{width:16px;height:16px;cursor:pointer;accent-color:var(--green)}
+.th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);padding:6px 10px;text-align:left;border-bottom:1px solid var(--bd)}
+
+/* ── POINTS TABLE ── */
+.pts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px}
+.pts-card{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:14px}
+.pts-team{font-family:Teko,sans-serif;font-size:18px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.pts-fields{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.pts-field label{display:block;font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:3px}
+.pts-field input{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:5px;padding:6px 8px;color:var(--txt);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;outline:none;text-align:center;transition:.15s}
+.pts-field input:focus{border-color:var(--gold)}
+
+/* ── SETTINGS ── */
+.settings-card{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:20px;margin-bottom:16px;max-width:600px}
+.settings-card h3{font-family:Teko,sans-serif;font-size:18px;font-weight:700;margin-bottom:12px}
+.setting-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.setting-row label{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);width:120px;flex-shrink:0}
+.setting-row input{flex:1;background:var(--s2);border:1px solid var(--bd);border-radius:5px;padding:7px 10px;color:var(--txt);font-size:13px;outline:none;font-family:monospace}
+.setting-row input:focus{border-color:var(--gold)}
+.info-box{background:rgba(240,165,0,.06);border:1px solid rgba(240,165,0,.2);border-radius:6px;padding:12px 14px;font-family:'Barlow Condensed',sans-serif;font-size:13px;color:var(--dim2);line-height:1.7}
+.info-box code{color:var(--gold);background:rgba(240,165,0,.1);padding:1px 5px;border-radius:3px;font-size:12px}
+.tag-green{color:var(--green);font-weight:700}
+.tag-red{color:var(--red);font-weight:700}
+
+/* ── MISC ── */
+#admin-panel{display:none}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--bd);border-top-color:var(--gold);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
-<div id="gate"><div class="gbox"><h2>IPLBuzz Admin</h2><p>Enter admin password</p><input type="password" id="gate-pw" placeholder="Password" onkeydown="if(event.key==='Enter')checkPw()"><button class="btn btn-gold" onclick="checkPw()" style="width:100%">Unlock</button><div id="gate-err" style="color:var(--red);font-family:Barlow Condensed,sans-serif;font-size:12px;margin-top:8px"></div></div></div>
-<div id="adm" style="display:none">
-<div class="top"><span class="brand">IPL <b>2026</b> <small>Admin</small></span><a href="index.html" class="back">← App</a></div>
-<div class="wrap">
-<div class="card" style="border-top:3px solid #3b82f6"><h3 style="color:#3b82f6"><span class="fb-ind" id="fb-dot" style="background:var(--red)"></span>Firebase Backend</h3><p style="font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--dim2);margin-bottom:10px">Connect Firebase so all users get live updates. <a href="https://console.firebase.google.com" target="_blank" style="color:var(--gold)">Create free project →</a></p><div class="row"><div class="field"><label>API Key</label><input id="fb-key"></div><div class="field"><label>Auth Domain</label><input id="fb-auth"></div><div class="field"><label>Database URL</label><input id="fb-url" placeholder="https://xxx.firebaseio.com"></div><div class="field"><label>Project ID</label><input id="fb-pid"></div></div><button class="btn btn-gold" onclick="connectFB()">Connect & Save</button><div id="fb-st" class="status"></div></div>
-<div class="card" style="border-top:3px solid var(--green)"><h3 style="color:var(--green)">Status</h3><div id="sg" class="sg"></div></div>
-<div class="card" style="border-top:3px solid var(--gold)"><h3 style="color:var(--gold)">CricAPI — Live Engine</h3><p style="font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--dim2);margin-bottom:10px">Fetches scores → pushes to Firebase → all users see updates instantly.</p><div class="field"><label>CricAPI Key</label><input id="api-key"></div><div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap"><button class="btn btn-gold" onclick="apiFetch()">Fetch Now</button><button class="btn btn-out" id="auto-btn" onclick="toggleAuto()">Start Auto (90s)</button><span id="auto-lbl" style="font-family:Barlow Condensed,sans-serif;font-size:11px;color:var(--dim)"></span></div><div id="api-st" class="status"></div><div id="api-res" style="margin-top:10px"></div></div>
-<div class="card" style="border-top:3px solid #a855f7"><h3 style="color:#a855f7">Match Data Entry</h3><div id="mgrid" class="mgrid"></div><div class="field"><label>Select Match</label><select id="sel" onchange="loadM(this.value)"><option value="">— Pick —</option></select></div><div id="mform" style="display:none"><div class="row" style="margin-bottom:10px"><div class="field"><label>Team 1</label><input id="f-t1" readonly></div><div class="field"><label>Team 2</label><input id="f-t2" readonly></div><div class="field"><label>Venue</label><input id="f-venue"></div><div class="field"><label>Date</label><input id="f-date" readonly></div></div><div class="row" style="margin-bottom:10px"><div class="field"><label>Toss</label><input id="f-toss"></div><div class="field"><label>Result</label><input id="f-result"></div><div class="field"><label>POM</label><input id="f-pom"></div></div><div class="row" style="margin-bottom:10px"><div class="field"><label>T1 Score</label><input id="f-t1s"></div><div class="field"><label>T1 Ov</label><input id="f-t1ov"></div><div class="field"><label>T2 Score</label><input id="f-t2s"></div><div class="field"><label>T2 Ov</label><input id="f-t2ov"></div></div><div class="field"><label>Batted first?</label><select id="f-bf"><option value="t1">Team 1</option><option value="t2">Team 2</option></select></div><div class="card" style="border-left:3px solid #3b82f6;background:var(--s2)"><h3 style="color:#3b82f6;font-size:16px">1st Inn</h3><div class="field"><label>Batting [{n,d,r,b,f,s}]</label><textarea id="f-i1b"></textarea></div><div class="field"><label>Extras {b,lb,w,nb,total}</label><input id="f-i1e"></div><div class="field"><label>Bowling [{n,o,r,w,wd,nb}]</label><textarea id="f-i1w"></textarea></div></div><div class="card" style="border-left:3px solid var(--green);background:var(--s2)"><h3 style="color:var(--green);font-size:16px">2nd Inn</h3><div class="field"><label>Batting</label><textarea id="f-i2b"></textarea></div><div class="field"><label>Extras</label><input id="f-i2e"></div><div class="field"><label>Bowling</label><textarea id="f-i2w"></textarea></div></div><div class="card" style="border-left:3px solid var(--dim2);background:var(--s2)"><h3 style="font-size:16px">Tier 2 (Optional)</h3><div class="row"><div class="field"><label>I1 OvR csv</label><input id="f-or1"></div><div class="field"><label>I1 OvW csv</label><input id="f-ow1"></div><div class="field"><label>I2 OvR csv</label><input id="f-or2"></div><div class="field"><label>I2 OvW csv</label><input id="f-ow2"></div></div><div class="field"><label>I1 Partnerships</label><textarea id="f-ps1" style="min-height:50px"></textarea></div><div class="field"><label>I2 Partnerships</label><textarea id="f-ps2" style="min-height:50px"></textarea></div><div class="field"><label>I1 FOW</label><textarea id="f-fw1" style="min-height:50px"></textarea></div><div class="field"><label>I2 FOW</label><textarea id="f-fw2" style="min-height:50px"></textarea></div><div class="field"><label>I1 Moments</label><textarea id="f-mo1" style="min-height:50px"></textarea></div><div class="field"><label>I2 Moments</label><textarea id="f-mo2" style="min-height:50px"></textarea></div><div class="field"><label>Ratings</label><textarea id="f-rat" style="min-height:50px"></textarea></div></div><div style="display:flex;gap:8px;margin-top:10px"><button class="btn btn-gold" onclick="saveM()">Save to Backend</button><button class="btn btn-out" onclick="previewM()">Preview</button></div><div id="save-st" class="status"></div><pre id="pv" style="display:none;background:var(--s2);border:1px solid var(--bd);border-radius:5px;padding:8px;margin-top:8px;font-size:10px;color:var(--dim2);overflow:auto;max-height:200px"></pre></div></div>
-<div class="card"><h3>Points & Data</h3><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-gold" onclick="recalcPts()">Recalc Points</button><button class="btn btn-out" onclick="exportD()">Export</button><button class="btn btn-out" onclick="document.getElementById('imp').click()">Import</button><button class="btn btn-red" onclick="resetD()">Reset</button></div><input type="file" id="imp" accept=".json" style="display:none" onchange="importD(event)"><div id="mgmt-st" class="status"></div></div>
-</div></div>
+
+<nav>
+  <span class="brand">IPL<b>Buzz</b></span>
+  <span class="badge">Admin</span>
+  <span id="auth-status">Not logged in</span>
+  <button id="sign-out-btn" onclick="signOut()">Sign Out</button>
+</nav>
+
+<!-- LOGIN -->
+<div id="login-box">
+  <div class="login-title">Admin Login</div>
+  <div class="login-sub">IPLBuzz · Firebase Admin</div>
+  <div class="field">
+    <label>Email</label>
+    <input type="email" id="email-input" placeholder="admin@iplbuzz.com" autocomplete="username">
+  </div>
+  <div class="field">
+    <label>Password</label>
+    <input type="password" id="pass-input" placeholder="••••••••" autocomplete="current-password"
+      onkeydown="if(event.key==='Enter')doLogin()">
+  </div>
+  <button class="btn-primary" id="login-btn" onclick="doLogin()">Sign In</button>
+  <div id="login-err"></div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="admin-panel">
+  <div class="container">
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab-btn on" onclick="switchTab('schedule',this)">📅 Schedule & Results</button>
+      <button class="tab-btn" onclick="switchTab('points',this)">📊 Points Table</button>
+      <button class="tab-btn" onclick="switchTab('settings',this)">⚙️ Settings</button>
+    </div>
+
+    <!-- SCHEDULE TAB -->
+    <div class="tab-panel on" id="tab-schedule">
+      <div class="section">
+        <div class="section-title">Match Results Manager</div>
+        <div class="section-sub">Edit results below → Save to Firebase → index.html auto-updates</div>
+        <div class="save-bar">
+          <button class="btn-save" onclick="saveSchedule()">💾 Save Schedule to Firebase</button>
+          <button class="btn-secondary" onclick="loadFromFirebase()">↓ Reload from Firebase</button>
+          <button class="btn-secondary" onclick="seedDefaults()">🌱 Seed Defaults</button>
+          <span id="sched-status"></span>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="match-table" id="match-table">
+            <thead>
+              <tr>
+                <th class="th">No</th>
+                <th class="th">Date</th>
+                <th class="th">Teams</th>
+                <th class="th">Done?</th>
+                <th class="th">NR?</th>
+                <th class="th">Result</th>
+                <th class="th">T1 Score</th>
+                <th class="th">T1 Ov</th>
+                <th class="th">T2 Score</th>
+                <th class="th">T2 Ov</th>
+              </tr>
+            </thead>
+            <tbody id="match-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- POINTS TAB -->
+    <div class="tab-panel" id="tab-points">
+      <div class="section">
+        <div class="section-title">Points Table Editor</div>
+        <div class="section-sub">Update after each match — NRR must be entered manually</div>
+        <div class="save-bar">
+          <button class="btn-save" onclick="savePoints()">💾 Save Points to Firebase</button>
+          <button class="btn-secondary" onclick="autoComputePoints()">⚡ Auto-Compute from Schedule</button>
+          <span id="pts-status"></span>
+        </div>
+        <div class="pts-grid" id="pts-grid"></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS TAB -->
+    <div class="tab-panel" id="tab-settings">
+      <div class="section">
+        <div class="section-title">Settings</div>
+        <div class="section-sub">CricAPI & Cloudflare Worker configuration</div>
+
+        <div class="settings-card">
+          <h3>🔑 CricAPI Key</h3>
+          <div class="setting-row">
+            <label>API Key</label>
+            <input type="text" id="set-apikey" placeholder="a7402ce9-..." value="a7402ce9-871c-4dee-813a-5484b141ef5a">
+          </div>
+          <button class="btn-secondary" onclick="saveSettings()">Save</button>
+        </div>
+
+        <div class="settings-card">
+          <h3>🌐 Cloudflare Worker Proxy</h3>
+          <div class="setting-row">
+            <label>Worker URL</label>
+            <input type="text" id="set-proxy" placeholder="https://cricapi-proxy.yourname.workers.dev">
+          </div>
+          <button class="btn-secondary" onclick="saveSettings()">Save</button>
+          <div class="info-box" style="margin-top:12px">
+            <strong>Why you need this:</strong> CricAPI blocks direct browser requests (CORS). A Cloudflare Worker acts as a middleman.<br><br>
+            <strong>Setup:</strong><br>
+            1. Go to <code>workers.cloudflare.com</code> → Create Worker<br>
+            2. Paste the code from <code>worker.js</code> in your repo<br>
+            3. Deploy → copy the URL and paste it above<br>
+            4. The worker forwards requests: <code>/proxy?url=https://api.cricapi.com/...</code>
+          </div>
+        </div>
+
+        <div class="settings-card">
+          <h3>🔐 Firebase Rules</h3>
+          <div class="info-box">
+            Set your Firebase Realtime Database rules to:<br><br>
+            <code>{<br>&nbsp;&nbsp;"rules": {<br>&nbsp;&nbsp;&nbsp;&nbsp;".read": true,<br>&nbsp;&nbsp;&nbsp;&nbsp;".write": "auth != null"<br>&nbsp;&nbsp;}<br>}</code><br><br>
+            This allows <span class="tag-green">public reads</span> (index.html works for all) and <span class="tag-red">writes only when admin is logged in</span>.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /container -->
+</div><!-- /admin-panel -->
+
 <script>
-var ADMIN_PW='iplbuzz2026';
-function checkPw(){if(document.getElementById('gate-pw').value===ADMIN_PW){document.getElementById('gate').classList.add('hide');document.getElementById('adm').style.display='block';sessionStorage.setItem('iplba','1');initA();}else document.getElementById('gate-err').textContent='Wrong password';}
-if(sessionStorage.getItem('iplba')==='1'){document.getElementById('gate').classList.add('hide');document.getElementById('adm').style.display='block';setTimeout(initA,0);}
-var TEAMS={RCB:1,MI:1,CSK:1,KKR:1,SRH:1,RR:1,PBKS:1,DC:1,GT:1,LSG:1};
-var TA={'Royal Challengers Bengaluru':'RCB','Royal Challengers Bangalore':'RCB','Mumbai Indians':'MI','Chennai Super Kings':'CSK','Kolkata Knight Riders':'KKR','Sunrisers Hyderabad':'SRH','Rajasthan Royals':'RR','Punjab Kings':'PBKS','Delhi Capitals':'DC','Gujarat Titans':'GT','Lucknow Super Giants':'LSG'};
-var DS=[{no:1,date:'Sat, Mar 28',d:'Mar 28',t1:'RCB',t2:'SRH',time:'7:30 PM',result:'RCB won by 6 wkts',t1score:'203/4',t2score:'201/9',completed:true},{no:2,date:'Sun, Mar 29',d:'Mar 29',t1:'MI',t2:'KKR',time:'7:30 PM',venue:'Wankhede Stadium, Mumbai',completed:true,result:'MI won by 6 wkts',t1score:'224/4',t1ov:'19.1',t2score:'220/4',t2ov:'20'},{no:3,date:'Mon, Mar 30',d:'Mar 30',t1:'RR',t2:'CSK',time:'7:30 PM',venue:'Barsapara Cricket Stadium, Guwahati'},{no:4,date:'Tue, Mar 31',d:'Mar 31',t1:'PBKS',t2:'GT',time:'7:30 PM'},{no:5,date:'Wed, Apr 1',d:'Apr 1',t1:'LSG',t2:'DC',time:'7:30 PM'},{no:6,date:'Thu, Apr 2',d:'Apr 2',t1:'KKR',t2:'SRH',time:'7:30 PM'},{no:7,date:'Fri, Apr 3',d:'Apr 3',t1:'CSK',t2:'PBKS',time:'7:30 PM'},{no:8,date:'Sat, Apr 4',d:'Apr 4',t1:'DC',t2:'MI',time:'3:30 PM'},{no:9,date:'Sat, Apr 4',d:'Apr 4',t1:'GT',t2:'RR',time:'7:30 PM'},{no:10,date:'Sun, Apr 5',d:'Apr 5',t1:'SRH',t2:'LSG',time:'3:30 PM'},{no:11,date:'Sun, Apr 5',d:'Apr 5',t1:'RCB',t2:'CSK',time:'7:30 PM'},{no:12,date:'Mon, Apr 6',d:'Apr 6',t1:'KKR',t2:'PBKS',time:'7:30 PM'},{no:13,date:'Tue, Apr 7',d:'Apr 7',t1:'RR',t2:'MI',time:'7:30 PM'},{no:14,date:'Wed, Apr 8',d:'Apr 8',t1:'DC',t2:'GT',time:'7:30 PM'},{no:15,date:'Thu, Apr 9',d:'Apr 9',t1:'KKR',t2:'LSG',time:'7:30 PM'},{no:16,date:'Fri, Apr 10',d:'Apr 10',t1:'RR',t2:'RCB',time:'7:30 PM'},{no:17,date:'Sat, Apr 11',d:'Apr 11',t1:'PBKS',t2:'SRH',time:'3:30 PM'},{no:18,date:'Sat, Apr 11',d:'Apr 11',t1:'CSK',t2:'DC',time:'7:30 PM'},{no:19,date:'Sun, Apr 12',d:'Apr 12',t1:'LSG',t2:'GT',time:'3:30 PM'},{no:20,date:'Sun, Apr 12',d:'Apr 12',t1:'MI',t2:'RCB',time:'7:30 PM'},{no:21,date:'Mon, Apr 13',d:'Apr 13',t1:'SRH',t2:'RR',time:'7:30 PM'},{no:22,date:'Tue, Apr 14',d:'Apr 14',t1:'CSK',t2:'KKR',time:'7:30 PM'},{no:23,date:'Wed, Apr 15',d:'Apr 15',t1:'RCB',t2:'LSG',time:'7:30 PM'},{no:24,date:'Thu, Apr 16',d:'Apr 16',t1:'MI',t2:'PBKS',time:'7:30 PM'},{no:25,date:'Fri, Apr 17',d:'Apr 17',t1:'GT',t2:'KKR',time:'7:30 PM'},{no:26,date:'Sat, Apr 18',d:'Apr 18',t1:'RCB',t2:'DC',time:'3:30 PM'},{no:27,date:'Sat, Apr 18',d:'Apr 18',t1:'SRH',t2:'CSK',time:'7:30 PM'},{no:28,date:'Sun, Apr 19',d:'Apr 19',t1:'KKR',t2:'RR',time:'3:30 PM'},{no:29,date:'Sun, Apr 19',d:'Apr 19',t1:'PBKS',t2:'LSG',time:'7:30 PM'},{no:30,date:'Mon, Apr 20',d:'Apr 20',t1:'GT',t2:'MI',time:'7:30 PM'}];
-function sG(k){try{var d=localStorage.getItem('iplbuzz_'+k);return d?JSON.parse(d):null;}catch(e){return null;}}
-function sS(k,v){try{localStorage.setItem('iplbuzz_'+k,JSON.stringify(v));}catch(e){}}
-function gM(){return sG('matches')||[];}
-function gS(){var s=sG('schedule');if(s&&s.length)return s;sS('schedule',DS);return DS;}
-function gP(){return sG('points')||[];}
-var fbDB=null,fbOK=false;
-function connectFB(){var c={apiKey:V('fb-key'),authDomain:V('fb-auth'),databaseURL:V('fb-url'),projectId:V('fb-pid')};if(!c.databaseURL){flash('fb-st','Database URL required','err');return;}sS('fb_config',c);localStorage.setItem('iplbuzz_fb_config',JSON.stringify(c));loadSDK(c);}
-function loadSDK(c){if(typeof firebase!=='undefined'){doConn(c);return;}var s=document.createElement('script');s.src='https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js';s.onload=function(){var s2=document.createElement('script');s2.src='https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js';s2.onload=function(){doConn(c);};document.head.appendChild(s2);};document.head.appendChild(s);}
-function doConn(c){try{if(!firebase.apps.length)firebase.initializeApp(c);fbDB=firebase.database();fbOK=true;document.getElementById('fb-dot').style.background='var(--green)';flash('fb-st','Connected! All data syncs to every user.','ok');renderSt();fbDB.ref('iplbuzz/schedule').once('value',function(s){if(!s.val()){fbW('schedule',gS());fbW('matches',gM());fbW('points',gP());}});}catch(e){flash('fb-st','Error: '+e.message,'err');}}
-function fbW(k,d){if(fbOK&&fbDB)try{fbDB.ref('iplbuzz/'+k).set(d);}catch(e){}}
-function saveAll(m,s,p){sS('matches',m);sS('schedule',s);sS('points',p);fbW('matches',m);fbW('schedule',s);fbW('points',p);}
-function initA(){document.getElementById('api-key').value=localStorage.getItem('cricapi_key')||'';var c=sG('fb_config');if(c){document.getElementById('fb-key').value=c.apiKey||'';document.getElementById('fb-auth').value=c.authDomain||'';document.getElementById('fb-url').value=c.databaseURL||'';document.getElementById('fb-pid').value=c.projectId||'';loadSDK(c);}renderSt();renderGr();}
-function V(id){return(document.getElementById(id)||{}).value||'';}
-function renderSt(){var m=gM(),s=gS();document.getElementById('sg').innerHTML='<div class="sb"><div class="sv" style="color:var(--gold)">'+m.length+'</div><div class="sl">Matches</div></div><div class="sb"><div class="sv" style="color:var(--green)">'+s.filter(function(x){return x.completed;}).length+'</div><div class="sl">Completed</div></div><div class="sb"><div class="sv" style="color:'+(fbOK?'var(--green)':'var(--red)')+'">'+( fbOK?'ON':'OFF')+'</div><div class="sl">Firebase</div></div>';}
-function renderGr(){var s=gS(),m=gM(),gh='',sh='<option value="">— Pick —</option>';s.forEach(function(x){var h=m.some(function(y){return y.no===x.no;});gh+='<div class="mitem '+(h?'has':'no')+'" onclick="document.getElementById(\'sel\').value=\''+x.no+'\';loadM(\''+x.no+'\')"><div style="font-weight:700;color:'+(h?'var(--green)':'var(--red)')+'">M'+x.no+'</div><div style="font-size:10px;color:var(--dim2)">'+x.t1+' v '+x.t2+'</div></div>';sh+='<option value="'+x.no+'">M'+x.no+' '+x.t1+' v '+x.t2+(h?' ✓':'')+'</option>';});document.getElementById('mgrid').innerHTML=gh;document.getElementById('sel').innerHTML=sh;}
-function loadM(no){no=parseInt(no);if(!no){document.getElementById('mform').style.display='none';return;}document.getElementById('mform').style.display='block';var s=gS().find(function(x){return x.no===no;}),m=gM().find(function(x){return x.no===no;});if(!s)return;document.getElementById('f-t1').value=s.t1;document.getElementById('f-t2').value=s.t2;document.getElementById('f-venue').value=(m&&m.venue)||s.venue||'';document.getElementById('f-date').value=s.date;if(m){document.getElementById('f-toss').value=m.toss||'';document.getElementById('f-result').value=m.result||'';document.getElementById('f-pom').value=m.pom||'';document.getElementById('f-t1s').value=m.t1score||'';document.getElementById('f-t1ov').value=m.t1ov||'';document.getElementById('f-t2s').value=m.t2score||'';document.getElementById('f-t2ov').value=m.t2ov||'';document.getElementById('f-bf').value=(m.inn1&&m.inn1.team===s.t2)?'t2':'t1';if(m.inn1){document.getElementById('f-i1b').value=Js(m.inn1.batting);document.getElementById('f-i1e').value=JSON.stringify(m.inn1.extras||{});document.getElementById('f-i1w').value=Js(m.inn1.bowling);document.getElementById('f-or1').value=(m.inn1.overR||[]).join(',');document.getElementById('f-ow1').value=(m.inn1.overW||[]).join(',');document.getElementById('f-ps1').value=m.inn1.pships?Js(m.inn1.pships):'';document.getElementById('f-fw1').value=m.inn1.fow?Js(m.inn1.fow):'';document.getElementById('f-mo1').value=m.inn1.moments?Js(m.inn1.moments):'';}if(m.inn2){document.getElementById('f-i2b').value=Js(m.inn2.batting);document.getElementById('f-i2e').value=JSON.stringify(m.inn2.extras||{});document.getElementById('f-i2w').value=Js(m.inn2.bowling);document.getElementById('f-or2').value=(m.inn2.overR||[]).join(',');document.getElementById('f-ow2').value=(m.inn2.overW||[]).join(',');document.getElementById('f-ps2').value=m.inn2.pships?Js(m.inn2.pships):'';document.getElementById('f-fw2').value=m.inn2.fow?Js(m.inn2.fow):'';document.getElementById('f-mo2').value=m.inn2.moments?Js(m.inn2.moments):'';}document.getElementById('f-rat').value=m.ratings?Js(m.ratings):'';}else{['f-toss','f-result','f-pom','f-t1s','f-t1ov','f-t2s','f-t2ov','f-i1b','f-i1e','f-i1w','f-i2b','f-i2e','f-i2w','f-or1','f-ow1','f-or2','f-ow2','f-ps1','f-ps2','f-fw1','f-fw2','f-mo1','f-mo2','f-rat'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});}}
-function Js(d){return JSON.stringify(d||[],null,1);}function Pp(s,fb){if(!s||!s.trim())return fb;try{return JSON.parse(s);}catch(e){return fb;}}function Csv(s){if(!s||!s.trim())return null;return s.split(',').map(function(x){return parseInt(x.trim())||0;});}
-function buildM(){var no=parseInt(V('sel')),s=gS().find(function(x){return x.no===no;});if(!s)return null;var t1=s.t1,t2=s.t2,bf=V('f-bf'),i1t=bf==='t2'?t2:t1,i2t=bf==='t2'?t1:t2;var i1b=Pp(V('f-i1b'),[]),i1e=Pp(V('f-i1e'),{b:0,lb:0,w:0,nb:0,total:0}),i1w=Pp(V('f-i1w'),[]),i2b=Pp(V('f-i2b'),[]),i2e=Pp(V('f-i2e'),{b:0,lb:0,w:0,nb:0,total:0}),i2w=Pp(V('f-i2w'),[]);var i1r=i1b.reduce(function(a,b){return a+(b.r||0);},0)+(i1e.total||0),i2r=i2b.reduce(function(a,b){return a+(b.r||0);},0)+(i2e.total||0);var t1s=V('f-t1s'),t2s=V('f-t2s'),t1ov=V('f-t1ov')||'20',t2ov=V('f-t2ov')||'20';var inn1={team:i1t,total:(i1t===t1?t1s:t2s)||'',overs:parseFloat(i1t===t1?t1ov:t2ov)||20,runs:i1r,batting:i1b,extras:i1e,bowling:i1w};var inn2={team:i2t,total:(i2t===t1?t1s:t2s)||'',overs:parseFloat(i2t===t1?t1ov:t2ov)||20,runs:i2r,batting:i2b,extras:i2e,bowling:i2w};var or1=Csv(V('f-or1'));if(or1)inn1.overR=or1;var ow1=Csv(V('f-ow1'));if(ow1)inn1.overW=ow1;var or2=Csv(V('f-or2'));if(or2)inn2.overR=or2;var ow2=Csv(V('f-ow2'));if(ow2)inn2.overW=ow2;var ps1=Pp(V('f-ps1'),null);if(ps1)inn1.pships=ps1;var ps2=Pp(V('f-ps2'),null);if(ps2)inn2.pships=ps2;var fw1=Pp(V('f-fw1'),null);if(fw1)inn1.fow=fw1;var fw2=Pp(V('f-fw2'),null);if(fw2)inn2.fow=fw2;var mo1=Pp(V('f-mo1'),null);if(mo1)inn1.moments=mo1;var mo2=Pp(V('f-mo2'),null);if(mo2)inn2.moments=mo2;var rat=Pp(V('f-rat'),null);var match={id:'m'+no,no:no,date:s.date,venue:V('f-venue')||s.venue||'',t1:t1,t2:t2,status:'completed',toss:V('f-toss'),result:V('f-result'),pom:V('f-pom'),t1score:t1s,t1ov:t1ov,t2score:t2s,t2ov:t2ov,inn1:inn1,inn2:inn2};if(rat)match.ratings=rat;return match;}
-function saveM(){var match=buildM();if(!match){flash('save-st','Select a match','err');return;}if(!match.result){flash('save-st','Result required','err');return;}var matches=gM(),sched=gS();var idx=matches.findIndex(function(m){return m.no===match.no;});if(idx>=0)matches[idx]=match;else matches.push(match);matches.sort(function(a,b){return a.no-b.no;});var sc=sched.find(function(s){return s.no===match.no;});if(sc){sc.completed=true;sc.result=match.result;sc.t1score=match.t1score;sc.t2score=match.t2score;sc.t1ov=match.t1ov;sc.t2ov=match.t2ov;}recalcD(matches,sched);renderSt();renderGr();flash('save-st','Match '+match.no+' saved! All users updated.','ok');}
-function previewM(){document.getElementById('pv').style.display='block';document.getElementById('pv').textContent=JSON.stringify(buildM(),null,2);}
-function tAl(n){if(!n)return '';if(TEAMS[n])return n;if(TA[n])return TA[n];var l=n.toLowerCase();for(var a in TA)if(l.includes(a.toLowerCase().split(' ')[0]))return TA[a];return n;}
-function apiFetch(){var key=V('api-key');if(!key){flash('api-st','Enter API key','err');return;}localStorage.setItem('cricapi_key',key);flash('api-st','Fetching...','ok');fetch('https://api.cricapi.com/v1/currentMatches?apikey='+key+'&offset=0').then(function(r){return r.json();}).then(function(j){if(j.status!=='success'){flash('api-st','API: '+(j.reason||'error'),'err');return;}var data=j.data||[];var live={ts:Date.now(),data:data};sS('live',live);fbW('live',live);var ipl=data.filter(function(m){return(m.name||'').toLowerCase().includes('ipl');});var stored=0,lN=0,html='';ipl.forEach(function(m){var ti=m.teamInfo||[],a1=tAl((ti[0]||{}).shortname||(ti[0]||{}).name||''),a2=tAl((ti[1]||{}).shortname||(ti[1]||{}).name||'');var sc=m.score||[],s1=sc[0]?sc[0].r+'/'+sc[0].w+' ('+sc[0].o+')':'—',s2=sc[1]?sc[1].r+'/'+sc[1].w+' ('+sc[1].o+')':'—';var done=m.matchEnded||m.status==='Match over';html+='<div style="background:var(--s2);border-left:3px solid '+(done?'var(--green)':'var(--gold)')+';border-radius:5px;padding:8px 12px;margin-bottom:5px"><b style="font-family:Teko;font-size:16px">'+a1+' vs '+a2+'</b> <span style="font-family:Barlow Condensed;font-size:10px;color:'+(done?'var(--green)':'var(--gold)')+'">'+(done?'DONE':'LIVE')+'</span><div style="font-family:Barlow Condensed;font-size:12px;color:var(--dim2)">'+s1+' · '+s2+'</div><div style="font-family:Barlow Condensed;font-size:11px;color:var(--txt)">'+(m.status||'')+'</div></div>';if(!done){lN++;return;}var sched=gS(),matches=gM();var sch=sched.find(function(s){return(s.t1===a1&&s.t2===a2)||(s.t1===a2&&s.t2===a1);});if(!sch)return;var ex=matches.find(function(x){return x.no===sch.no;});if(ex&&ex.inn1&&ex.inn1.batting&&ex.inn1.batting.length>0)return;sch.completed=true;sch.result=m.status||'';if(sc[0]){sch.t1score=sc[0].r+'/'+sc[0].w;sch.t1ov=String(sc[0].o);}if(sc[1]){sch.t2score=sc[1].r+'/'+sc[1].w;sch.t2ov=String(sc[1].o);}var entry={id:'m'+sch.no,no:sch.no,date:sch.date,venue:m.venue||sch.venue||'',t1:sch.t1,t2:sch.t2,status:'completed',toss:'',result:m.status||'',pom:'',t1score:sch.t1score||'',t1ov:sch.t1ov||'20',t2score:sch.t2score||'',t2ov:sch.t2ov||'20',inn1:{team:a1,total:sch.t1score||'',overs:parseFloat(sch.t1ov)||20,runs:(sc[0]||{}).r||0,batting:[],extras:{b:0,lb:0,w:0,nb:0,total:0},bowling:[]},inn2:{team:a2,total:sch.t2score||'',overs:parseFloat(sch.t2ov)||20,runs:(sc[1]||{}).r||0,batting:[],extras:{b:0,lb:0,w:0,nb:0,total:0},bowling:[]}};if(ex){matches[matches.indexOf(ex)]=entry;}else matches.push(entry);matches.sort(function(a,b){return a.no-b.no;});sS('matches',matches);sS('schedule',sched);fbW('matches',matches);fbW('schedule',sched);stored++;});if(stored>0)recalcD(gM(),gS());renderSt();renderGr();flash('api-st',ipl.length+' IPL ('+lN+' live, '+stored+' stored)','ok');document.getElementById('api-res').innerHTML=html;}).catch(function(e){flash('api-st','Error: '+e.message,'err');});}
-var autoT=null;function toggleAuto(){var b=document.getElementById('auto-btn'),l=document.getElementById('auto-lbl');if(autoT){clearInterval(autoT);autoT=null;b.textContent='Start Auto (90s)';b.style.borderColor='';b.style.color='';l.textContent='';return;}apiFetch();autoT=setInterval(apiFetch,90000);b.textContent='Stop';b.style.borderColor='var(--green)';b.style.color='var(--green)';l.textContent='Every 90s';}
-function recalcPts(){recalcD(gM(),gS());renderSt();flash('mgmt-st','Points recalculated','ok');}
-function recalcD(matches,sched){var ts={};Object.keys(TEAMS).forEach(function(t){ts[t]={team:t,m:0,w:0,l:0,nr:0,pts:0,nrr:'0.000',rS:0,oF:0,rC:0,oB:0};});sched.forEach(function(s){if(!s.completed||!s.result)return;var a=ts[s.t1],b=ts[s.t2];if(!a||!b)return;a.m++;b.m++;var w=null;if(s.result.indexOf(s.t1)===0&&s.result.indexOf('won')>0)w=s.t1;else if(s.result.indexOf(s.t2)===0&&s.result.indexOf('won')>0)w=s.t2;if(w){ts[w].w++;ts[w].pts+=2;ts[w===s.t1?s.t2:s.t1].l++;}else{a.nr++;b.nr++;a.pts++;b.pts++;}var match=matches.find(function(m){return m.no===s.no;});if(match&&match.inn1&&match.inn2){var i1t=match.inn1.team,i2t=match.inn2.team,r1=match.inn1.runs||parseInt(match.inn1.total)||0,r2=match.inn2.runs||parseInt(match.inn2.total)||0,o1=parseFloat(match.inn1.overs)||20,o2=parseFloat(match.inn2.overs)||20;if(ts[i1t]){ts[i1t].rS+=r1;ts[i1t].oF+=o1;ts[i1t].rC+=r2;ts[i1t].oB+=o2;}if(ts[i2t]){ts[i2t].rS+=r2;ts[i2t].oF+=o2;ts[i2t].rC+=r1;ts[i2t].oB+=o1;}}});Object.values(ts).forEach(function(t){if(t.oF>0&&t.oB>0){var n=(t.rS/t.oF)-(t.rC/t.oB);t.nrr=(n>=0?'+':'')+n.toFixed(3);}});saveAll(matches,sched,Object.values(ts));}
-function exportD(){var d={matches:gM(),schedule:gS(),points:gP(),exported:new Date().toISOString()};var b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='iplbuzz-'+new Date().toISOString().slice(0,10)+'.json';a.click();}
-function importD(ev){var f=ev.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){try{var d=JSON.parse(e.target.result);if(d.matches)saveAll(d.matches,d.schedule||gS(),d.points||gP());renderSt();renderGr();flash('mgmt-st','Imported','ok');}catch(err){flash('mgmt-st',err.message,'err');}};r.readAsText(f);ev.target.value='';}
-function resetD(){if(!confirm('Delete ALL data?'))return;['matches','schedule','points','live','newsletters'].forEach(function(k){localStorage.removeItem('iplbuzz_'+k);});if(fbOK&&fbDB)fbDB.ref('iplbuzz').remove();location.reload();}
-function flash(id,msg,type){var el=document.getElementById(id);if(!el)return;el.className='status '+type;el.textContent=msg;el.style.display='block';if(type==='ok')setTimeout(function(){el.style.display='none';},5000);}
+// ═══════════════════════════════════════════════════════════════════════
+// DEFAULT DATA — matches Firebase seed exactly
+// ═══════════════════════════════════════════════════════════════════════
+const DEFAULT_SCHEDULE = [
+  {no:1,date:'Sat, Mar 28',d:'Mar 28',t1:'RCB',t2:'SRH',time:'7:30 PM',venue:'M.Chinnaswamy Stadium, Bengaluru',completed:true,result:'RCB won by 6 wkts',t1score:'203/4',t1ov:'15.4',t2score:'201/9',t2ov:'20'},
+  {no:2,date:'Sun, Mar 29',d:'Mar 29',t1:'MI',t2:'KKR',time:'7:30 PM',venue:'Wankhede Stadium, Mumbai',completed:true,result:'MI won by 6 wkts',t1score:'224/4',t1ov:'19.1',t2score:'220/4',t2ov:'20'},
+  {no:3,date:'Mon, Mar 30',d:'Mar 30',t1:'RR',t2:'CSK',time:'7:30 PM',venue:'Barsapara Cricket Stadium, Guwahati',completed:true,result:'RR won by 8 wkts',t1score:'128/2',t1ov:'12.1',t2score:'127/10',t2ov:'19.4'},
+  {no:4,date:'Tue, Mar 31',d:'Mar 31',t1:'PBKS',t2:'GT',time:'7:30 PM',venue:'New International Cricket Stadium, New Chandigarh',completed:true,result:'PBKS won by 3 wkts',t1score:'165/7',t1ov:'19.1',t2score:'162/6',t2ov:'20'},
+  {no:5,date:'Wed, Apr 1',d:'Apr 1',t1:'LSG',t2:'DC',time:'7:30 PM',venue:'Ekana Cricket Stadium, Lucknow',completed:true,result:'DC won by 6 wkts',t1score:'141/10',t1ov:'18.4',t2score:'145/4',t2ov:'17.1'},
+  {no:6,date:'Thu, Apr 2',d:'Apr 2',t1:'KKR',t2:'SRH',time:'7:30 PM',venue:'Eden Gardens, Kolkata',completed:true,result:'SRH won by 65 runs',t1score:'161/10',t1ov:'20',t2score:'226/8',t2ov:'20'},
+  {no:7,date:'Fri, Apr 3',d:'Apr 3',t1:'CSK',t2:'PBKS',time:'7:30 PM',venue:'MA Chidambaram Stadium, Chennai',completed:true,result:'PBKS won by 5 wkts',t1score:'209/5',t1ov:'20',t2score:'210/5',t2ov:'18.4'},
+  {no:8,date:'Sat, Apr 4',d:'Apr 4',t1:'DC',t2:'MI',time:'3:30 PM',venue:'Arun Jaitley Stadium, Delhi',completed:true,result:'DC won by 6 wkts',t1score:'164/4',t1ov:'18.1',t2score:'162/6',t2ov:'20'},
+  {no:9,date:'Sat, Apr 4',d:'Apr 4',t1:'GT',t2:'RR',time:'7:30 PM',venue:'Narendra Modi Stadium, Ahmedabad',completed:true,result:'RR won by 6 runs',t1score:'204/8',t1ov:'20',t2score:'210/6',t2ov:'20'},
+  {no:10,date:'Sun, Apr 5',d:'Apr 5',t1:'SRH',t2:'LSG',time:'3:30 PM',venue:'Rajiv Gandhi International Stadium, Hyderabad',completed:true,result:'LSG won by 5 wkts',t1score:'156/9',t1ov:'20',t2score:'160/5',t2ov:'19.5'},
+  {no:11,date:'Sun, Apr 5',d:'Apr 5',t1:'RCB',t2:'CSK',time:'7:30 PM',venue:'M.Chinnaswamy Stadium, Bengaluru',completed:true,result:'RCB won by 43 runs',t1score:'250/3',t1ov:'20',t2score:'207/10',t2ov:'19.4'},
+  {no:12,date:'Mon, Apr 6',d:'Apr 6',t1:'KKR',t2:'PBKS',time:'7:30 PM',venue:'Eden Gardens, Kolkata',completed:true,result:'Match Abandoned',t1score:'25/2',t1ov:'3.4',t2score:'—',t2ov:'—',nr:true},
+  {no:13,date:'Tue, Apr 7',d:'Apr 7',t1:'RR',t2:'MI',time:'7:30 PM',venue:'ACA Stadium, Guwahati'},
+  {no:14,date:'Wed, Apr 8',d:'Apr 8',t1:'DC',t2:'GT',time:'7:30 PM',venue:'Arun Jaitley Stadium, Delhi'},
+  {no:15,date:'Thu, Apr 9',d:'Apr 9',t1:'KKR',t2:'LSG',time:'7:30 PM',venue:'Eden Gardens, Kolkata'},
+  {no:16,date:'Fri, Apr 10',d:'Apr 10',t1:'RR',t2:'RCB',time:'7:30 PM',venue:'Sawai Mansingh Stadium, Jaipur'},
+  {no:17,date:'Sat, Apr 11',d:'Apr 11',t1:'PBKS',t2:'SRH',time:'3:30 PM',venue:'New International Cricket Stadium, New Chandigarh'},
+  {no:18,date:'Sat, Apr 11',d:'Apr 11',t1:'CSK',t2:'DC',time:'7:30 PM',venue:'MA Chidambaram Stadium, Chennai'},
+  {no:19,date:'Sun, Apr 12',d:'Apr 12',t1:'LSG',t2:'GT',time:'3:30 PM',venue:'Ekana Cricket Stadium, Lucknow'},
+  {no:20,date:'Sun, Apr 12',d:'Apr 12',t1:'MI',t2:'RCB',time:'7:30 PM',venue:'Wankhede Stadium, Mumbai'},
+  {no:21,date:'Mon, Apr 13',d:'Apr 13',t1:'SRH',t2:'RR',time:'7:30 PM',venue:'Rajiv Gandhi International Stadium, Hyderabad'},
+  {no:22,date:'Tue, Apr 14',d:'Apr 14',t1:'CSK',t2:'KKR',time:'7:30 PM',venue:'MA Chidambaram Stadium, Chennai'},
+  {no:23,date:'Wed, Apr 15',d:'Apr 15',t1:'RCB',t2:'LSG',time:'7:30 PM',venue:'M.Chinnaswamy Stadium, Bengaluru'},
+  {no:24,date:'Thu, Apr 16',d:'Apr 16',t1:'MI',t2:'PBKS',time:'7:30 PM',venue:'Wankhede Stadium, Mumbai'},
+  {no:25,date:'Fri, Apr 17',d:'Apr 17',t1:'GT',t2:'KKR',time:'7:30 PM',venue:'Narendra Modi Stadium, Ahmedabad'},
+  {no:26,date:'Sat, Apr 18',d:'Apr 18',t1:'RCB',t2:'DC',time:'3:30 PM',venue:'M.Chinnaswamy Stadium, Bengaluru'},
+  {no:27,date:'Sat, Apr 18',d:'Apr 18',t1:'SRH',t2:'CSK',time:'7:30 PM',venue:'Rajiv Gandhi International Stadium, Hyderabad'},
+  {no:28,date:'Sun, Apr 19',d:'Apr 19',t1:'KKR',t2:'RR',time:'3:30 PM',venue:'Eden Gardens, Kolkata'},
+  {no:29,date:'Sun, Apr 19',d:'Apr 19',t1:'PBKS',t2:'LSG',time:'7:30 PM',venue:'New International Cricket Stadium, New Chandigarh'},
+  {no:30,date:'Mon, Apr 20',d:'Apr 20',t1:'GT',t2:'MI',time:'7:30 PM',venue:'Narendra Modi Stadium, Ahmedabad'}
+];
+
+const DEFAULT_POINTS = [
+  {team:'PBKS',m:3,w:2,l:0,nr:1,pts:5,nrr:'+0.637'},
+  {team:'RCB', m:2,w:2,l:0,nr:0,pts:4,nrr:'+2.501'},
+  {team:'RR',  m:2,w:2,l:0,nr:0,pts:4,nrr:'+2.233'},
+  {team:'DC',  m:2,w:2,l:0,nr:0,pts:4,nrr:'+1.170'},
+  {team:'SRH', m:3,w:1,l:2,nr:0,pts:2,nrr:'+0.275'},
+  {team:'MI',  m:2,w:1,l:1,nr:0,pts:2,nrr:'-0.206'},
+  {team:'LSG', m:2,w:1,l:1,nr:0,pts:2,nrr:'-0.542'},
+  {team:'KKR', m:3,w:0,l:2,nr:1,pts:1,nrr:'-1.964'},
+  {team:'GT',  m:2,w:0,l:2,nr:0,pts:0,nrr:'-0.424'},
+  {team:'CSK', m:3,w:0,l:3,nr:0,pts:0,nrr:'-2.517'}
+];
+
+const TEAM_COLORS = {RCB:'#c9112e',MI:'#004ba0',CSK:'#c8a400',KKR:'#3d1a78',SRH:'#f26522',RR:'#2d5da1',PBKS:'#ed1f27',GT:'#1c2951',LSG:'#a4274e',DC:'#0072bc'};
+
+// ═══════════════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════════════
+let db = null;
+let currentSchedule = JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));
+let currentPoints   = JSON.parse(JSON.stringify(DEFAULT_POINTS));
+
+// ═══════════════════════════════════════════════════════════════════════
+// FIREBASE INIT
+// ═══════════════════════════════════════════════════════════════════════
+const FB_CONFIG = {
+  apiKey:"AIzaSyC2MvTO5dbDycCQoZbi9EhLTv7DenH6vMk",
+  authDomain:"iplbuzz-2de05.firebaseapp.com",
+  databaseURL:"https://iplbuzz-2de05-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"iplbuzz-2de05"
+};
+
+function loadFirebaseSDKs(callback){
+  const s1 = document.createElement('script');
+  s1.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js';
+  s1.onload = ()=>{
+    const s2 = document.createElement('script');
+    s2.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js';
+    s2.onload = ()=>{
+      const s3 = document.createElement('script');
+      s3.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js';
+      s3.onload = callback;
+      document.head.appendChild(s3);
+    };
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s1);
+}
+
+function initFirebase(){
+  if(!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
+  db = firebase.database();
+  firebase.auth().onAuthStateChanged(user=>{
+    if(user){
+      document.getElementById('login-box').style.display='none';
+      document.getElementById('admin-panel').style.display='block';
+      document.getElementById('auth-status').textContent='Signed in as '+user.email;
+      document.getElementById('sign-out-btn').style.display='block';
+      loadFromFirebase();
+    } else {
+      document.getElementById('login-box').style.display='block';
+      document.getElementById('admin-panel').style.display='none';
+      document.getElementById('auth-status').textContent='Not logged in';
+      document.getElementById('sign-out-btn').style.display='none';
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════════════════════
+function doLogin(){
+  const email = document.getElementById('email-input').value.trim();
+  const pass  = document.getElementById('pass-input').value;
+  const btn   = document.getElementById('login-btn');
+  const err   = document.getElementById('login-err');
+  if(!email||!pass){err.textContent='Please enter email and password.';return;}
+  btn.disabled=true;
+  btn.innerHTML='<span class="spinner"></span>Signing in...';
+  err.textContent='';
+  firebase.auth().signInWithEmailAndPassword(email,pass)
+    .then(()=>{btn.disabled=false;btn.textContent='Sign In';})
+    .catch(e=>{err.textContent=e.message;btn.disabled=false;btn.textContent='Sign In';});
+}
+
+function signOut(){
+  firebase.auth().signOut();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════════════════════════
+function switchTab(name,btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('tab-'+name).classList.add('on');
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// LOAD FROM FIREBASE
+// ═══════════════════════════════════════════════════════════════════════
+function toArr(d){
+  if(!d)return null;
+  if(Array.isArray(d))return d;
+  if(typeof d==='object')return Object.values(d);
+  return null;
+}
+
+function loadFromFirebase(){
+  setStatus('sched-status','<span class="spinner"></span>Loading...');
+  db.ref('iplbuzz/schedule').once('value',snap=>{
+    const d=toArr(snap.val());
+    if(d&&d.length){
+      currentSchedule=d;
+      setStatus('sched-status','✅ Loaded from Firebase');
+    } else {
+      setStatus('sched-status','⚠️ No Firebase data — showing defaults');
+    }
+    renderMatchTable();
+  });
+  db.ref('iplbuzz/points').once('value',snap=>{
+    const d=toArr(snap.val());
+    if(d&&d.length) currentPoints=d;
+    renderPointsGrid();
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// MATCH TABLE RENDER
+// ═══════════════════════════════════════════════════════════════════════
+function renderMatchTable(){
+  const tbody = document.getElementById('match-tbody');
+  tbody.innerHTML = currentSchedule.map((m,i)=>{
+    const done = m.completed||false;
+    const nr   = m.nr||false;
+    const cls  = nr?'nr-row':done?'completed-row':'upcoming-row';
+    return `<tr class="match-row ${cls}" id="mrow-${i}">
+      <td><div class="match-no">${m.no}</div><div class="match-date">${m.date}</div></td>
+      <td><div class="teams">${m.t1} vs ${m.t2}</div><div class="match-date">${m.time}</div></td>
+      <td style="text-align:center"><input type="checkbox" class="done-check" ${done?'checked':''} onchange="toggleDone(${i},this)"></td>
+      <td style="text-align:center"><input type="checkbox" class="done-check" style="accent-color:var(--gold)" ${nr?'checked':''} onchange="toggleNR(${i},this)"></td>
+      <td><input class="mini-input result-input" value="${m.result||''}" placeholder="e.g. RCB won by 6 wkts" onchange="updateField(${i},'result',this.value)"></td>
+      <td class="score-cell"><input class="mini-input" value="${m.t1score||''}" placeholder="${m.t1} score" onchange="updateField(${i},'t1score',this.value)"></td>
+      <td class="ov-cell"><input class="mini-input" value="${m.t1ov||''}" placeholder="ov" onchange="updateField(${i},'t1ov',this.value)"></td>
+      <td class="score-cell"><input class="mini-input" value="${m.t2score||''}" placeholder="${m.t2} score" onchange="updateField(${i},'t2score',this.value)"></td>
+      <td class="ov-cell"><input class="mini-input" value="${m.t2ov||''}" placeholder="ov" onchange="updateField(${i},'t2ov',this.value)"></td>
+    </tr>`;
+  }).join('');
+}
+
+function toggleDone(i,el){
+  currentSchedule[i].completed = el.checked;
+  const row = document.getElementById('mrow-'+i);
+  row.className = 'match-row '+(currentSchedule[i].nr?'nr-row':el.checked?'completed-row':'upcoming-row');
+}
+function toggleNR(i,el){
+  currentSchedule[i].nr = el.checked;
+  if(el.checked) currentSchedule[i].completed=true;
+  const row = document.getElementById('mrow-'+i);
+  row.className = 'match-row '+(el.checked?'nr-row':currentSchedule[i].completed?'completed-row':'upcoming-row');
+}
+function updateField(i,key,val){
+  currentSchedule[i][key]=val;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// POINTS GRID RENDER
+// ═══════════════════════════════════════════════════════════════════════
+function renderPointsGrid(){
+  const grid = document.getElementById('pts-grid');
+  grid.innerHTML = currentPoints.map((p,i)=>{
+    const col = TEAM_COLORS[p.team]||'#888';
+    return `<div class="pts-card" style="border-left:3px solid ${col}">
+      <div class="pts-team" style="color:${col}">
+        <span>${p.team}</span>
+      </div>
+      <div class="pts-fields">
+        <div class="pts-field"><label>M</label><input type="number" value="${p.m}" onchange="updatePts(${i},'m',+this.value)" min="0" max="30"></div>
+        <div class="pts-field"><label>W</label><input type="number" value="${p.w}" onchange="updatePts(${i},'w',+this.value)" min="0" max="30"></div>
+        <div class="pts-field"><label>L</label><input type="number" value="${p.l}" onchange="updatePts(${i},'l',+this.value)" min="0" max="30"></div>
+        <div class="pts-field"><label>NR</label><input type="number" value="${p.nr}" onchange="updatePts(${i},'nr',+this.value)" min="0" max="30"></div>
+        <div class="pts-field"><label>Pts</label><input type="number" value="${p.pts}" onchange="updatePts(${i},'pts',+this.value)" min="0" max="60"></div>
+        <div class="pts-field" style="grid-column:span 3"><label>NRR</label><input type="text" value="${p.nrr}" onchange="updatePts(${i},'nrr',this.value)" placeholder="+0.000"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updatePts(i,key,val){
+  currentPoints[i][key]=val;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// AUTO-COMPUTE POINTS FROM SCHEDULE
+// ═══════════════════════════════════════════════════════════════════════
+function autoComputePoints(){
+  const counts={};
+  currentPoints.forEach(p=>{counts[p.team]={m:0,w:0,l:0,nr:0,pts:0};});
+  currentSchedule.forEach(m=>{
+    if(!m.completed) return;
+    const isNR=m.nr||false;
+    if(counts[m.t1]){counts[m.t1].m++;}
+    if(counts[m.t2]){counts[m.t2].m++;}
+    if(isNR){
+      if(counts[m.t1]){counts[m.t1].nr++;counts[m.t1].pts+=1;}
+      if(counts[m.t2]){counts[m.t2].nr++;counts[m.t2].pts+=1;}
+      return;
+    }
+    // Determine winner from result string
+    const res=(m.result||'').toLowerCase();
+    let winner='';
+    if(res.includes(m.t1.toLowerCase())) winner=m.t1;
+    else if(res.includes(m.t2.toLowerCase())) winner=m.t2;
+    if(winner===m.t1){
+      if(counts[m.t1]){counts[m.t1].w++;counts[m.t1].pts+=2;}
+      if(counts[m.t2]){counts[m.t2].l++;}
+    } else if(winner===m.t2){
+      if(counts[m.t2]){counts[m.t2].w++;counts[m.t2].pts+=2;}
+      if(counts[m.t1]){counts[m.t1].l++;}
+    }
+  });
+  currentPoints = currentPoints.map(p=>({...p,...counts[p.team]}));
+  renderPointsGrid();
+  setStatus('pts-status','⚡ Points auto-computed from schedule — please update NRR manually');
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// SAVE TO FIREBASE
+// ═══════════════════════════════════════════════════════════════════════
+function saveSchedule(){
+  setStatus('sched-status','<span class="spinner"></span>Saving...');
+  db.ref('iplbuzz/schedule').set(currentSchedule)
+    .then(()=>setStatus('sched-status','✅ Saved to Firebase! index.html auto-updated.'))
+    .catch(e=>setStatus('sched-status','❌ Error: '+e.message));
+}
+
+function savePoints(){
+  setStatus('pts-status','<span class="spinner"></span>Saving...');
+  db.ref('iplbuzz/points').set(currentPoints)
+    .then(()=>setStatus('pts-status','✅ Saved to Firebase! index.html auto-updated.'))
+    .catch(e=>setStatus('pts-status','❌ Error: '+e.message));
+}
+
+function seedDefaults(){
+  if(!confirm('This will overwrite Firebase with default data. Continue?')) return;
+  currentSchedule = JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));
+  currentPoints   = JSON.parse(JSON.stringify(DEFAULT_POINTS));
+  renderMatchTable();
+  renderPointsGrid();
+  Promise.all([
+    db.ref('iplbuzz/schedule').set(currentSchedule),
+    db.ref('iplbuzz/points').set(currentPoints)
+  ]).then(()=>setStatus('sched-status','✅ Defaults seeded to Firebase!'))
+    .catch(e=>setStatus('sched-status','❌ '+e.message));
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════════════════════════════════
+function saveSettings(){
+  const proxy = document.getElementById('set-proxy').value.trim();
+  if(proxy) localStorage.setItem('cricapi_proxy', proxy);
+  alert('Settings saved. Update the proxy URL in index.html localStorage via browser console:\nlocalStorage.setItem(\'cricapi_proxy\', \''+proxy+'\')');
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════════════════
+function setStatus(id, html){
+  const el = document.getElementById(id);
+  if(el) el.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════════════════════════════
+loadFirebaseSDKs(initFirebase);
 </script>
-</body></html>
+</body>
+</html>
