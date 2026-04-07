@@ -1,0 +1,30 @@
+match_no,innings,batting_team,player,runs,balls,fours,sixes,strike_rate,dismissal,bowler
+1,1,SRH,Abhishek Sharma,2,4,0,0,50.0,c Padikkal b Duffy,Jacob Duffy
+1,1,SRH,Travis Head,4,7,0,0,57.1,c Salt b Duffy,Jacob Duffy
+1,1,SRH,Ishan Kishan,80,38,13,0,210.5,c Salt b Abhinandan,Abhinandan Singh
+1,1,SRH,Heinrich Klaasen,31,22,3,1,140.9,c Padikkal b Shepherd,Romario Shepherd
+1,1,SRH,Nitish K Reddy,0,3,0,0,0.0,c Padikkal b Duffy,Jacob Duffy
+1,1,SRH,Aniket Verma,43,17,5,2,252.9,c Kohli b Shepherd,Romario Shepherd
+1,1,SRH,Salil Arora,9,6,0,1,150.0,c Padikkal b Suyash,Suyash Sharma
+1,1,SRH,Harsh Dubey,3,3,0,0,100.0,c sub b Shepherd,Romario Shepherd
+1,1,SRH,Harshal Patel,0,2,0,0,0.0,c Padikkal b Bhuvneshwar,Bhuvneshwar Kumar
+1,1,SRH,David Payne,8,5,1,0,160.0,not out,
+1,1,SRH,Jaydev Unadkat,3,3,0,0,100.0,not out,
+1,2,RCB,Phil Salt,8,7,2,0,114.3,c Klaasen b Unadkat,Jaydev Unadkat
+1,2,RCB,Virat Kohli,69,38,5,5,181.6,not out,
+1,2,RCB,Devdutt Padikkal,61,26,7,4,234.6,c Klaasen b Harsh Dubey,Harsh Dubey
+1,2,RCB,Rajat Patidar,31,12,2,3,258.3,c Harsh Dubey b Payne,David Payne
+1,2,RCB,Jitesh Sharma,0,1,0,0,0.0,c Unadkat b Payne,David Payne
+1,2,RCB,Tim David,16,10,1,1,160.0,not out,
+2,1,KKR,Ajinkya Rahane,67,40,3,5,167.5,c Hardik Pandya b Shardul Thakur,Shardul Thakur
+2,1,KKR,Finn Allen,37,17,6,2,217.6,c Tilak Varma b Shardul Thakur,Shardul Thakur
+2,1,KKR,Cameron Green,18,10,1,1,180.0,c Sherfane Rutherford b Shardul Thakur,Shardul Thakur
+2,1,KKR,Angkrish Raghuvanshi,51,29,6,2,175.9,c Tilak Varma b Hardik Pandya,Hardik Pandya
+2,1,KKR,Rinku Singh,33,21,4,0,157.1,not out,
+2,1,KKR,Ramandeep Singh,4,4,0,0,100.0,not out,
+2,2,MI,Ryan Rickelton,81,43,4,8,188.4,run out (Anukul Roy),
+2,2,MI,Rohit Sharma,78,38,6,6,205.3,c Anukul Roy b Vaibhav Arora,Vaibhav Arora
+2,2,MI,Suryakumar Yadav,16,8,3,0,200.0,c Rinku Singh b Kartik Tyagi,Kartik Tyagi
+2,2,MI,Tilak Varma,20,14,4,0,142.9,c (sub) Manish Pandey b Sunil Narine,Sunil Narine
+2,2,MI,Hardik Pandya,18,11,3,0,163.6,not out,
+2,2,MI,Naman Dhir,5,2,1,0,250.0,not out,

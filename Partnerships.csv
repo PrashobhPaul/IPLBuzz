@@ -1,0 +1,25 @@
+match_no,innings,wkt,p1,p2,runs,balls
+1,1,1,Abhishek Sharma,Travis Head,5,11
+1,1,2,Travis Head,Ishan Kishan,24,16
+1,1,3,Ishan Kishan,Heinrich Klaasen,71,44
+1,1,4,Ishan Kishan,Nitish K Reddy,0,3
+1,1,5,Ishan Kishan,Aniket Verma,55,28
+1,1,6,Ishan Kishan,Salil Arora,14,9
+1,1,7,Aniket Verma,Harsh Dubey,8,5
+1,1,8,Aniket Verma,Harshal Patel,9,5
+1,1,9,David Payne,Jaydev Unadkat,11,8
+1,2,1,Phil Salt,Virat Kohli,9,7
+1,2,2,Devdutt Padikkal,Virat Kohli,101,45
+1,2,3,Rajat Patidar,Virat Kohli,53,22
+1,2,4,Jitesh Sharma,Virat Kohli,0,1
+1,2,5,Tim David,Virat Kohli,40,19
+2,1,1,Finn Allen,Ajinkya Rahane,69,31
+2,1,2,Ajinkya Rahane,Cameron Green,40,23
+2,1,3,Ajinkya Rahane,Angkrish Raghuvanshi,96,56
+2,1,4,Rinku Singh,Angkrish Raghuvanshi,60,31
+2,1,5,Rinku Singh,Ramandeep Singh,15,10
+2,2,1,Ryan Rickelton,Rohit Sharma,148,71
+2,2,2,Ryan Rickelton,Suryakumar Yadav,31,16
+2,2,3,Ryan Rickelton,Tilak Varma,36,22
+2,2,4,Hardik Pandya,Tilak Varma,31,18
+2,2,5,Hardik Pandya,Naman Dhir,9,5
