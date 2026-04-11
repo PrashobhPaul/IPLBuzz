@@ -7,99 +7,59 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#07080c;--s1:#0d0f17;--s2:#141720;--bd:#222840;--bd2:#2c3555;--gold:#f0a500;--red:#e0341a;--green:#1db954;--txt:#dde1ee;--dim:#606880;--dim2:#9099b4}
-body{background:var(--bg);color:var(--txt);font-family:'DM Sans',system-ui,sans-serif;min-height:100vh}
-@import url('https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&family=DM+Sans:wght@400;500&family=Barlow+Condensed:wght@400;600;700&display=swap');
-
-/* ── NAV ── */
+body{background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,sans-serif;min-height:100vh;font-size:14px}
 nav{display:flex;align-items:center;height:54px;padding:0 20px;background:var(--s1);border-bottom:1px solid var(--bd);gap:12px;position:sticky;top:0;z-index:100}
-.brand{font-family:Teko,sans-serif;font-size:22px;font-weight:700;color:var(--txt)}
+.brand{font-size:22px;font-weight:700}
 .brand b{color:var(--gold)}
-.badge{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:3px 8px;border-radius:4px;background:rgba(240,165,0,.15);color:var(--gold);border:1px solid rgba(240,165,0,.3)}
-#auth-status{margin-left:auto;font-family:'Barlow Condensed',sans-serif;font-size:12px;color:var(--dim2)}
-#sign-out-btn{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:5px 12px;border-radius:4px;border:1px solid var(--bd2);background:transparent;color:var(--dim2);cursor:pointer;display:none}
+.badge{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:3px 8px;border-radius:4px;background:rgba(240,165,0,.15);color:var(--gold);border:1px solid rgba(240,165,0,.3)}
+#auth-status{margin-left:auto;font-size:12px;color:var(--dim2)}
+#sign-out-btn{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:5px 12px;border-radius:4px;border:1px solid var(--bd2);background:transparent;color:var(--dim2);cursor:pointer;display:none}
 #sign-out-btn:hover{background:var(--s2);color:var(--txt)}
-
-/* ── LAYOUT ── */
-.container{max-width:1200px;margin:0 auto;padding:20px 16px}
-.section{margin-bottom:32px}
-.section-title{font-family:Teko,sans-serif;font-size:22px;font-weight:700;color:var(--txt);margin-bottom:4px}
-.section-sub{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--dim);margin-bottom:16px}
-
-/* ── TABS ── */
-.tabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin-bottom:24px}
-.tab-btn{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim2);background:none;border:none;cursor:pointer;padding:10px 16px;border-bottom:2px solid transparent;transition:.15s}
-.tab-btn:hover{color:var(--txt)}
-.tab-btn.on{color:var(--gold);border-bottom-color:var(--gold)}
-.tab-panel{display:none}
-.tab-panel.on{display:block}
-
-/* ── LOGIN ── */
+.container{max-width:1100px;margin:0 auto;padding:24px 18px}
+.section{margin-bottom:28px}
+.section-title{font-size:20px;font-weight:700;margin-bottom:4px}
+.section-sub{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:14px}
 #login-box{max-width:380px;margin:80px auto;background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:32px}
-.login-title{font-family:Teko,sans-serif;font-size:28px;font-weight:700;margin-bottom:4px}
-.login-sub{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:24px}
+.login-title{font-size:24px;font-weight:700;margin-bottom:4px}
+.login-sub{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:24px}
 .field{margin-bottom:14px}
-.field label{display:block;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:5px}
-.field input{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:9px 12px;color:var(--txt);font-size:14px;outline:none;transition:.15s}
+.field label{display:block;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:5px}
+.field input{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:10px 12px;color:var(--txt);font-size:14px;outline:none;transition:.15s}
 .field input:focus{border-color:var(--gold)}
-.btn-primary{width:100%;background:var(--gold);color:#000;border:none;border-radius:6px;padding:10px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:.15s;margin-top:4px}
+.btn-primary{width:100%;background:var(--gold);color:#000;border:none;border-radius:6px;padding:11px;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;margin-top:4px}
 .btn-primary:hover{background:#d4900a}
 .btn-primary:disabled{opacity:.5;cursor:not-allowed}
-#login-err{color:var(--red);font-family:'Barlow Condensed',sans-serif;font-size:12px;margin-top:10px;min-height:18px}
-
-/* ── SAVE BAR ── */
-.save-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
-.btn-save{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:8px 18px;border-radius:6px;border:none;background:var(--green);color:#000;cursor:pointer;transition:.15s}
+#login-err{color:var(--red);font-size:12px;margin-top:10px;min-height:18px}
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:20px;margin-bottom:16px}
+.card h3{font-size:16px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.drop{border:2px dashed var(--bd2);border-radius:10px;padding:32px 20px;text-align:center;cursor:pointer;transition:.15s;background:var(--s2)}
+.drop:hover,.drop.hover{border-color:var(--gold);background:rgba(240,165,0,.04)}
+.drop-icon{font-size:32px;margin-bottom:8px}
+.drop-text{font-size:14px;color:var(--dim2)}
+.drop-text b{color:var(--gold)}
+.drop-sub{font-size:11px;color:var(--dim);margin-top:6px;letter-spacing:.5px}
+.file-list{margin-top:14px;display:flex;flex-direction:column;gap:6px}
+.file-row{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;font-size:13px}
+.file-row .fname{flex:1;font-family:monospace;color:var(--txt)}
+.file-row .fstatus{font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700}
+.fstatus.ok{color:var(--green)}
+.fstatus.err{color:var(--red)}
+.fstatus.pending{color:var(--dim2)}
+.btn{font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:9px 18px;border-radius:6px;border:none;cursor:pointer;transition:.15s}
+.btn-save{background:var(--green);color:#000}
 .btn-save:hover{background:#17a348}
 .btn-save:disabled{opacity:.5;cursor:not-allowed}
-.btn-secondary{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:7px 14px;border-radius:6px;border:1px solid var(--bd2);background:transparent;color:var(--dim2);cursor:pointer;transition:.15s}
-.btn-secondary:hover{background:var(--s2);color:var(--txt)}
-#save-status{font-family:'Barlow Condensed',sans-serif;font-size:12px;color:var(--dim2)}
-
-/* ── MATCH TABLE ── */
-.match-table{width:100%;border-collapse:separate;border-spacing:0 4px}
-.match-row{background:var(--s1);transition:.1s}
-.match-row.completed-row td:first-child{border-left:3px solid var(--green)}
-.match-row.upcoming-row td:first-child{border-left:3px solid var(--bd2)}
-.match-row.nr-row td:first-child{border-left:3px solid var(--gold)}
-.match-row td{padding:8px 10px;vertical-align:middle;border-top:1px solid var(--bd);border-bottom:1px solid var(--bd)}
-.match-row td:first-child{border-left:3px solid var(--bd2);border-radius:6px 0 0 6px}
-.match-row td:last-child{border-right:1px solid var(--bd);border-radius:0 6px 6px 0}
-.match-no{font-family:Teko,sans-serif;font-size:20px;font-weight:700;color:var(--gold);line-height:1}
-.match-date{font-family:'Barlow Condensed',sans-serif;font-size:10px;color:var(--dim);letter-spacing:1px}
-.teams{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--txt)}
-.mini-input{background:var(--s2);border:1px solid var(--bd);border-radius:5px;padding:5px 8px;color:var(--txt);font-family:'Barlow Condensed',sans-serif;font-size:13px;outline:none;transition:.15s;width:100%}
-.mini-input:focus{border-color:var(--gold)}
-.mini-input.result-input{min-width:160px}
-.score-cell{width:80px}
-.ov-cell{width:60px}
-.done-check{width:16px;height:16px;cursor:pointer;accent-color:var(--green)}
-.th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);padding:6px 10px;text-align:left;border-bottom:1px solid var(--bd)}
-
-/* ── POINTS TABLE ── */
-.pts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px}
-.pts-card{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:14px}
-.pts-team{font-family:Teko,sans-serif;font-size:18px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.pts-fields{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.pts-field label{display:block;font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:3px}
-.pts-field input{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:5px;padding:6px 8px;color:var(--txt);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;outline:none;text-align:center;transition:.15s}
-.pts-field input:focus{border-color:var(--gold)}
-
-/* ── SETTINGS ── */
-.settings-card{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:20px;margin-bottom:16px;max-width:600px}
-.settings-card h3{font-family:Teko,sans-serif;font-size:18px;font-weight:700;margin-bottom:12px}
-.setting-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.setting-row label{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);width:120px;flex-shrink:0}
-.setting-row input{flex:1;background:var(--s2);border:1px solid var(--bd);border-radius:5px;padding:7px 10px;color:var(--txt);font-size:13px;outline:none;font-family:monospace}
-.setting-row input:focus{border-color:var(--gold)}
-.info-box{background:rgba(240,165,0,.06);border:1px solid rgba(240,165,0,.2);border-radius:6px;padding:12px 14px;font-family:'Barlow Condensed',sans-serif;font-size:13px;color:var(--dim2);line-height:1.7}
-.info-box code{color:var(--gold);background:rgba(240,165,0,.1);padding:1px 5px;border-radius:3px;font-size:12px}
-.tag-green{color:var(--green);font-weight:700}
-.tag-red{color:var(--red);font-weight:700}
-
-/* ── MISC ── */
-#admin-panel{display:none}
-.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--bd);border-top-color:var(--gold);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+.btn-sec{background:transparent;color:var(--dim2);border:1px solid var(--bd2)}
+.btn-sec:hover{background:var(--s2);color:var(--txt)}
+.save-bar{display:flex;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap}
+#save-log{font-size:12px;color:var(--dim2);min-height:18px}
+.preview{margin-top:14px;font-size:12px;color:var(--dim2);background:var(--s2);padding:12px 14px;border-radius:6px;border-left:3px solid var(--gold);font-family:monospace;max-height:200px;overflow:auto}
+.preview b{color:var(--gold)}
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--bd);border-top-color:var(--gold);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
 @keyframes spin{to{transform:rotate(360deg)}}
+.info{background:rgba(240,165,0,.06);border:1px solid rgba(240,165,0,.2);border-radius:6px;padding:12px 14px;font-size:12px;color:var(--dim2);line-height:1.7;margin-top:10px}
+.info code{color:var(--gold);background:rgba(240,165,0,.1);padding:1px 5px;border-radius:3px}
+#admin-panel{display:none}
 </style>
 </head>
 <body>
@@ -107,24 +67,19 @@ nav{display:flex;align-items:center;height:54px;padding:0 20px;background:var(--
 <nav>
   <span class="brand">IPL<b>Buzz</b></span>
   <span class="badge">Admin</span>
-  <span id="auth-status">Not logged in</span>
+  <span id="auth-status">Locked</span>
   <button id="sign-out-btn" onclick="signOut()">Sign Out</button>
 </nav>
 
 <!-- LOGIN -->
 <div id="login-box">
-  <div class="login-title">Admin Login</div>
-  <div class="login-sub">IPLBuzz · Firebase Admin</div>
-  <div class="field">
-    <label>Email</label>
-    <input type="email" id="email-input" placeholder="admin@iplbuzz.com" autocomplete="username">
-  </div>
+  <div class="login-title">Admin Access</div>
+  <div class="login-sub">Enter password to continue</div>
   <div class="field">
     <label>Password</label>
-    <input type="password" id="pass-input" placeholder="••••••••" autocomplete="current-password"
-      onkeydown="if(event.key==='Enter')doLogin()">
+    <input type="password" id="pass-input" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
   </div>
-  <button class="btn-primary" id="login-btn" onclick="doLogin()">Sign In</button>
+  <button class="btn-primary" id="login-btn" onclick="doLogin()">Unlock</button>
   <div id="login-err"></div>
 </div>
 
@@ -132,168 +87,58 @@ nav{display:flex;align-items:center;height:54px;padding:0 20px;background:var(--
 <div id="admin-panel">
   <div class="container">
 
-    <!-- TABS -->
-    <div class="tabs">
-      <button class="tab-btn on" onclick="switchTab('schedule',this)">📅 Schedule & Results</button>
-      <button class="tab-btn" onclick="switchTab('points',this)">📊 Points Table</button>
-      <button class="tab-btn" onclick="switchTab('settings',this)">⚙️ Settings</button>
-    </div>
+    <div class="section">
+      <div class="section-title">📂 CSV Data Ingestion</div>
+      <div class="section-sub">Drop CSVs from your repo → preview → save to Firebase</div>
 
-    <!-- SCHEDULE TAB -->
-    <div class="tab-panel on" id="tab-schedule">
-      <div class="section">
-        <div class="section-title">Match Results Manager</div>
-        <div class="section-sub">Edit results below → Save to Firebase → index.html auto-updates</div>
+      <div class="card">
+        <h3>Upload files</h3>
+        <div class="drop" id="drop-zone" onclick="document.getElementById('file-input').click()">
+          <div class="drop-icon">📥</div>
+          <div class="drop-text">Drop CSV files here or <b>click to browse</b></div>
+          <div class="drop-sub">Schedule.csv · Points.csv · Batting.csv · Bowling.csv · FOW.csv · Partnerships.csv · Squads.csv · Teams.csv</div>
+        </div>
+        <input type="file" id="file-input" multiple accept=".csv" style="display:none" onchange="handleFiles(this.files)">
+
+        <div class="file-list" id="file-list"></div>
+        <div class="preview" id="preview" style="display:none"></div>
+
         <div class="save-bar">
-          <button class="btn-save" onclick="saveSchedule()">💾 Save Schedule to Firebase</button>
-          <button class="btn-secondary" onclick="loadFromFirebase()">↓ Reload from Firebase</button>
-          <button class="btn-secondary" onclick="seedDefaults()">🌱 Seed Defaults</button>
-          <span id="sched-status"></span>
+          <button class="btn btn-save" id="save-btn" onclick="saveAll()" disabled>💾 Save All to Firebase</button>
+          <button class="btn btn-sec" onclick="clearAll()">Clear</button>
+          <span id="save-log"></span>
         </div>
-        <div style="overflow-x:auto">
-          <table class="match-table" id="match-table">
-            <thead>
-              <tr>
-                <th class="th">No</th>
-                <th class="th">Date</th>
-                <th class="th">Teams</th>
-                <th class="th">Done?</th>
-                <th class="th">NR?</th>
-                <th class="th">Result</th>
-                <th class="th">T1 Score</th>
-                <th class="th">T1 Ov</th>
-                <th class="th">T2 Score</th>
-                <th class="th">T2 Ov</th>
-              </tr>
-            </thead>
-            <tbody id="match-tbody"></tbody>
-          </table>
+
+        <div class="info">
+          <b>How it works:</b> Filenames are auto-detected. Schedule & Points go to their own Firebase nodes. Batting/Bowling/FOW/Partnerships are merged per match → <code>iplbuzz/scorecards/{matchNo}</code>. Squads → <code>iplbuzz/squads</code>. Teams → <code>iplbuzz/teams</code>. Existing nodes are overwritten for a clean snapshot.
         </div>
       </div>
-    </div>
 
-    <!-- POINTS TAB -->
-    <div class="tab-panel" id="tab-points">
-      <div class="section">
-        <div class="section-title">Points Table Editor</div>
-        <div class="section-sub">Update after each match — NRR must be entered manually</div>
-        <div class="save-bar">
-          <button class="btn-save" onclick="savePoints()">💾 Save Points to Firebase</button>
-          <button class="btn-secondary" onclick="autoComputePoints()">⚡ Auto-Compute from Schedule</button>
-          <span id="pts-status"></span>
-        </div>
-        <div class="pts-grid" id="pts-grid"></div>
-      </div>
-    </div>
-
-    <!-- SETTINGS TAB -->
-    <div class="tab-panel" id="tab-settings">
-      <div class="section">
-        <div class="section-title">Settings</div>
-        <div class="section-sub">CricAPI & Cloudflare Worker configuration</div>
-
-        <div class="settings-card">
-          <h3>🔑 CricAPI Key</h3>
-          <div class="setting-row">
-            <label>API Key</label>
-            <input type="text" id="set-apikey" placeholder="a7402ce9-..." value="a7402ce9-871c-4dee-813a-5484b141ef5a">
-          </div>
-          <button class="btn-secondary" onclick="saveSettings()">Save</button>
-        </div>
-
-        <div class="settings-card">
-          <h3>🌐 Cloudflare Worker Proxy</h3>
-          <div class="setting-row">
-            <label>Worker URL</label>
-            <input type="text" id="set-proxy" placeholder="https://cricapi-proxy.yourname.workers.dev">
-          </div>
-          <button class="btn-secondary" onclick="saveSettings()">Save</button>
-          <div class="info-box" style="margin-top:12px">
-            <strong>Why you need this:</strong> CricAPI blocks direct browser requests (CORS). A Cloudflare Worker acts as a middleman.<br><br>
-            <strong>Setup:</strong><br>
-            1. Go to <code>workers.cloudflare.com</code> → Create Worker<br>
-            2. Paste the code from <code>worker.js</code> in your repo<br>
-            3. Deploy → copy the URL and paste it above<br>
-            4. The worker forwards requests: <code>/proxy?url=https://api.cricapi.com/...</code>
-          </div>
-        </div>
-
-        <div class="settings-card">
-          <h3>🔐 Firebase Rules</h3>
-          <div class="info-box">
-            Set your Firebase Realtime Database rules to:<br><br>
-            <code>{<br>&nbsp;&nbsp;"rules": {<br>&nbsp;&nbsp;&nbsp;&nbsp;".read": true,<br>&nbsp;&nbsp;&nbsp;&nbsp;".write": "auth != null"<br>&nbsp;&nbsp;}<br>}</code><br><br>
-            This allows <span class="tag-green">public reads</span> (index.html works for all) and <span class="tag-red">writes only when admin is logged in</span>.
-          </div>
+      <div class="card">
+        <h3>🔐 Security notes</h3>
+        <div class="info">
+          Password is checked client-side for simple UX. After unlock, the admin signs in anonymously to Firebase so writes still require <code>auth != null</code> per your DB rules. Change the password by editing <code>ADMIN_PASSWORD</code> near the top of this file's script.<br><br>
+          <b>Firebase rules (keep as-is):</b><br>
+          <code>{ "rules": { ".read": true, ".write": "auth != null" } }</code><br><br>
+          Also enable <b>Anonymous</b> as a sign-in provider in Firebase Console → Authentication → Sign-in method.
         </div>
       </div>
-    </div>
 
-  </div><!-- /container -->
-</div><!-- /admin-panel -->
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 
 <script>
-// ═══════════════════════════════════════════════════════════════════════
-// DEFAULT DATA — matches Firebase seed exactly
-// ═══════════════════════════════════════════════════════════════════════
-const DEFAULT_SCHEDULE = [
-  {no:1,date:'Sat, Mar 28',d:'Mar 28',t1:'RCB',t2:'SRH',time:'7:30 PM',venue:'M.Chinnaswamy Stadium, Bengaluru',completed:true,result:'RCB won by 6 wkts',t1score:'203/4',t1ov:'15.4',t2score:'201/9',t2ov:'20'},
-  {no:2,date:'Sun, Mar 29',d:'Mar 29',t1:'MI',t2:'KKR',time:'7:30 PM',venue:'Wankhede Stadium, Mumbai',completed:true,result:'MI won by 6 wkts',t1score:'224/4',t1ov:'19.1',t2score:'220/4',t2ov:'20'},
-  {no:3,date:'Mon, Mar 30',d:'Mar 30',t1:'RR',t2:'CSK',time:'7:30 PM',venue:'Barsapara Cricket Stadium, Guwahati',completed:true,result:'RR won by 8 wkts',t1score:'128/2',t1ov:'12.1',t2score:'127/10',t2ov:'19.4'},
-  {no:4,date:'Tue, Mar 31',d:'Mar 31',t1:'PBKS',t2:'GT',time:'7:30 PM',venue:'New International Cricket Stadium, New Chandigarh',completed:true,result:'PBKS won by 3 wkts',t1score:'165/7',t1ov:'19.1',t2score:'162/6',t2ov:'20'},
-  {no:5,date:'Wed, Apr 1',d:'Apr 1',t1:'LSG',t2:'DC',time:'7:30 PM',venue:'Ekana Cricket Stadium, Lucknow',completed:true,result:'DC won by 6 wkts',t1score:'141/10',t1ov:'18.4',t2score:'145/4',t2ov:'17.1'},
-  {no:6,date:'Thu, Apr 2',d:'Apr 2',t1:'KKR',t2:'SRH',time:'7:30 PM',venue:'Eden Gardens, Kolkata',completed:true,result:'SRH won by 65 runs',t1score:'161/10',t1ov:'20',t2score:'226/8',t2ov:'20'},
-  {no:7,date:'Fri, Apr 3',d:'Apr 3',t1:'CSK',t2:'PBKS',time:'7:30 PM',venue:'MA Chidambaram Stadium, Chennai',completed:true,result:'PBKS won by 5 wkts',t1score:'209/5',t1ov:'20',t2score:'210/5',t2ov:'18.4'},
-  {no:8,date:'Sat, Apr 4',d:'Apr 4',t1:'DC',t2:'MI',time:'3:30 PM',venue:'Arun Jaitley Stadium, Delhi',completed:true,result:'DC won by 6 wkts',t1score:'164/4',t1ov:'18.1',t2score:'162/6',t2ov:'20'},
-  {no:9,date:'Sat, Apr 4',d:'Apr 4',t1:'GT',t2:'RR',time:'7:30 PM',venue:'Narendra Modi Stadium, Ahmedabad',completed:true,result:'RR won by 6 runs',t1score:'204/8',t1ov:'20',t2score:'210/6',t2ov:'20'},
-  {no:10,date:'Sun, Apr 5',d:'Apr 5',t1:'SRH',t2:'LSG',time:'3:30 PM',venue:'Rajiv Gandhi International Stadium, Hyderabad',completed:true,result:'LSG won by 5 wkts',t1score:'156/9',t1ov:'20',t2score:'160/5',t2ov:'19.5'},
-  {no:11,date:'Sun, Apr 5',d:'Apr 5',t1:'RCB',t2:'CSK',time:'7:30 PM',venue:'M.Chinnaswamy Stadium, Bengaluru',completed:true,result:'RCB won by 43 runs',t1score:'250/3',t1ov:'20',t2score:'207/10',t2ov:'19.4'},
-  {no:12,date:'Mon, Apr 6',d:'Apr 6',t1:'KKR',t2:'PBKS',time:'7:30 PM',venue:'Eden Gardens, Kolkata',completed:true,result:'Match Abandoned',t1score:'25/2',t1ov:'3.4',t2score:'—',t2ov:'—',nr:true},
-  {no:13,date:'Tue, Apr 7',d:'Apr 7',t1:'RR',t2:'MI',time:'7:30 PM',venue:'ACA Stadium, Guwahati'},
-  {no:14,date:'Wed, Apr 8',d:'Apr 8',t1:'DC',t2:'GT',time:'7:30 PM',venue:'Arun Jaitley Stadium, Delhi'},
-  {no:15,date:'Thu, Apr 9',d:'Apr 9',t1:'KKR',t2:'LSG',time:'7:30 PM',venue:'Eden Gardens, Kolkata'},
-  {no:16,date:'Fri, Apr 10',d:'Apr 10',t1:'RR',t2:'RCB',time:'7:30 PM',venue:'Sawai Mansingh Stadium, Jaipur'},
-  {no:17,date:'Sat, Apr 11',d:'Apr 11',t1:'PBKS',t2:'SRH',time:'3:30 PM',venue:'New International Cricket Stadium, New Chandigarh'},
-  {no:18,date:'Sat, Apr 11',d:'Apr 11',t1:'CSK',t2:'DC',time:'7:30 PM',venue:'MA Chidambaram Stadium, Chennai'},
-  {no:19,date:'Sun, Apr 12',d:'Apr 12',t1:'LSG',t2:'GT',time:'3:30 PM',venue:'Ekana Cricket Stadium, Lucknow'},
-  {no:20,date:'Sun, Apr 12',d:'Apr 12',t1:'MI',t2:'RCB',time:'7:30 PM',venue:'Wankhede Stadium, Mumbai'},
-  {no:21,date:'Mon, Apr 13',d:'Apr 13',t1:'SRH',t2:'RR',time:'7:30 PM',venue:'Rajiv Gandhi International Stadium, Hyderabad'},
-  {no:22,date:'Tue, Apr 14',d:'Apr 14',t1:'CSK',t2:'KKR',time:'7:30 PM',venue:'MA Chidambaram Stadium, Chennai'},
-  {no:23,date:'Wed, Apr 15',d:'Apr 15',t1:'RCB',t2:'LSG',time:'7:30 PM',venue:'M.Chinnaswamy Stadium, Bengaluru'},
-  {no:24,date:'Thu, Apr 16',d:'Apr 16',t1:'MI',t2:'PBKS',time:'7:30 PM',venue:'Wankhede Stadium, Mumbai'},
-  {no:25,date:'Fri, Apr 17',d:'Apr 17',t1:'GT',t2:'KKR',time:'7:30 PM',venue:'Narendra Modi Stadium, Ahmedabad'},
-  {no:26,date:'Sat, Apr 18',d:'Apr 18',t1:'RCB',t2:'DC',time:'3:30 PM',venue:'M.Chinnaswamy Stadium, Bengaluru'},
-  {no:27,date:'Sat, Apr 18',d:'Apr 18',t1:'SRH',t2:'CSK',time:'7:30 PM',venue:'Rajiv Gandhi International Stadium, Hyderabad'},
-  {no:28,date:'Sun, Apr 19',d:'Apr 19',t1:'KKR',t2:'RR',time:'3:30 PM',venue:'Eden Gardens, Kolkata'},
-  {no:29,date:'Sun, Apr 19',d:'Apr 19',t1:'PBKS',t2:'LSG',time:'7:30 PM',venue:'New International Cricket Stadium, New Chandigarh'},
-  {no:30,date:'Mon, Apr 20',d:'Apr 20',t1:'GT',t2:'MI',time:'7:30 PM',venue:'Narendra Modi Stadium, Ahmedabad'}
-];
+// ═══════════════════════════════════════════════════════════════
+// CONFIG — change password here
+// ═══════════════════════════════════════════════════════════════
+const ADMIN_PASSWORD = 'iplbuzz2026';
 
-const DEFAULT_POINTS = [
-  {team:'PBKS',m:3,w:2,l:0,nr:1,pts:5,nrr:'+0.637'},
-  {team:'RCB', m:2,w:2,l:0,nr:0,pts:4,nrr:'+2.501'},
-  {team:'RR',  m:2,w:2,l:0,nr:0,pts:4,nrr:'+2.233'},
-  {team:'DC',  m:2,w:2,l:0,nr:0,pts:4,nrr:'+1.170'},
-  {team:'SRH', m:3,w:1,l:2,nr:0,pts:2,nrr:'+0.275'},
-  {team:'MI',  m:2,w:1,l:1,nr:0,pts:2,nrr:'-0.206'},
-  {team:'LSG', m:2,w:1,l:1,nr:0,pts:2,nrr:'-0.542'},
-  {team:'KKR', m:3,w:0,l:2,nr:1,pts:1,nrr:'-1.964'},
-  {team:'GT',  m:2,w:0,l:2,nr:0,pts:0,nrr:'-0.424'},
-  {team:'CSK', m:3,w:0,l:3,nr:0,pts:0,nrr:'-2.517'}
-];
-
-const TEAM_COLORS = {RCB:'#c9112e',MI:'#004ba0',CSK:'#c8a400',KKR:'#3d1a78',SRH:'#f26522',RR:'#2d5da1',PBKS:'#ed1f27',GT:'#1c2951',LSG:'#a4274e',DC:'#0072bc'};
-
-// ═══════════════════════════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════════════════════════
-let db = null;
-let currentSchedule = JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));
-let currentPoints   = JSON.parse(JSON.stringify(DEFAULT_POINTS));
-
-// ═══════════════════════════════════════════════════════════════════════
-// FIREBASE INIT
-// ═══════════════════════════════════════════════════════════════════════
 const FB_CONFIG = {
   apiKey:"AIzaSyC2MvTO5dbDycCQoZbi9EhLTv7DenH6vMk",
   authDomain:"iplbuzz-2de05.firebaseapp.com",
@@ -301,252 +146,222 @@ const FB_CONFIG = {
   projectId:"iplbuzz-2de05"
 };
 
-function loadFirebaseSDKs(callback){
-  const s1 = document.createElement('script');
-  s1.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js';
-  s1.onload = ()=>{
-    const s2 = document.createElement('script');
-    s2.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js';
-    s2.onload = ()=>{
-      const s3 = document.createElement('script');
-      s3.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js';
-      s3.onload = callback;
-      document.head.appendChild(s3);
-    };
-    document.head.appendChild(s2);
-  };
-  document.head.appendChild(s1);
-}
+// ═══════════════════════════════════════════════════════════════
+// FIREBASE INIT
+// ═══════════════════════════════════════════════════════════════
+firebase.initializeApp(FB_CONFIG);
+const db = firebase.database();
+const auth = firebase.auth();
 
-function initFirebase(){
-  if(!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
-  db = firebase.database();
-  firebase.auth().onAuthStateChanged(user=>{
-    if(user){
-      document.getElementById('login-box').style.display='none';
-      document.getElementById('admin-panel').style.display='block';
-      document.getElementById('auth-status').textContent='Signed in as '+user.email;
-      document.getElementById('sign-out-btn').style.display='block';
-      loadFromFirebase();
-    } else {
-      document.getElementById('login-box').style.display='block';
-      document.getElementById('admin-panel').style.display='none';
-      document.getElementById('auth-status').textContent='Not logged in';
-      document.getElementById('sign-out-btn').style.display='none';
-    }
-  });
-}
+auth.onAuthStateChanged(user => {
+  if (user) {
+    document.getElementById('auth-status').textContent = 'Unlocked · anon ' + user.uid.slice(0,6);
+    document.getElementById('sign-out-btn').style.display = 'block';
+  } else {
+    document.getElementById('auth-status').textContent = 'Locked';
+    document.getElementById('sign-out-btn').style.display = 'none';
+  }
+});
 
-// ═══════════════════════════════════════════════════════════════════════
-// AUTH
-// ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════════════════════════════
 function doLogin(){
-  const email = document.getElementById('email-input').value.trim();
-  const pass  = document.getElementById('pass-input').value;
-  const btn   = document.getElementById('login-btn');
-  const err   = document.getElementById('login-err');
-  if(!email||!pass){err.textContent='Please enter email and password.';return;}
-  btn.disabled=true;
-  btn.innerHTML='<span class="spinner"></span>Signing in...';
-  err.textContent='';
-  firebase.auth().signInWithEmailAndPassword(email,pass)
-    .then(()=>{btn.disabled=false;btn.textContent='Sign In';})
-    .catch(e=>{err.textContent=e.message;btn.disabled=false;btn.textContent='Sign In';});
+  const pass = document.getElementById('pass-input').value;
+  const err = document.getElementById('login-err');
+  const btn = document.getElementById('login-btn');
+  if (pass !== ADMIN_PASSWORD) {
+    err.textContent = 'Incorrect password.';
+    return;
+  }
+  err.textContent = '';
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Unlocking...';
+  auth.signInAnonymously()
+    .then(() => {
+      document.getElementById('login-box').style.display = 'none';
+      document.getElementById('admin-panel').style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Unlock';
+    })
+    .catch(e => {
+      err.textContent = 'Firebase auth failed: ' + e.message + ' (enable Anonymous sign-in in Firebase Console)';
+      btn.disabled = false;
+      btn.textContent = 'Unlock';
+    });
 }
 
 function signOut(){
-  firebase.auth().signOut();
+  auth.signOut();
+  location.reload();
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// TABS
-// ═══════════════════════════════════════════════════════════════════════
-function switchTab(name,btn){
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
-  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('on'));
-  btn.classList.add('on');
-  document.getElementById('tab-'+name).classList.add('on');
+// ═══════════════════════════════════════════════════════════════
+// CSV INGESTION
+// ═══════════════════════════════════════════════════════════════
+const KNOWN = ['schedule','points','batting','bowling','fow','partnerships','squads','teams'];
+let parsed = {}; // { schedule: [...], points: [...], ... }
+
+// Drag-drop
+const dz = document.getElementById('drop-zone');
+['dragenter','dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('hover'); }));
+['dragleave','drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('hover'); }));
+dz.addEventListener('drop', e => handleFiles(e.dataTransfer.files));
+
+function handleFiles(files){
+  Array.from(files).forEach(f => {
+    const key = detectKey(f.name);
+    if (!key) {
+      addFileRow(f.name, 'err', 'Unknown file — expected Schedule/Points/Batting/Bowling/FOW/Partnerships/Squads/Teams');
+      return;
+    }
+    Papa.parse(f, {
+      header: true,
+      skipEmptyLines: true,
+      dynamicTyping: true,
+      complete: results => {
+        parsed[key] = results.data;
+        addFileRow(f.name, 'ok', `${results.data.length} rows → ${key}`);
+        updatePreview();
+        document.getElementById('save-btn').disabled = Object.keys(parsed).length === 0;
+      },
+      error: err => addFileRow(f.name, 'err', err.message)
+    });
+  });
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// LOAD FROM FIREBASE
-// ═══════════════════════════════════════════════════════════════════════
-function toArr(d){
-  if(!d)return null;
-  if(Array.isArray(d))return d;
-  if(typeof d==='object')return Object.values(d);
+function detectKey(fname){
+  const low = fname.toLowerCase();
+  for (const k of KNOWN) if (low.includes(k)) return k;
   return null;
 }
 
-function loadFromFirebase(){
-  setStatus('sched-status','<span class="spinner"></span>Loading...');
-  db.ref('iplbuzz/schedule').once('value',snap=>{
-    const d=toArr(snap.val());
-    if(d&&d.length){
-      currentSchedule=d;
-      setStatus('sched-status','✅ Loaded from Firebase');
-    } else {
-      setStatus('sched-status','⚠️ No Firebase data — showing defaults');
+function addFileRow(name, status, note){
+  const list = document.getElementById('file-list');
+  const row = document.createElement('div');
+  row.className = 'file-row';
+  row.innerHTML = `<span class="fname">${name}</span><span class="fstatus ${status}">${status === 'ok' ? '✓' : '✗'} ${note}</span>`;
+  list.appendChild(row);
+}
+
+function updatePreview(){
+  const p = document.getElementById('preview');
+  const keys = Object.keys(parsed);
+  if (!keys.length) { p.style.display = 'none'; return; }
+  p.style.display = 'block';
+  p.innerHTML = keys.map(k => `<b>${k}</b>: ${parsed[k].length} rows`).join('<br>');
+}
+
+function clearAll(){
+  parsed = {};
+  document.getElementById('file-list').innerHTML = '';
+  document.getElementById('preview').style.display = 'none';
+  document.getElementById('save-btn').disabled = true;
+  document.getElementById('save-log').textContent = '';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TRANSFORM + SAVE
+// ═══════════════════════════════════════════════════════════════
+async function saveAll(){
+  const log = document.getElementById('save-log');
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  log.innerHTML = '<span class="spinner"></span>Saving...';
+
+  try {
+    const writes = [];
+
+    if (parsed.schedule) {
+      const sched = parsed.schedule.map(r => ({
+        no: r.no, date: r.date, d: r.d, t1: r.t1, t2: r.t2, time: r.time, venue: r.venue,
+        completed: r.completed === true || r.completed === 'True' || r.completed === 'true',
+        result: r.result || '', t1score: r.t1score || '', t1ov: r.t1ov || '',
+        t2score: r.t2score || '', t2ov: r.t2ov || '',
+        nr: r.nr === true || r.nr === 'True',
+        pom: r.pom || '', toss: r.toss || '',
+        inn1_team: r.inn1_team || '', inn2_team: r.inn2_team || ''
+      }));
+      writes.push(db.ref('iplbuzz/schedule').set(sched));
     }
-    renderMatchTable();
-  });
-  db.ref('iplbuzz/points').once('value',snap=>{
-    const d=toArr(snap.val());
-    if(d&&d.length) currentPoints=d;
-    renderPointsGrid();
-  });
-}
 
-// ═══════════════════════════════════════════════════════════════════════
-// MATCH TABLE RENDER
-// ═══════════════════════════════════════════════════════════════════════
-function renderMatchTable(){
-  const tbody = document.getElementById('match-tbody');
-  tbody.innerHTML = currentSchedule.map((m,i)=>{
-    const done = m.completed||false;
-    const nr   = m.nr||false;
-    const cls  = nr?'nr-row':done?'completed-row':'upcoming-row';
-    return `<tr class="match-row ${cls}" id="mrow-${i}">
-      <td><div class="match-no">${m.no}</div><div class="match-date">${m.date}</div></td>
-      <td><div class="teams">${m.t1} vs ${m.t2}</div><div class="match-date">${m.time}</div></td>
-      <td style="text-align:center"><input type="checkbox" class="done-check" ${done?'checked':''} onchange="toggleDone(${i},this)"></td>
-      <td style="text-align:center"><input type="checkbox" class="done-check" style="accent-color:var(--gold)" ${nr?'checked':''} onchange="toggleNR(${i},this)"></td>
-      <td><input class="mini-input result-input" value="${m.result||''}" placeholder="e.g. RCB won by 6 wkts" onchange="updateField(${i},'result',this.value)"></td>
-      <td class="score-cell"><input class="mini-input" value="${m.t1score||''}" placeholder="${m.t1} score" onchange="updateField(${i},'t1score',this.value)"></td>
-      <td class="ov-cell"><input class="mini-input" value="${m.t1ov||''}" placeholder="ov" onchange="updateField(${i},'t1ov',this.value)"></td>
-      <td class="score-cell"><input class="mini-input" value="${m.t2score||''}" placeholder="${m.t2} score" onchange="updateField(${i},'t2score',this.value)"></td>
-      <td class="ov-cell"><input class="mini-input" value="${m.t2ov||''}" placeholder="ov" onchange="updateField(${i},'t2ov',this.value)"></td>
-    </tr>`;
-  }).join('');
-}
-
-function toggleDone(i,el){
-  currentSchedule[i].completed = el.checked;
-  const row = document.getElementById('mrow-'+i);
-  row.className = 'match-row '+(currentSchedule[i].nr?'nr-row':el.checked?'completed-row':'upcoming-row');
-}
-function toggleNR(i,el){
-  currentSchedule[i].nr = el.checked;
-  if(el.checked) currentSchedule[i].completed=true;
-  const row = document.getElementById('mrow-'+i);
-  row.className = 'match-row '+(el.checked?'nr-row':currentSchedule[i].completed?'completed-row':'upcoming-row');
-}
-function updateField(i,key,val){
-  currentSchedule[i][key]=val;
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-// POINTS GRID RENDER
-// ═══════════════════════════════════════════════════════════════════════
-function renderPointsGrid(){
-  const grid = document.getElementById('pts-grid');
-  grid.innerHTML = currentPoints.map((p,i)=>{
-    const col = TEAM_COLORS[p.team]||'#888';
-    return `<div class="pts-card" style="border-left:3px solid ${col}">
-      <div class="pts-team" style="color:${col}">
-        <span>${p.team}</span>
-      </div>
-      <div class="pts-fields">
-        <div class="pts-field"><label>M</label><input type="number" value="${p.m}" onchange="updatePts(${i},'m',+this.value)" min="0" max="30"></div>
-        <div class="pts-field"><label>W</label><input type="number" value="${p.w}" onchange="updatePts(${i},'w',+this.value)" min="0" max="30"></div>
-        <div class="pts-field"><label>L</label><input type="number" value="${p.l}" onchange="updatePts(${i},'l',+this.value)" min="0" max="30"></div>
-        <div class="pts-field"><label>NR</label><input type="number" value="${p.nr}" onchange="updatePts(${i},'nr',+this.value)" min="0" max="30"></div>
-        <div class="pts-field"><label>Pts</label><input type="number" value="${p.pts}" onchange="updatePts(${i},'pts',+this.value)" min="0" max="60"></div>
-        <div class="pts-field" style="grid-column:span 3"><label>NRR</label><input type="text" value="${p.nrr}" onchange="updatePts(${i},'nrr',this.value)" placeholder="+0.000"></div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function updatePts(i,key,val){
-  currentPoints[i][key]=val;
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-// AUTO-COMPUTE POINTS FROM SCHEDULE
-// ═══════════════════════════════════════════════════════════════════════
-function autoComputePoints(){
-  const counts={};
-  currentPoints.forEach(p=>{counts[p.team]={m:0,w:0,l:0,nr:0,pts:0};});
-  currentSchedule.forEach(m=>{
-    if(!m.completed) return;
-    const isNR=m.nr||false;
-    if(counts[m.t1]){counts[m.t1].m++;}
-    if(counts[m.t2]){counts[m.t2].m++;}
-    if(isNR){
-      if(counts[m.t1]){counts[m.t1].nr++;counts[m.t1].pts+=1;}
-      if(counts[m.t2]){counts[m.t2].nr++;counts[m.t2].pts+=1;}
-      return;
+    if (parsed.points) {
+      writes.push(db.ref('iplbuzz/points').set(parsed.points));
     }
-    // Determine winner from result string
-    const res=(m.result||'').toLowerCase();
-    let winner='';
-    if(res.includes(m.t1.toLowerCase())) winner=m.t1;
-    else if(res.includes(m.t2.toLowerCase())) winner=m.t2;
-    if(winner===m.t1){
-      if(counts[m.t1]){counts[m.t1].w++;counts[m.t1].pts+=2;}
-      if(counts[m.t2]){counts[m.t2].l++;}
-    } else if(winner===m.t2){
-      if(counts[m.t2]){counts[m.t2].w++;counts[m.t2].pts+=2;}
-      if(counts[m.t1]){counts[m.t1].l++;}
+
+    if (parsed.teams) {
+      const teamsObj = {};
+      parsed.teams.forEach(t => { teamsObj[t.abbr] = t; });
+      writes.push(db.ref('iplbuzz/teams').set(teamsObj));
     }
+
+    if (parsed.squads) {
+      const squadsObj = {};
+      parsed.squads.forEach(p => {
+        if (!squadsObj[p.team]) squadsObj[p.team] = [];
+        squadsObj[p.team].push({ player: p.player, role: p.role, country: p.country });
+      });
+      writes.push(db.ref('iplbuzz/squads').set(squadsObj));
+    }
+
+    // Merge scorecard CSVs → iplbuzz/scorecards/{matchNo}
+    if (parsed.batting || parsed.bowling || parsed.fow || parsed.partnerships) {
+      const cards = buildScorecards();
+      writes.push(db.ref('iplbuzz/scorecards').set(cards));
+    }
+
+    await Promise.all(writes);
+    log.innerHTML = `✅ Saved: ${Object.keys(parsed).join(', ')}`;
+  } catch (e) {
+    log.innerHTML = `❌ ${e.message}`;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function buildScorecards(){
+  const cards = {}; // { matchNo: { inn1: {...}, inn2: {...} } }
+
+  const ensure = (matchNo, innings) => {
+    if (!cards[matchNo]) cards[matchNo] = { 1:{batting:[],bowling:[],fow:[],partnerships:[],team:''}, 2:{batting:[],bowling:[],fow:[],partnerships:[],team:''} };
+    return cards[matchNo][innings];
+  };
+
+  (parsed.batting || []).forEach(r => {
+    const inn = ensure(r.match_no, r.innings);
+    inn.team = r.batting_team;
+    inn.batting.push({
+      n: r.player, d: r.dismissal || 'not out',
+      r: r.runs, b: r.balls, f: r.fours, s: r.sixes,
+      sr: r.strike_rate, bowler: r.bowler || ''
+    });
   });
-  currentPoints = currentPoints.map(p=>({...p,...counts[p.team]}));
-  renderPointsGrid();
-  setStatus('pts-status','⚡ Points auto-computed from schedule — please update NRR manually');
-}
 
-// ═══════════════════════════════════════════════════════════════════════
-// SAVE TO FIREBASE
-// ═══════════════════════════════════════════════════════════════════════
-function saveSchedule(){
-  setStatus('sched-status','<span class="spinner"></span>Saving...');
-  db.ref('iplbuzz/schedule').set(currentSchedule)
-    .then(()=>setStatus('sched-status','✅ Saved to Firebase! index.html auto-updated.'))
-    .catch(e=>setStatus('sched-status','❌ Error: '+e.message));
-}
+  (parsed.bowling || []).forEach(r => {
+    const inn = ensure(r.match_no, r.innings);
+    inn.bowling.push({
+      n: r.player, team: r.bowling_team,
+      o: r.overs, r: r.runs, w: r.wickets, wd: r.wides, nb: r.noballs
+    });
+  });
 
-function savePoints(){
-  setStatus('pts-status','<span class="spinner"></span>Saving...');
-  db.ref('iplbuzz/points').set(currentPoints)
-    .then(()=>setStatus('pts-status','✅ Saved to Firebase! index.html auto-updated.'))
-    .catch(e=>setStatus('pts-status','❌ Error: '+e.message));
-}
+  (parsed.fow || []).forEach(r => {
+    const inn = ensure(r.match_no, r.innings);
+    inn.fow.push({ wkt: r.wkt, r: r.runs, ov: r.over, bat: r.batsman });
+  });
 
-function seedDefaults(){
-  if(!confirm('This will overwrite Firebase with default data. Continue?')) return;
-  currentSchedule = JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));
-  currentPoints   = JSON.parse(JSON.stringify(DEFAULT_POINTS));
-  renderMatchTable();
-  renderPointsGrid();
-  Promise.all([
-    db.ref('iplbuzz/schedule').set(currentSchedule),
-    db.ref('iplbuzz/points').set(currentPoints)
-  ]).then(()=>setStatus('sched-status','✅ Defaults seeded to Firebase!'))
-    .catch(e=>setStatus('sched-status','❌ '+e.message));
-}
+  (parsed.partnerships || []).forEach(r => {
+    const inn = ensure(r.match_no, r.innings);
+    inn.partnerships.push({ wkt: r.wkt, p1: r.p1, p2: r.p2, r: r.runs, b: r.balls });
+  });
 
-// ═══════════════════════════════════════════════════════════════════════
-// SETTINGS
-// ═══════════════════════════════════════════════════════════════════════
-function saveSettings(){
-  const proxy = document.getElementById('set-proxy').value.trim();
-  if(proxy) localStorage.setItem('cricapi_proxy', proxy);
-  alert('Settings saved. Update the proxy URL in index.html localStorage via browser console:\nlocalStorage.setItem(\'cricapi_proxy\', \''+proxy+'\')');
+  // Normalize shape: { matchNo: { inn1, inn2 } }
+  const out = {};
+  Object.keys(cards).forEach(mn => {
+    out[mn] = { inn1: cards[mn][1], inn2: cards[mn][2] };
+  });
+  return out;
 }
-
-// ═══════════════════════════════════════════════════════════════════════
-// UTILS
-// ═══════════════════════════════════════════════════════════════════════
-function setStatus(id, html){
-  const el = document.getElementById(id);
-  if(el) el.innerHTML = html;
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-// BOOT
-// ═══════════════════════════════════════════════════════════════════════
-loadFirebaseSDKs(initFirebase);
 </script>
 </body>
 </html>
