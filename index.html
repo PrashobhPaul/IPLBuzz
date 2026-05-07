@@ -554,7 +554,7 @@ const SQUADS = {
   }
 };
 
-const MATCHES = [{
+var MATCHES = [{
   id:'m1', no:1, date:'Sat, Mar 28 2026',
   venue:'M. Chinnaswamy Stadium, Bengaluru',
   t1:'SRH', t2:'RCB', status:'completed',
@@ -836,6 +836,91 @@ var POINTS = [
   {team:'KKR', p:1,w:0,l:1,nr:0,pts:0,nrr:'-1.05'},
   {team:'SRH', p:1,w:0,l:1,nr:0,pts:0,nrr:'-1.18'}
 ];
+
+async function loadSeasonDataFromCSVs(){
+  try{
+    var files = await Promise.all([
+      fetch('./Schedule.csv').then(r=>r.text()),
+      fetch('./Points.csv').then(r=>r.text()),
+      fetch('./Batting.csv').then(r=>r.text()),
+      fetch('./Bowling.csv').then(r=>r.text()),
+      fetch('./Partnerships.csv').then(r=>r.text()),
+      fetch('./FOW.csv').then(r=>r.text())
+    ]);
+    var scheduleRows = parseCSV(files[0]), pointsRows = parseCSV(files[1]);
+    var battingRows = parseCSV(files[2]), bowlingRows = parseCSV(files[3]);
+    var partRows = parseCSV(files[4]), fowRows = parseCSV(files[5]);
+
+    POINTS = pointsRows.map(function(r){
+      return { team:r.team, p:+r.m||0, w:+r.w||0, l:+r.l||0, nr:+r.nr||0, pts:+r.pts||0, nrr:r.nrr||'0.00' };
+    });
+
+    var byMatchInningsBat = groupRows(battingRows, ['match_no','innings']);
+    var byMatchInningsBowl = groupRows(bowlingRows, ['match_no','innings']);
+    var byMatchInningsPart = groupRows(partRows, ['match_no','innings']);
+    var byMatchInningsFow = groupRows(fowRows, ['match_no','innings']);
+
+    MATCHES = scheduleRows.map(function(r){
+      var no = +r.no;
+      var id = 'm'+no;
+      var completed = String(r.completed).toLowerCase()==='true';
+      var inn1Team = r.inn1_team || r.t1;
+      var inn2Team = r.inn2_team || r.t2;
+      return {
+        id:id, no:no, date:(r.date||'')+' 2026', venue:r.venue, t1:r.t1, t2:r.t2,
+        status: completed ? 'completed' : 'upcoming',
+        toss:r.toss||'', result:r.result||'', playerOfMatch:(r.pom||'').split('·')[0].trim(),
+        t1score:r.t1score||'', t1ov:r.t1ov||'', t2score:r.t2score||'', t2ov:r.t2ov||'',
+        inn1: buildInnings(no, 1, inn1Team, r.t1score, byMatchInningsBat, byMatchInningsBowl, byMatchInningsFow, byMatchInningsPart),
+        inn2: buildInnings(no, 2, inn2Team, r.t2score, byMatchInningsBat, byMatchInningsBowl, byMatchInningsFow, byMatchInningsPart)
+      };
+    });
+  }catch(e){
+    console.warn('CSV load failed, using embedded fallback data.', e);
+  }
+}
+
+function parseCSV(text){
+  var lines = text.trim().split(/\r?\n/);
+  if(!lines.length) return [];
+  var headers = splitCSVLine(lines[0]);
+  return lines.slice(1).filter(Boolean).map(function(line){
+    var cols = splitCSVLine(line), obj = {};
+    headers.forEach(function(h,i){ obj[h] = (cols[i]||'').trim(); });
+    return obj;
+  });
+}
+function splitCSVLine(line){
+  var out=[], cur='', q=false;
+  for(var i=0;i<line.length;i++){
+    var ch=line[i];
+    if(ch === '"'){ q = !q; continue; }
+    if(ch===',' && !q){ out.push(cur); cur=''; continue; }
+    cur += ch;
+  }
+  out.push(cur);
+  return out;
+}
+function groupRows(rows, keys){
+  var map={};
+  rows.forEach(function(r){
+    var k = keys.map(function(x){ return r[x]; }).join('|');
+    if(!map[k]) map[k]=[];
+    map[k].push(r);
+  });
+  return map;
+}
+function buildInnings(matchNo, inningsNo, team, total, batMap, bowlMap, fowMap, partMap){
+  var key = matchNo+'|'+inningsNo;
+  return {
+    team: team,
+    total: total || '',
+    batting: (batMap[key]||[]).map(function(r){ return { n:r.player, r:+r.runs||0, b:+r.balls||0, f:+r.fours||0, s:+r.sixes||0, d:r.dismissal||'' }; }),
+    bowling: (bowlMap[key]||[]).map(function(r){ return { n:r.player, o:r.overs, r:+r.runs||0, w:+r.wickets||0 }; }),
+    fow: (fowMap[key]||[]).map(function(r){ return { wkt:+r.wkt||0, r:+r.runs||0, ov:r.over, bat:r.batsman }; }),
+    pships: (partMap[key]||[]).map(function(r){ return { wkt:+r.wkt||0, p1:r.p1, p2:r.p2, r:+r.runs||0, b:+r.balls||0 }; })
+  };
+}
 
 // ═══ NAVIGATION & VIEWS ═══
 
@@ -2070,7 +2155,27 @@ function quickChat(msg){
 
 // ═══ INITIALIZATION ═══
 
-document.addEventListener('DOMContentLoaded', function(){
+function enableZeroCostCaching(){
+  if(!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.register('./sw.js').catch(function(err){
+    console.warn('SW registration failed:', err);
+  });
+}
+
+function preloadHeavyAssets(){
+  var urls = [
+    './Points.csv','./Batting.csv','./Bowling.csv','./Schedule.csv','./Teams.csv',
+    './Squads.csv','./Partnerships.csv','./FOW.csv'
+  ];
+  urls.forEach(function(url){
+    fetch(url, { cache: 'force-cache' }).catch(function(){});
+  });
+}
+
+document.addEventListener('DOMContentLoaded', async function(){
+  enableZeroCostCaching();
+  preloadHeavyAssets();
+  await loadSeasonDataFromCSVs();
   showView('home');
 });
 
