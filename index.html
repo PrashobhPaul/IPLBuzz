@@ -852,15 +852,18 @@ var POINTS = [
 
 async function loadSeasonDataFromCSVs(){
   try{
-    var ver = Date.now();
-    var scheduleRows = parseCSV(await fetch('./Schedule.csv?v='+ver, { cache:'no-store' }).then(mustText));
-    var pointsRows = parseCSV(await fetch('./Points.csv?v='+ver, { cache:'no-store' }).then(mustText));
-    var battingRows = parseCSV(await fetch('./Batting.csv?v='+ver, { cache:'no-store' }).then(optionalText));
-    var bowlingRows = parseCSV(await fetch('./Bowling.csv?v='+ver, { cache:'no-store' }).then(optionalText));
-    var partRows = parseCSV(await fetch('./Partnerships.csv?v='+ver, { cache:'no-store' }).then(optionalText));
-    var fowRows = parseCSV(await fetch('./FOW.csv?v='+ver, { cache:'no-store' }).then(optionalText));
+    var files = await Promise.all([
+      fetch('./Schedule.csv').then(r=>r.text()),
+      fetch('./Points.csv').then(r=>r.text()),
+      fetch('./Batting.csv').then(r=>r.text()),
+      fetch('./Bowling.csv').then(r=>r.text()),
+      fetch('./Partnerships.csv').then(r=>r.text()),
+      fetch('./FOW.csv').then(r=>r.text())
+    ]);
+    var scheduleRows = parseCSV(files[0]), pointsRows = parseCSV(files[1]);
+    var battingRows = parseCSV(files[2]), bowlingRows = parseCSV(files[3]);
+    var partRows = parseCSV(files[4]), fowRows = parseCSV(files[5]);
 
-    POINTS = [];
     POINTS = pointsRows.map(function(r){
       return { team:r.team, p:+r.m||0, w:+r.w||0, l:+r.l||0, nr:+r.nr||0, pts:+r.pts||0, nrr:r.nrr||'0.00' };
     });
@@ -870,7 +873,6 @@ async function loadSeasonDataFromCSVs(){
     var byMatchInningsPart = groupRows(partRows, ['match_no','innings']);
     var byMatchInningsFow = groupRows(fowRows, ['match_no','innings']);
 
-    MATCHES = [];
     MATCHES = scheduleRows.map(function(r){
       var no = +r.no;
       var id = 'm'+no;
@@ -887,18 +889,8 @@ async function loadSeasonDataFromCSVs(){
       };
     });
   }catch(e){
-    console.error('CSV load failed. Cannot continue with stale embedded data.', e);
-    MATCHES = [];
-    POINTS = [];
+    console.warn('CSV load failed, using embedded fallback data.', e);
   }
-}
-function mustText(res){
-  if(!res.ok) throw new Error('Required CSV missing: '+res.url+' ['+res.status+']');
-  return res.text();
-}
-function optionalText(res){
-  if(!res.ok) return '';
-  return res.text();
 }
 
 function parseCSV(text){
