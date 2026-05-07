@@ -258,6 +258,19 @@ nav button.on{color:var(--gold);background:rgba(240,165,0,.1)}
 .date-sep:first-child{border-top:none;padding-top:4px}
 .mrow{display:flex;align-items:center;gap:10px;background:var(--s1);border:1px solid var(--bd);border-radius:7px;padding:11px 14px;margin-bottom:4px;cursor:pointer;transition:.14s}
 .mrow:hover{background:var(--s2);border-color:var(--bd2)}
+@media (max-width: 900px){
+  nav{overflow-x:auto}
+  .atabs{padding-bottom:2px}
+}
+@media (max-width: 760px){
+  .main-w{padding:16px 12px!important}
+  .live-scores-row,.mc-teams-row,.md-scores{flex-direction:column;align-items:flex-start}
+}
+@media (max-width: 560px){
+  .sh h2{font-size:24px}
+  .stat-name{font-size:13px}
+  .md-tname{font-size:22px}
+}
 .mrow.today-match{border-color:rgba(29,185,84,.3)}.mrow.completed-match{border-color:rgba(240,165,0,.2);opacity:.9}.m-result-badge{font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:700;color:var(--green);letter-spacing:.5px;text-align:right;max-width:140px;line-height:1.3}
 .mno{font-family:'Barlow Condensed',sans-serif;font-size:11px;color:var(--dim);width:20px;text-align:center;flex-shrink:0}
 .mteams{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
@@ -948,10 +961,23 @@ function renderHome(){
   var el = document.getElementById('home-content');
   if(!el) return;
 
-  // Live score tile placeholder
-  var liveHtml = '<div class="api-notice-tile">'+
-    '<div class="api-notice">Live scores are currently experiencing connectivity issues. We\'re working on a fix.</div>'+
-  '</div>';
+  var liveMatch = MATCHES.find(function(m){ return m.status==='live'; });
+  var featured = liveMatch || MATCHES.find(function(m){ return m.status==='upcoming'; }) || MATCHES[MATCHES.length-1];
+  var ft1 = featured ? TEAMS[featured.t1] : null;
+  var ft2 = featured ? TEAMS[featured.t2] : null;
+  var liveHtml = featured ? (
+    '<div class="live-tile">'+
+      '<div class="live-tile-header">'+
+        '<div class="live-tag"><div class="live-dot"></div>'+(liveMatch?'Live Match':'Featured Match')+'</div>'+
+        '<div class="live-scores-row">'+
+          '<div class="live-team-score"><div class="live-tname"><div class="tdot" style="background:'+(ft1?ft1.color:'#888')+'"></div>'+featured.t1+'</div><div class="live-sc">'+(featured.t1score||'—')+' <small>'+(featured.t1ov?featured.t1ov+' ov':'')+'</small></div></div>'+
+          '<div class="live-vs">vs</div>'+
+          '<div class="live-team-score"><div class="live-tname"><div class="tdot" style="background:'+(ft2?ft2.color:'#888')+'"></div>'+featured.t2+'</div><div class="live-sc">'+(featured.t2score||'—')+' <small>'+(featured.t2ov?featured.t2ov+' ov':'')+'</small></div></div>'+
+        '</div>'+
+        '<div class="live-status-txt">'+(featured.result||featured.date+' · '+featured.venue)+'</div>'+
+      '</div>'+
+    '</div>'
+  ) : '';
 
   // Today's matches
   var today = new Date();
@@ -1007,7 +1033,7 @@ function renderHome(){
   el.innerHTML = '<div class="main-w">' +
     '<div class="sh"><h2>IPL 2026</h2><p>Live Scores • Points Table • Full Coverage</p></div>' +
     liveHtml +
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">' +
+    '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-bottom:20px">' +
       '<div>' +
         '<div style="font-family:Teko,sans-serif;font-size:22px;font-weight:700;color:var(--txt);margin-bottom:12px">Today\'s Fixtures</div>' +
         matchesHtml +
@@ -1696,6 +1722,9 @@ function renderScorecard(match){
 }
 
 function renderWormChart(match){
+  if(!match.inn1 || !match.inn2 || !match.inn1.overR || !match.inn2.overR){
+    return '<div class="stats-note">Worm chart will appear when over-by-over feed is available for this match.</div>';
+  }
   // Simple worm chart implementation
   var html = '<div class="worm-chart-wrap">' +
     '<div class="worm-chart-title">Run Rate Progression</div>' +
@@ -1747,6 +1776,9 @@ function renderWormChart(match){
 }
 
 function renderOverAnalysis(match){
+  if(!match.inn1 || !match.inn2 || !match.inn1.overR || !match.inn2.overR){
+    return '<div class="stats-note">Over analysis will appear when over-by-over feed is available for this match.</div>';
+  }
   var activeInn = 0;
   var html = '<div class="ov-chart-wrap">' +
     '<div class="ov-controls">' +
@@ -1788,6 +1820,9 @@ function switchOverView(innIndex, btn, matchId){
 }
 
 function renderPartnerships(match){
+  if((!match.inn1 || !match.inn1.pships || !match.inn1.pships.length) && (!match.inn2 || !match.inn2.pships || !match.inn2.pships.length)){
+    return '<div class="stats-note">Partnership data not available for this match yet.</div>';
+  }
   var html = '<div class="part-list">';
   
   [match.inn1, match.inn2].forEach(function(inn){
@@ -1845,6 +1880,9 @@ function renderPlayerAnalysis(match){
 }
 
 function renderKeyMoments(match){
+  if(!match.inn1 || !match.inn1.moments){
+    return '<div class="stats-note">Key moments timeline will be shown when ball-by-ball events are available.</div>';
+  }
   var html = '<div class="km-list">';
   
   [match.inn1, match.inn2].forEach(function(inn){
@@ -2176,13 +2214,10 @@ document.addEventListener('DOMContentLoaded', async function(){
   enableZeroCostCaching();
   preloadHeavyAssets();
   await loadSeasonDataFromCSVs();
-document.addEventListener('DOMContentLoaded', function(){
-  enableZeroCostCaching();
-  preloadHeavyAssets();
   showView('home');
+  var backBtn = document.getElementById('match-back-btn');
+  if(backBtn) backBtn.onclick = function(){ showView('matches'); };
 });
-
-document.getElementById('match-back-btn').onclick = function(){ showView('matches'); };
 </script>
 
 <!-- HOME VIEW -->
