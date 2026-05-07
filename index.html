@@ -2070,7 +2070,26 @@ function quickChat(msg){
 
 // ═══ INITIALIZATION ═══
 
+function enableZeroCostCaching(){
+  if(!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.register('./sw.js').catch(function(err){
+    console.warn('SW registration failed:', err);
+  });
+}
+
+function preloadHeavyAssets(){
+  var urls = [
+    './Points.csv','./Batting.csv','./Bowling.csv','./Schedule.csv','./Teams.csv',
+    './Squads.csv','./Partnerships.csv','./FOW.csv'
+  ];
+  urls.forEach(function(url){
+    fetch(url, { cache: 'force-cache' }).catch(function(){});
+  });
+}
+
 document.addEventListener('DOMContentLoaded', function(){
+  enableZeroCostCaching();
+  preloadHeavyAssets();
   showView('home');
 });
 
