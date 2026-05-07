@@ -2176,6 +2176,9 @@ document.addEventListener('DOMContentLoaded', async function(){
   enableZeroCostCaching();
   preloadHeavyAssets();
   await loadSeasonDataFromCSVs();
+document.addEventListener('DOMContentLoaded', function(){
+  enableZeroCostCaching();
+  preloadHeavyAssets();
   showView('home');
 });
 
