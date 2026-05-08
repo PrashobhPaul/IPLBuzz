@@ -48,3 +48,32 @@ If a photo file is missing, the dashboard automatically shows a team-coloured ci
 - **Stats** — 14 leaderboard categories
 - **🏏 AI Chatbot** — Powered by Claude, knows all live data
 
+## Cricbuzz-style setup (zero-cost optimized)
+
+This repo now follows a lightweight, Cricbuzz-like delivery pattern:
+
+- **Instant app shell load** using a Service Worker (`sw.js`) that pre-caches the core app and core CSV datasets.
+- **Stale-while-revalidate for data files** (`*.csv`, `*.json`) so stats/tables open immediately from cache and silently refresh in background.
+- **Network-first for UI assets** with offline fallback for seamless experience in patchy networks.
+- **Preload warmup on app boot** so frequently used tables (points, batting, bowling, schedule, teams) are available fast with minimal repeated network usage.
+
+### Why this keeps cost at ~zero
+
+- Static hosting friendly (GitHub Pages / Cloudflare Pages / Netlify free tiers).
+- Browser cache + Service Worker reduce repeated bandwidth and origin hits.
+- Existing fan-out Worker design keeps live API polling centralized instead of per-user API calls.
+
+In short: one cheap backend poller for live updates + aggressive client caching = scalable and near-zero operating cost.
+
+## React component scaffold (new)
+
+If you are migrating from the single-file app to a modular frontend, a reusable component scaffold is now available at:
+
+- `src/components/IPLBuzzLiveDashboard.tsx`
+
+It includes:
+- Premium live match hero card
+- Schedule/result cards
+- Points table panel
+- Top-stats panel
+- Responsive stadium-themed layout (desktop + mobile)
