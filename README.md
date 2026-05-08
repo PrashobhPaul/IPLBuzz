@@ -64,16 +64,3 @@ This repo now follows a lightweight, Cricbuzz-like delivery pattern:
 - Existing fan-out Worker design keeps live API polling centralized instead of per-user API calls.
 
 In short: one cheap backend poller for live updates + aggressive client caching = scalable and near-zero operating cost.
-
-## React component scaffold (new)
-
-If you are migrating from the single-file app to a modular frontend, a reusable component scaffold is now available at:
-
-- `src/components/IPLBuzzLiveDashboard.tsx`
-
-It includes:
-- Premium live match hero card
-- Schedule/result cards
-- Points table panel
-- Top-stats panel
-- Responsive stadium-themed layout (desktop + mobile)
