@@ -1,8 +1,11 @@
 # IPLBuzz — IPL 2026 Analytics Dashboard
 
-> Live analytics dashboard for IPL 2026. Single-file web app, zero dependencies.
+> Complete analytics dashboard for the **finished IPL 2026 season**. Single-file web app, zero dependencies, works fully offline.
 
 🌐 **Live:** https://prashobhpaul.github.io/IPLBuzz/
+
+🏆 **Champions:** Royal Challengers Bengaluru (beat Gujarat Titans in the Final).
+🟠 **Orange Cap:** Vaibhav Sooryavanshi (776 runs) · 🟣 **Purple Cap:** Bhuvneshwar Kumar (29 wickets).
 
 ---
 
@@ -39,28 +42,34 @@ If a photo file is missing, the dashboard automatically shows a team-coloured ci
 
 ## Features
 
-- **Home** — Season overview, cap race, tournament predictor, countdown timer
-- **Schedule** — Full 30-match schedule with team filters
-- **Points Table** — Live standings with NRR
-- **Teams** — Squad (with photos), Newsletter, Fixtures for all 10 teams
-- **Match Centre** — Completed match scorecards
-- **Match Analytics** — 7 tabs: Pre-Match Forecast · Scorecard · Worm Chart · Over Analysis · Partnerships · Player Analysis · Key Moments
-- **Stats** — 14 leaderboard categories
-- **🏏 AI Chatbot** — Powered by Claude, knows all live data
+- **Home** — Season summary, champions banner, final standings (with playoff cut-off), season awards
+- **Schedule** — Full 74-match fixture list (70 league + 4 playoffs) with results, grouped by date
+- **Points Table** — Final league standings with NRR and playoff qualification
+- **Teams** — Squad (with photos) and season performance for all 10 teams
+- **Match Centre** — Every match with detailed scorecards
+- **Match Analytics** — Scorecard · Worm Chart · Over Analysis · Partnerships · Player Analysis · Key Moments (all derived from ball-by-ball data)
+- **Stats** — 16 full-season leaderboard categories (Orange Cap, Purple Cap, and more)
+- **🏏 IPLBuzz Bot** — A built-in, fully offline analyst that answers from the season data baked into the app
 
-## Cricbuzz-style setup (zero-cost optimized)
+## Data
 
-This repo now follows a lightweight, Cricbuzz-like delivery pattern:
+All season data lives in CSV files that the app loads at startup (no backend, no API keys):
 
-- **Instant app shell load** using a Service Worker (`sw.js`) that pre-caches the core app and core CSV datasets.
-- **Stale-while-revalidate for data files** (`*.csv`, `*.json`) so stats/tables open immediately from cache and silently refresh in background.
-- **Network-first for UI assets** with offline fallback for seamless experience in patchy networks.
-- **Preload warmup on app boot** so frequently used tables (points, batting, bowling, schedule, teams) are available fast with minimal repeated network usage.
+| File | What |
+|---|---|
+| `Schedule.csv` | All 74 matches — teams, venue, result, scores, POM, toss, playoff stage |
+| `Points.csv` | Final league points table (P/W/L/NR/Pts/NRR) |
+| `Batting.csv` · `Bowling.csv` | Per-innings batting & bowling scorecards for every match |
+| `FOW.csv` · `Partnerships.csv` | Fall of wickets and partnerships per innings |
+| `Overs.csv` | Over-by-over runs/wickets (powers the worm chart & over analysis) |
+| `Teams.csv` · `Squads.csv` | Team metadata and squads |
 
-### Why this keeps cost at ~zero
+Match data is sourced from **[Cricsheet](https://cricsheet.org)** ball-by-ball records (ODbL). Leaderboards, the points table, and all analytics are computed in-browser from these files, so the numbers always reconcile with the scorecards.
 
-- Static hosting friendly (GitHub Pages / Cloudflare Pages / Netlify free tiers).
-- Browser cache + Service Worker reduce repeated bandwidth and origin hits.
-- Existing fan-out Worker design keeps live API polling centralized instead of per-user API calls.
+> **Note:** `admin.html` and `worker.js` were part of the original live-ops pipeline (Firebase + CricAPI polling) used while the season was in progress. The season is over, so the public app no longer depends on them — it reads everything from the static CSVs above.
 
-In short: one cheap backend poller for live updates + aggressive client caching = scalable and near-zero operating cost.
+## Zero-cost, offline-first delivery
+
+- **Instant app-shell load** via a Service Worker (`sw.js`) that pre-caches the app and all CSV datasets.
+- **Stale-while-revalidate** for data files so tables and stats open immediately from cache.
+- **Fully static** — deploys on any free static host (GitHub Pages / Cloudflare Pages / Netlify) and runs offline after first load.

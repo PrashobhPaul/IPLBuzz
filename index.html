@@ -20,7 +20,10 @@ nav button.on{color:var(--gold);background:rgba(240,165,0,.1)}
 
 .api-input:focus{border-color:var(--gold)}
 .api-input::placeholder{color:var(--dim)}
-.api-save{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:5px 10px;border-radius:4px;border:1px solid var(-font-family:'Teko',sans-serif;font-size:28px;font-weight:700;letter-spacing:-.3px;line-height:1}
+.api-save{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:5px 10px;border-radius:4px;border:1px solid var(--bd2);background:var(--s2);color:var(--dim2);cursor:pointer}
+.api-save:hover{color:var(--txt);border-color:var(--gold)}
+.sh{margin-bottom:18px}
+.sh h2{font-family:'Teko',sans-serif;font-size:28px;font-weight:700;letter-spacing:-.3px;line-height:1}
 .sh p{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--dim);margin-top:3px}
 /* ── LIVE TILE ── */
 .live-tile{background:var(--s1);border:1px solid var(--bd);border-radius:10px;margin-bottom:22px;position:relative;overflow:hidden;transition:border-color .2s}
@@ -858,11 +861,13 @@ async function loadSeasonDataFromCSVs(){
       fetch('./Batting.csv').then(r=>r.text()),
       fetch('./Bowling.csv').then(r=>r.text()),
       fetch('./Partnerships.csv').then(r=>r.text()),
-      fetch('./FOW.csv').then(r=>r.text())
+      fetch('./FOW.csv').then(r=>r.text()),
+      fetch('./Overs.csv').then(r=>r.text()).catch(function(){ return ''; })
     ]);
     var scheduleRows = parseCSV(files[0]), pointsRows = parseCSV(files[1]);
     var battingRows = parseCSV(files[2]), bowlingRows = parseCSV(files[3]);
     var partRows = parseCSV(files[4]), fowRows = parseCSV(files[5]);
+    var oversRows = files[6] ? parseCSV(files[6]) : [];
 
     POINTS = pointsRows.map(function(r){
       return { team:r.team, p:+r.m||0, w:+r.w||0, l:+r.l||0, nr:+r.nr||0, pts:+r.pts||0, nrr:r.nrr||'0.00' };
@@ -872,6 +877,7 @@ async function loadSeasonDataFromCSVs(){
     var byMatchInningsBowl = groupRows(bowlingRows, ['match_no','innings']);
     var byMatchInningsPart = groupRows(partRows, ['match_no','innings']);
     var byMatchInningsFow = groupRows(fowRows, ['match_no','innings']);
+    var byMatchInningsOvers = groupRows(oversRows, ['match_no','innings']);
 
     MATCHES = scheduleRows.map(function(r){
       var no = +r.no;
@@ -879,13 +885,17 @@ async function loadSeasonDataFromCSVs(){
       var completed = String(r.completed).toLowerCase()==='true';
       var inn1Team = r.inn1_team || r.t1;
       var inn2Team = r.inn2_team || r.t2;
+      var inn1 = buildInnings(no, 1, inn1Team, r.t1score, byMatchInningsBat, byMatchInningsBowl, byMatchInningsFow, byMatchInningsPart);
+      var inn2 = buildInnings(no, 2, inn2Team, r.t2score, byMatchInningsBat, byMatchInningsBowl, byMatchInningsFow, byMatchInningsPart);
+      attachOvers(inn1, byMatchInningsOvers[no+'|1']);
+      attachOvers(inn2, byMatchInningsOvers[no+'|2']);
       return {
-        id:id, no:no, date:(r.date||'')+' 2026', venue:r.venue, t1:r.t1, t2:r.t2,
+        id:id, no:no, date:(r.date||'')+' 2026', time:r.time||'', venue:r.venue, t1:r.t1, t2:r.t2,
         status: completed ? 'completed' : 'upcoming',
+        stage: r.stage||'', nr: String(r.nr).toLowerCase()==='true',
         toss:r.toss||'', result:r.result||'', playerOfMatch:(r.pom||'').split('·')[0].trim(),
         t1score:r.t1score||'', t1ov:r.t1ov||'', t2score:r.t2score||'', t2ov:r.t2ov||'',
-        inn1: buildInnings(no, 1, inn1Team, r.t1score, byMatchInningsBat, byMatchInningsBowl, byMatchInningsFow, byMatchInningsPart),
-        inn2: buildInnings(no, 2, inn2Team, r.t2score, byMatchInningsBat, byMatchInningsBowl, byMatchInningsFow, byMatchInningsPart)
+        inn1: inn1, inn2: inn2
       };
     });
   }catch(e){
@@ -934,6 +944,16 @@ function buildInnings(matchNo, inningsNo, team, total, batMap, bowlMap, fowMap, 
     pships: (partMap[key]||[]).map(function(r){ return { wkt:+r.wkt||0, p1:r.p1, p2:r.p2, r:+r.runs||0, b:+r.balls||0 }; })
   };
 }
+function attachOvers(inn, rows){
+  if(!inn || !rows || !rows.length) return;
+  var maxOver = 0;
+  rows.forEach(function(r){ if((+r.over) > maxOver) maxOver = +r.over; });
+  var overR = new Array(maxOver+1).fill(0);
+  var overW = new Array(maxOver+1).fill(0);
+  rows.forEach(function(r){ overR[+r.over] = +r.runs||0; overW[+r.over] = +r.wickets||0; });
+  inn.overR = overR;
+  inn.overW = overW;
+}
 
 // ═══ NAVIGATION & VIEWS ═══
 
@@ -962,13 +982,40 @@ function renderHome(){
   if(!el) return;
 
   var liveMatch = MATCHES.find(function(m){ return m.status==='live'; });
-  var featured = liveMatch || MATCHES.find(function(m){ return m.status==='upcoming'; }) || MATCHES[MATCHES.length-1];
+  var upcoming = MATCHES.find(function(m){ return m.status==='upcoming'; });
+  var seasonComplete = MATCHES.length > 0 && !liveMatch && !upcoming;
+
+  // Determine the final / champion
+  var finalM = MATCHES.find(function(m){ return m.stage === 'Final'; });
+  var champAbbr = '', runnerAbbr = '';
+  if(finalM && finalM.result){
+    champAbbr = finalM.result.split(' ')[0];
+    runnerAbbr = (finalM.t1 === champAbbr) ? finalM.t2 : finalM.t1;
+  } else if(POINTS.length){ champAbbr = POINTS[0].team; }
+  var champ = TEAMS[champAbbr], runner = TEAMS[runnerAbbr];
+
+  // ── Champions banner ──
+  var champHtml = '';
+  if(seasonComplete && champ){
+    champHtml =
+      '<div style="position:relative;overflow:hidden;border-radius:14px;margin-bottom:20px;padding:22px 20px;'+
+        'background:linear-gradient(135deg,'+champ.color+' 0%, rgba(7,8,12,.92) 70%);border:1px solid rgba(240,165,0,.4)">'+
+        '<div style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold)">🏆 IPL 2026 Champions</div>'+
+        '<div style="font-family:Teko,sans-serif;font-size:40px;font-weight:700;line-height:1;color:#fff;margin:6px 0 4px">'+champ.name+'</div>'+
+        (runner ? '<div style="font-family:Barlow Condensed,sans-serif;font-size:14px;color:rgba(255,255,255,.85)">defeated '+runner.name+' in the Final · '+(finalM?finalM.result:'')+'</div>' : '')+
+        (finalM && finalM.playerOfMatch ? '<div style="font-family:Barlow Condensed,sans-serif;font-size:13px;color:rgba(255,255,255,.7);margin-top:4px">Final · Player of the Match: '+finalM.playerOfMatch+'</div>' : '')+
+      '</div>';
+  }
+
+  // ── Featured tile: the Final (or last match) ──
+  var featured = liveMatch || upcoming || MATCHES[MATCHES.length-1];
   var ft1 = featured ? TEAMS[featured.t1] : null;
   var ft2 = featured ? TEAMS[featured.t2] : null;
+  var tag = liveMatch ? 'Live Match' : (seasonComplete ? (featured && featured.stage ? featured.stage : 'Final') : 'Featured Match');
   var liveHtml = featured ? (
-    '<div class="live-tile">'+
+    '<div class="live-tile" onclick="viewMatch(\''+featured.id+'\')" style="cursor:pointer">'+
       '<div class="live-tile-header">'+
-        '<div class="live-tag"><div class="live-dot"></div>'+(liveMatch?'Live Match':'Featured Match')+'</div>'+
+        '<div class="live-tag">'+(liveMatch?'<div class="live-dot"></div>':'')+tag+'</div>'+
         '<div class="live-scores-row">'+
           '<div class="live-team-score"><div class="live-tname"><div class="tdot" style="background:'+(ft1?ft1.color:'#888')+'"></div>'+featured.t1+'</div><div class="live-sc">'+(featured.t1score||'—')+' <small>'+(featured.t1ov?featured.t1ov+' ov':'')+'</small></div></div>'+
           '<div class="live-vs">vs</div>'+
@@ -979,68 +1026,54 @@ function renderHome(){
     '</div>'
   ) : '';
 
-  // Today's matches
-  var today = new Date();
-  var todayStr = today.toDateString();
-  var todayMatches = MATCHES.filter(function(m){
-    var mDate = new Date(m.date);
-    return mDate.toDateString() === todayStr;
-  });
-  
-  var matchesHtml = '';
-  if(todayMatches.length > 0) {
-    matchesHtml = '<div class="date-sep today">Today\'s Matches</div>';
-    todayMatches.forEach(function(m){
-      var t1 = TEAMS[m.t1], t2 = TEAMS[m.t2];
-      var statusClass = m.status === 'completed' ? 'completed-match' : 'today-match';
-      matchesHtml += '<div class="mrow '+statusClass+'" onclick="viewMatch(\''+m.id+'\')">' +
-        '<div class="mno">'+m.no+'</div>' +
-        '<div class="mteams">' +
-          '<div class="mteam">' +
-            '<div class="tdot" style="background:'+(t1?t1.color:'#888')+'"></div>' +
-            m.t1 +
-          '</div>' +
-          '<div class="mvs">VS</div>' +
-          '<div class="mteam">' +
-            '<div class="tdot" style="background:'+(t2?t2.color:'#888')+'"></div>' +
-            m.t2 +
-          '</div>' +
-        '</div>' +
-        '<div class="mright">' +
-          (m.status === 'completed' ?
-            '<div class="m-result-badge">'+m.result+'</div>' :
-            '<div class="mtime">7:30 PM</div>'
-          ) +
-        '</div>' +
-      '</div>';
-    });
-  } else {
-    matchesHtml = '<div class="date-sep">No matches today</div>' +
-      '<div style="text-align:center;padding:24px;color:var(--dim);font-family:\'Barlow Condensed\',sans-serif;font-size:14px">' +
-      'Next match: Tomorrow</div>';
-  }
-
-  // Points table preview
+  // ── Full points table with playoff cutoff after top 4 ──
   var pointsHtml = '<table class="ptbl">' +
-    '<tr><th>Team</th><th>P</th><th>W</th><th>L</th><th>Pts</th><th>NRR</th></tr>';
-  POINTS.slice(0,5).forEach(function(p,i){
+    '<tr><th>#</th><th>Team</th><th>P</th><th>W</th><th>L</th><th>Pts</th><th>NRR</th></tr>';
+  POINTS.forEach(function(p,i){
     var team = TEAMS[p.team];
-    pointsHtml += '<tr><td style="color:'+(team?team.color:'var(--txt)')+'">'+p.team+'</td>'+
-      '<td>'+p.p+'</td><td>'+p.w+'</td><td>'+p.l+'</td><td>'+p.pts+'</td><td>'+p.nrr+'</td></tr>';
+    var q = i < 4;
+    pointsHtml += '<tr style="'+(q?'background:rgba(240,165,0,.06)':'')+'">'+
+      '<td style="'+(q?'color:var(--gold);font-weight:700':'color:var(--dim)')+'">'+(i+1)+'</td>'+
+      '<td style="color:'+(team?team.color:'var(--txt)')+';font-weight:600">'+p.team+'</td>'+
+      '<td>'+p.p+'</td><td>'+p.w+'</td><td>'+p.l+'</td><td style="font-weight:700">'+p.pts+'</td><td>'+p.nrr+'</td></tr>';
+    if(i === 3) pointsHtml += '<tr><td colspan="7" style="padding:2px 0;border-bottom:1px dashed var(--bd2);font-size:9px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;text-align:center">Playoff cut-off</td></tr>';
   });
   pointsHtml += '</table>';
 
+  // ── Season awards ──
+  var stats = buildPlayerStats();
+  var oc = stats.bat.slice().sort(function(a,b){return b.runs-a.runs;})[0];
+  var pc = stats.bowl.slice().sort(function(a,b){return b.wkts-a.wkts || a.runs-b.runs;})[0];
+  var mvp = (getPlayerOfMatchStats()||[])[0];
+  var awardRow = function(label, name, teamCode, detail){
+    var t = TEAMS[teamCode];
+    return '<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--bd)">'+
+      playerPhoto(name, teamCode, 40, 'flex-shrink:0')+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold)">'+label+'</div>'+
+        '<div style="font-family:Teko,sans-serif;font-size:19px;font-weight:600;color:var(--txt);line-height:1.1">'+name+'</div>'+
+        '<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--dim2)">'+(t?t.name:teamCode)+' · '+detail+'</div>'+
+      '</div>'+
+    '</div>';
+  };
+  var awardsHtml = '<div style="background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:6px 16px 12px">';
+  if(oc) awardsHtml += awardRow('🟠 Orange Cap', oc.name, oc.team, oc.runs+' runs · SR '+oc.sr);
+  if(pc) awardsHtml += awardRow('🟣 Purple Cap', pc.name, pc.team, pc.wkts+' wickets · Econ '+pc.econ);
+  if(mvp) awardsHtml += awardRow('⭐ Most Player-of-Match', mvp.name, mvp.team, mvp.awards+' award'+(mvp.awards>1?'s':''));
+  awardsHtml += '</div>';
+
   el.innerHTML = '<div class="main-w">' +
-    '<div class="sh"><h2>IPL 2026</h2><p>Live Scores • Points Table • Full Coverage</p></div>' +
+    '<div class="sh"><h2>IPL 2026</h2><p>'+(seasonComplete?'Season Complete • Full Scorecards • Stats':'Live Scores • Points Table • Full Coverage')+'</p></div>' +
+    champHtml +
     liveHtml +
-    '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-bottom:20px">' +
+    '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin:20px 0">' +
       '<div>' +
-        '<div style="font-family:Teko,sans-serif;font-size:22px;font-weight:700;color:var(--txt);margin-bottom:12px">Today\'s Fixtures</div>' +
-        matchesHtml +
+        '<div style="font-family:Teko,sans-serif;font-size:22px;font-weight:700;color:var(--txt);margin-bottom:12px">Final Standings</div>' +
+        pointsHtml +
       '</div>' +
       '<div>' +
-        '<div style="font-family:Teko,sans-serif;font-size:22px;font-weight:700;color:var(--txt);margin-bottom:12px">Points Table</div>' +
-        pointsHtml +
+        '<div style="font-family:Teko,sans-serif;font-size:22px;font-weight:700;color:var(--txt);margin-bottom:12px">Season Awards</div>' +
+        awardsHtml +
       '</div>' +
     '</div>' +
   '</div>';
@@ -1253,7 +1286,7 @@ function renderStatCategory(cat){
     '</div>';
   }
 
-  var note = '<div class="stats-note" style="margin-top:10px">Stats are computed from completed matches only. Updated automatically as matches are added.</div>';
+  var note = '<div class="stats-note" style="margin-top:10px">Full-season totals across all 74 matches of IPL 2026, including the playoffs.</div>';
   var html = '';
 
   if(cat === 'bat-runs'){
@@ -1455,7 +1488,7 @@ function renderMatches(){
     
     html += '<div class="mc-card '+statusClass+'" onclick="viewMatch(\''+m.id+'\')">' +
       '<div class="mc-match-no">' +
-        'Match '+m.no+' · '+m.venue +
+        (m.stage ? m.stage : 'Match '+m.no)+' · '+m.venue +
         '<div class="mc-status-badge '+statusClass+'">'+statusText+'</div>' +
       '</div>' +
       '<div class="mc-teams-row">' +
@@ -1505,7 +1538,7 @@ function renderMatchDetail(matchId){
   var t1 = TEAMS[match.t1], t2 = TEAMS[match.t2];
   
   var html = '<div class="md-hero">' +
-    '<div class="md-hero-title">Match '+match.no+' · IPL 2026</div>' +
+    '<div class="md-hero-title">'+(match.stage ? match.stage+' · IPL 2026 Playoffs' : 'Match '+match.no+' · IPL 2026')+'</div>' +
     '<div class="md-scores">' +
       '<div class="md-team">' +
         '<div class="md-tname">' +
@@ -1734,30 +1767,23 @@ function renderWormChart(match){
         '<stop offset="100%" style="stop-color:'+(TEAMS[match.inn2.team]?TEAMS[match.inn2.team].color:'#22c55e')+';stop-opacity:1" />' +
       '</linearGradient></defs>';
   
-  // Draw the worm lines based on overR data
-  if(match.inn1.overR) {
-    var points1 = [];
-    var cumRuns = 0;
-    match.inn1.overR.forEach(function(runs, i){
-      cumRuns += runs;
-      var x = (i / 19) * 380 + 10;
-      var y = 180 - (cumRuns / 250) * 160;
-      points1.push(x + ',' + y);
+  // Dynamic y-scale from the higher innings total
+  var sumArr = function(a){ var t=0; (a||[]).forEach(function(r){ t+=r; }); return t; };
+  var maxTotal = Math.max(sumArr(match.inn1.overR), sumArr(match.inn2.overR), 1);
+  var lastOver = Math.max((match.inn1.overR||[]).length, (match.inn2.overR||[]).length, 1) - 1;
+  var wormLine = function(overR, color){
+    if(!overR) return '';
+    var pts = [], cum = 0;
+    overR.forEach(function(runs, i){
+      cum += runs;
+      var x = (lastOver ? (i / lastOver) : 0) * 380 + 10;
+      var y = 180 - (cum / maxTotal) * 160;
+      pts.push(x.toFixed(1) + ',' + y.toFixed(1));
     });
-    html += '<polyline fill="none" stroke="'+(TEAMS[match.inn1.team]?TEAMS[match.inn1.team].color:'#f0a500')+'" stroke-width="2" points="'+points1.join(' ')+'"/>';
-  }
-  
-  if(match.inn2.overR) {
-    var points2 = [];
-    var cumRuns = 0;
-    match.inn2.overR.forEach(function(runs, i){
-      cumRuns += runs;
-      var x = (i / 19) * 380 + 10;
-      var y = 180 - (cumRuns / 250) * 160;
-      points2.push(x + ',' + y);
-    });
-    html += '<polyline fill="none" stroke="'+(TEAMS[match.inn2.team]?TEAMS[match.inn2.team].color:'#22c55e')+'" stroke-width="2" points="'+points2.join(' ')+'"/>';
-  }
+    return '<polyline fill="none" stroke="'+color+'" stroke-width="2" points="'+pts.join(' ')+'"/>';
+  };
+  html += wormLine(match.inn1.overR, TEAMS[match.inn1.team]?TEAMS[match.inn1.team].color:'#f0a500');
+  html += wormLine(match.inn2.overR, TEAMS[match.inn2.team]?TEAMS[match.inn2.team].color:'#22c55e');
   
   html += '</svg>' +
     '<div class="worm-legend">' +
@@ -1848,9 +1874,54 @@ function renderPartnerships(match){
   return html;
 }
 
+// Derive key moments from scorecard data when no editorial timeline exists
+function buildMoments(inn){
+  if(!inn) return null;
+  var out = [];
+  (inn.batting||[]).forEach(function(b){
+    if((b.r||0) >= 100) out.push({ov:'—',i:'💯',t:b.n+' hits a century!',d:b.r+' ('+b.b+') · '+(b.f||0)+' fours, '+(b.s||0)+' sixes · SR '+(b.b?((b.r/b.b)*100).toFixed(1):'0')});
+    else if((b.r||0) >= 50) out.push({ov:'—',i:'🔥',t:b.n+' brings up a fifty',d:b.r+' ('+b.b+') · '+(b.f||0)+' fours, '+(b.s||0)+' sixes · SR '+(b.b?((b.r/b.b)*100).toFixed(1):'0')});
+  });
+  var bp = null;
+  (inn.pships||[]).forEach(function(p){ if(!bp || p.r>bp.r) bp = p; });
+  if(bp && bp.r>=40) out.push({ov:'—',i:'🤝',t:'Key stand: '+bp.p1+' & '+bp.p2,d:bp.r+' runs off '+bp.b+' balls for the '+bp.wkt+(bp.wkt===1?'st':bp.wkt===2?'nd':bp.wkt===3?'rd':'th')+' wicket'});
+  (inn.bowling||[]).forEach(function(b){
+    if((b.w||0) >= 3) out.push({ov:'—',i:'🎯',t:b.n+' rips through the order',d:b.w+' wickets for '+b.r+' runs in '+b.o+' overs'});
+  });
+  if(inn.total) out.push({ov:'20',i:'🏏',t:inn.team+' finish on '+inn.total,d:'End of innings'});
+  return out.length ? out : null;
+}
+// Derive player ratings/impact from scorecard data when no editorial ratings exist
+function buildRatings(match){
+  var players = [];
+  [match.inn1, match.inn2].forEach(function(inn){
+    if(!inn) return;
+    (inn.batting||[]).forEach(function(b){
+      if(!b.b) return;
+      var sr = (b.r/b.b)*100;
+      var v = Math.min(10, (b.r||0)/12 + (b.s||0)*0.35 + (sr>150?1:0));
+      players.push({n:b.n,t:inn.team,role:'Batting',v:+v.toFixed(1),score:b.r||0,
+        note:b.r+' ('+b.b+'), SR '+sr.toFixed(1)+', '+(b.f||0)+'x4 '+(b.s||0)+'x6'});
+    });
+    (inn.bowling||[]).forEach(function(b){
+      var balls = (String(b.o).split('.')[0]|0)*6 + (String(b.o).split('.')[1]|0);
+      var econ = balls ? (b.r/balls)*6 : 0;
+      var v = Math.min(10, (b.w||0)*2.2 + (econ<7?1.5:econ<9?0.7:0) + 1);
+      players.push({n:b.n,t:inn.team,role:'Bowling',v:+v.toFixed(1),score:(b.w||0)*100-(b.r||0),
+        note:(b.w||0)+'/'+(b.r||0)+' in '+b.o+' ov, econ '+econ.toFixed(2)});
+    });
+  });
+  players.sort(function(a,b){ return b.v - a.v || b.score - a.score; });
+  return players.slice(0, 6);
+}
+
 function renderPlayerAnalysis(match){
   var html = '<div class="player-grid">';
-  
+  var ratings = match.ratings || buildRatings(match);
+  if(ratings && ratings.length) {
+    match = Object.create(match);
+    match.ratings = ratings;
+  }
   if(match.ratings) {
     match.ratings.forEach(function(r){
       var team = TEAMS[r.t];
@@ -1880,18 +1951,21 @@ function renderPlayerAnalysis(match){
 }
 
 function renderKeyMoments(match){
-  if(!match.inn1 || !match.inn1.moments){
+  var m1 = (match.inn1 && (match.inn1.moments || buildMoments(match.inn1))) || null;
+  var m2 = (match.inn2 && (match.inn2.moments || buildMoments(match.inn2))) || null;
+  if(!m1 && !m2){
     return '<div class="stats-note">Key moments timeline will be shown when ball-by-ball events are available.</div>';
   }
   var html = '<div class="km-list">';
-  
-  [match.inn1, match.inn2].forEach(function(inn){
-    if(!inn || !inn.moments) return;
-    
+
+  [[match.inn1,m1],[match.inn2,m2]].forEach(function(pair){
+    var inn = pair[0], moments = pair[1];
+    if(!inn || !moments) return;
+
     var team = TEAMS[inn.team];
     html += '<div style="font-family:Teko,sans-serif;font-size:20px;font-weight:700;color:'+(team?team.color:'var(--txt)')+';margin:20px 0 12px">'+inn.team+' Innings</div>';
-    
-    inn.moments.forEach(function(m){
+
+    moments.forEach(function(m){
       html += '<div class="km-item">' +
         '<div class="km-header">' +
           '<div class="km-over">'+m.ov+'</div>' +
@@ -1987,53 +2061,58 @@ function expandTeam(teamCode){
 
 // ═══ SCHEDULE PAGE ═══
 
+function playoffTag(stage){
+  var map = {'Qualifier 1':'Q1','Qualifier 2':'Q2','Eliminator':'ELIM','Final':'🏆'};
+  return map[stage] || stage;
+}
+
 function renderSchedule(){
   var el = document.getElementById('schedule-content');
   if(!el) return;
   
+  var completedCount = MATCHES.filter(function(m){ return m.status === 'completed'; }).length;
+  var subtitle = (completedCount === MATCHES.length && MATCHES.length)
+    ? 'Complete Fixture List • Full Season Results'
+    : 'Complete Fixture List • Upcoming Matches • Results';
   var html = '<div class="main-w">' +
-    '<div class="sh"><h2>IPL 2026 Schedule</h2><p>Complete Fixture List • Upcoming Matches • Results</p></div>';
-  
-  SCHEDULE.forEach(function(day){
-    var isToday = day.date.includes('2026'); // Simple check
-    html += '<div class="date-sep '+(isToday?'today':'')+'">'+day.date+'</div>';
-    
-    if(day.matches.length === 0) {
-      html += '<div style="text-align:center;padding:16px;color:var(--dim);font-style:italic">No matches scheduled</div>';
-    } else {
-      day.matches.forEach(function(matchNo){
-        var match = MATCHES.find(function(m){ return m.no === matchNo; });
-        if(!match) return;
-        
-        var t1 = TEAMS[match.t1], t2 = TEAMS[match.t2];
-        var statusClass = match.status === 'completed' ? 'completed-match' : 'today-match';
-        
-        html += '<div class="mrow '+statusClass+'" onclick="viewMatch(\''+match.id+'\')">' +
-          '<div class="mno">'+match.no+'</div>' +
-          '<div class="mteams">' +
-            '<div class="mteam">' +
-              '<div class="tdot" style="background:'+(t1?t1.color:'#888')+'"></div>' +
-              match.t1 +
-            '</div>' +
-            '<div class="mvs">VS</div>' +
-            '<div class="mteam">' +
-              '<div class="tdot" style="background:'+(t2?t2.color:'#888')+'"></div>' +
-              match.t2 +
-            '</div>' +
-          '</div>' +
-          '<div class="mright">';
-        
-        if(match.status === 'completed') {
-          html += '<div class="m-result-badge">'+match.result+'</div>';
-        } else if(match.status === 'upcoming') {
-          html += '<div class="mtime">7:30 PM</div>';
-        }
-        
-        html += '</div></div>';
-      });
-    }
+    '<div class="sh"><h2>IPL 2026 Schedule</h2><p>'+subtitle+'</p></div>';
+
+  // Group all matches by date, preserving schedule order
+  var days = [], byDate = {};
+  MATCHES.forEach(function(m){
+    var key = m.date.replace(/ 2026$/, '');
+    if(!byDate[key]){ byDate[key] = []; days.push(key); }
+    byDate[key].push(m);
   });
-  
+
+  days.forEach(function(dateStr){
+    html += '<div class="date-sep">'+dateStr+'</div>';
+    byDate[dateStr].forEach(function(match){
+      var t1 = TEAMS[match.t1], t2 = TEAMS[match.t2];
+      var statusClass = match.status === 'completed' ? 'completed-match' : 'today-match';
+      html += '<div class="mrow '+statusClass+'" onclick="viewMatch(\''+match.id+'\')">' +
+        '<div class="mno">'+(match.stage ? '<span title="'+match.stage+'">'+playoffTag(match.stage)+'</span>' : match.no)+'</div>' +
+        '<div class="mteams">' +
+          '<div class="mteam">' +
+            '<div class="tdot" style="background:'+(t1?t1.color:'#888')+'"></div>' +
+            match.t1 +
+          '</div>' +
+          '<div class="mvs">VS</div>' +
+          '<div class="mteam">' +
+            '<div class="tdot" style="background:'+(t2?t2.color:'#888')+'"></div>' +
+            match.t2 +
+          '</div>' +
+        '</div>' +
+        '<div class="mright">';
+      if(match.status === 'completed') {
+        html += '<div class="m-result-badge">'+match.result+'</div>';
+      } else {
+        html += '<div class="mtime">'+(match.time||'7:30 PM')+'</div>';
+      }
+      html += '</div></div>';
+    });
+  });
+
   html += '</div>';
   el.innerHTML = html;
 }
@@ -2065,82 +2144,83 @@ function playerPhoto(playerName, teamCode, size, extraStyle){
 
 // ═══ CHATBOT SYSTEM ═══
 
-async function sendChatMessage(){
+function sendChatMessage(){
   var input = document.getElementById('chat-input');
   var message = input.value.trim();
   if(!message) return;
-  
+
   input.value = '';
   chatHistory.push({role: 'user', content: message});
   renderChatMessages();
-  
-  // Show typing
+
   var typing = document.getElementById('chat-typing');
   if(typing) typing.style.display = 'flex';
-  
-  try {
-    // Prepare context about IPL data
-    var context = {
-      matches: MATCHES.filter(function(m){ return m.status === 'completed'; }).map(function(m){
-        return {
-          id: m.id,
-          no: m.no,
-          teams: [m.t1, m.t2],
-          result: m.result,
-          playerOfMatch: m.playerOfMatch,
-          date: m.date,
-          venue: m.venue
-        };
-      }),
-      stats: buildPlayerStats(),
-      points: POINTS,
-      pomStats: getPlayerOfMatchStats()
-    };
-    
-    var response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [
-          {
-            role: 'user',
-            content: `You are IPLBuzz Bot, an AI cricket analyst for IPL 2026. You have access to match data, player statistics, and points table.
 
-Current IPL 2026 Data:
-${JSON.stringify(context, null, 2)}
-
-Answer this question about IPL 2026: ${message}
-
-Keep responses concise and engaging. Use cricket terminology and be enthusiastic about the game. If asking about specific stats, provide exact numbers from the data.`
-          }
-        ]
-      })
-    });
-    
+  // Fully offline analyst — answers from the real season data baked into the app
+  setTimeout(function(){
     if(typing) typing.style.display = 'none';
-    
-    if(!response.ok) {
-      throw new Error('API request failed');
+    chatHistory.push({role: 'assistant', content: answerLocally(message)});
+    renderChatMessages();
+  }, 350);
+}
+
+function answerLocally(msg){
+  var q = (msg||'').toLowerCase();
+  var stats = buildPlayerStats();
+  var bat = stats.bat.slice().sort(function(a,b){return b.runs-a.runs;});
+  var bowl = stats.bowl.slice().sort(function(a,b){return b.wkts-a.wkts || a.runs-b.runs;});
+  var pom = getPlayerOfMatchStats() || [];
+  var finalM = MATCHES.find(function(m){ return m.stage === 'Final'; });
+  var teamName = function(ab){ return TEAMS[ab] ? TEAMS[ab].name : ab; };
+
+  // Team mentioned?
+  var teamAb = null;
+  Object.keys(TEAMS).forEach(function(ab){
+    var t = TEAMS[ab];
+    if(q.indexOf(ab.toLowerCase())>=0 || (t && t.name && q.indexOf(t.name.toLowerCase())>=0)) teamAb = ab;
+  });
+
+  var has = function(){ for(var i=0;i<arguments.length;i++){ if(q.indexOf(arguments[i])>=0) return true; } return false; };
+
+  if(has('champion','won ipl','win ipl','winner of ipl','who won','trophy','title') && !teamAb){
+    if(finalM){
+      var champ = finalM.result.split(' ')[0];
+      var runner = finalM.t1===champ?finalM.t2:finalM.t1;
+      return '🏆 '+teamName(champ)+' are the IPL 2026 champions!\n\nThey beat '+teamName(runner)+' in the Final — '+finalM.result+'. Player of the Match: '+finalM.playerOfMatch+'.';
     }
-    
-    var data = await response.json();
-    var botResponse = data.content && data.content[0] ? data.content[0].text : 'Sorry, I encountered an error processing your request.';
-    
-    chatHistory.push({role: 'assistant', content: botResponse});
-    renderChatMessages();
-    
-  } catch(error) {
-    if(typing) typing.style.display = 'none';
-    chatHistory.push({
-      role: 'assistant', 
-      content: 'Sorry, I\'m having trouble connecting right now. But I can tell you that based on the completed matches:\n\n• RCB and MI are leading with 2 points each\n• Virat Kohli leads the Orange Cap race with 69 runs\n• Jacob Duffy (RCB) and Shardul Thakur (MI) are the top wicket-takers\n\nTry asking me about specific match details or player performances!'
-    });
-    renderChatMessages();
   }
+  if(has('orange cap','most run','top run','highest run','leading run')){
+    var o = bat[0];
+    return o ? '🟠 Orange Cap: '+o.name+' ('+teamName(o.team)+') with '+o.runs+' runs at a strike rate of '+o.sr+' — '+o.fifties+' fifties, '+o.hundreds+' hundreds, HS '+o.hs+(o.hsNo?'*':'')+'.' : 'No batting data available.';
+  }
+  if(has('purple cap','most wicket','top wicket','leading wicket','best bowler')){
+    var w = bowl[0];
+    return w ? '🟣 Purple Cap: '+w.name+' ('+teamName(w.team)+') with '+w.wkts+' wickets, economy '+w.econ+', best figures '+w.best+'.' : 'No bowling data available.';
+  }
+  if(has('most six','biggest hitter')){
+    var s = stats.bat.slice().sort(function(a,b){return b.sixes-a.sixes;})[0];
+    return s ? '6️⃣ Most sixes: '+s.name+' ('+teamName(s.team)+') smashed '+s.sixes+' sixes this season.' : 'No data.';
+  }
+  if(has('player of the match','most awards','mvp','most valuable','most pom')){
+    var p = pom[0];
+    return p ? '⭐ Most Player-of-the-Match awards: '+p.name+' ('+teamName(p.team)+') with '+p.awards+' award'+(p.awards>1?'s':'')+'.' : 'No POM data.';
+  }
+  if(has('points','table','standing','final table','league')){
+    var lines = POINTS.slice(0,6).map(function(p,i){ return (i+1)+'. '+p.team+' — '+p.pts+' pts ('+p.w+'W '+p.l+'L, NRR '+p.nrr+')'; });
+    return '📊 Final IPL 2026 standings:\n'+lines.join('\n')+'\n\nTop 4 qualified for the playoffs.';
+  }
+  if(teamAb){
+    var pt = POINTS.find(function(p){ return p.team===teamAb; });
+    var pos = POINTS.findIndex(function(p){ return p.team===teamAb; })+1;
+    var isChamp = finalM && finalM.result.split(' ')[0]===teamAb;
+    var isRunner = finalM && (finalM.t1===teamAb||finalM.t2===teamAb) && !isChamp;
+    var extra = isChamp ? ' They went on to win the title! 🏆' : isRunner ? ' They finished runners-up in the Final.' : (pos<=4 ? ' They reached the playoffs.' : '');
+    return pt ? teamName(teamAb)+' finished '+pos+(pos===1?'st':pos===2?'nd':pos===3?'rd':'th')+' in the league with '+pt.pts+' points ('+pt.w+' wins, '+pt.l+' losses, NRR '+pt.nrr+').'+extra
+              : 'I have data on all 10 teams — try asking about their record or the points table.';
+  }
+  // Default
+  var champTxt = finalM ? teamName(finalM.result.split(' ')[0])+' won IPL 2026. ' : '';
+  return '🏏 IPL 2026 is complete! '+champTxt+'Ask me about the champions, the Orange Cap, the Purple Cap, the final points table, or any team\'s season.';
 }
 
 function renderChatMessages(){
@@ -2170,7 +2250,7 @@ function toggleChat(){
       // Send welcome
       chatHistory.push({
         role:'assistant',
-        content: '🏏 Hey! I\'m IPLBuzz Bot — your AI cricket analyst.\n\nAsk me anything about IPL 2026:\n• "How did RCB win Match 1?"\n• "Who\'s leading the Orange Cap?"\n• "Predict the winner of tonight\'s match"\n• "Compare Kohli and Kishan\'s innings"\n• "What does SRH need to do to qualify?"'
+        content: '🏏 Hey! I\'m IPLBuzz Bot — your IPL 2026 season analyst.\n\nThe season is done and dusted — ask me anything:\n• "Who won IPL 2026?"\n• "Who won the Orange Cap?"\n• "Who won the Purple Cap?"\n• "Show me the final points table"\n• "How did RCB\'s season go?"'
       });
       renderChatMessages();
     }
@@ -2203,7 +2283,7 @@ function enableZeroCostCaching(){
 function preloadHeavyAssets(){
   var urls = [
     './Points.csv','./Batting.csv','./Bowling.csv','./Schedule.csv','./Teams.csv',
-    './Squads.csv','./Partnerships.csv','./FOW.csv'
+    './Squads.csv','./Partnerships.csv','./FOW.csv','./Overs.csv'
   ];
   urls.forEach(function(url){
     fetch(url, { cache: 'force-cache' }).catch(function(){});
@@ -2243,7 +2323,7 @@ document.addEventListener('DOMContentLoaded', async function(){
 <!-- STATS VIEW -->
 <div class="view" id="view-stats">
   <div class="main-w" style="max-width:920px;margin:0 auto;padding:22px 18px">
-    <div class="sh"><h2>Tournament Stats</h2><p>IPL 2026 · Updated after every match</p></div>
+    <div class="sh"><h2>Tournament Stats</h2><p>IPL 2026 · Full Season Leaderboards</p></div>
     <!-- Stats category tabs -->
     <div class="atabs" id="stats-tabs" style="margin-bottom:20px">
       <button class="atab on" onclick="switchStatTab('bat-runs',this)">Most Runs</button>
@@ -2298,12 +2378,11 @@ document.addEventListener('DOMContentLoaded', async function(){
   </div>
 
   <div id="chat-chips">
-    <button class="chat-chip" onclick="quickChat('How did RCB win Match 1?')">Match 1 recap</button>
-    <button class="chat-chip" onclick="quickChat('Who leads the Orange Cap?')">🟠 Orange Cap</button>
-    <button class="chat-chip" onclick="quickChat('Who leads the Purple Cap?')">🟣 Purple Cap</button>
-    <button class="chat-chip" onclick="quickChat('Who will win IPL 2026?')">🏆 Predict winner</button>
-    <button class="chat-chip" onclick="quickChat('How did Kohli play in Match 1?')">Kohli stats</button>
-    <button class="chat-chip" onclick="quickChat('What is the current points table?')">Points table</button>
+    <button class="chat-chip" onclick="quickChat('Who won IPL 2026?')">🏆 Champions</button>
+    <button class="chat-chip" onclick="quickChat('Who won the Orange Cap?')">🟠 Orange Cap</button>
+    <button class="chat-chip" onclick="quickChat('Who won the Purple Cap?')">🟣 Purple Cap</button>
+    <button class="chat-chip" onclick="quickChat('Show me the final points table')">📊 Points table</button>
+    <button class="chat-chip" onclick="quickChat('Who won the most Player of the Match awards?')">⭐ Most POM</button>
   </div>
 
   <div id="chat-input-row">
