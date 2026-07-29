@@ -6,7 +6,12 @@
 <title>IPLBuzz · IPL 2026</title>
 <link rel="icon" type="image/png" href="logo.png">
 <link rel="apple-touch-icon" href="logo.png">
+<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0a0506">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="IPLBuzz">
 <link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&family=DM+Sans:wght@400;500&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -421,6 +426,101 @@ nav button.on{color:var(--gold);background:rgba(240,165,0,.1)}
   color: white;
   border: 2px solid rgba(255,255,255,0.1);
 }
+
+/* ═══════════════ PREMIUM ANIMATIONS ═══════════════ */
+@keyframes viewIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes riseIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes barX{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes barY{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes wormDraw{to{stroke-dashoffset:0}}
+@keyframes sheen{0%{transform:translateX(-120%) rotate(8deg)}100%{transform:translateX(320%) rotate(8deg)}}
+@keyframes fabPulse{0%,100%{box-shadow:0 6px 20px rgba(0,0,0,.4),0 0 0 0 rgba(240,165,0,.45)}50%{box-shadow:0 6px 20px rgba(0,0,0,.4),0 0 0 12px rgba(240,165,0,0)}}
+@keyframes popIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+
+/* view enters with a gentle fade-rise */
+.view.on{animation:viewIn .42s cubic-bezier(.22,.61,.36,1)}
+
+/* premium surface transitions + lift on hover */
+.mc-card,.team-card,.tc-key,.stat-row,.part-item,.km-item,.player-card,.tc-player{transition:transform .18s cubic-bezier(.22,.61,.36,1),border-color .18s,background .18s,box-shadow .18s}
+.mc-card:hover,.part-item:hover{transform:translateY(-3px);box-shadow:0 10px 26px -14px rgba(0,0,0,.7);border-color:var(--bd2)}
+.tc-key:hover{transform:translateY(-2px);border-color:var(--bd2)}
+.live-tile{transition:transform .2s,border-color .2s,box-shadow .2s}
+.live-tile:hover{transform:translateY(-2px);box-shadow:0 14px 30px -18px rgba(0,0,0,.8)}
+
+/* staggered reveal for lists (first ~14 items) */
+#match-list .mc-card,.team-list .team-card,#home-content .mrow,.tc-key-grid .tc-key,#match-analytics .part-item,#match-analytics .km-item,.player-grid .player-card{animation:riseIn .5s both cubic-bezier(.22,.61,.36,1)}
+#match-list .mc-card:nth-child(n+1),.team-list .team-card:nth-child(n+1){animation-delay:.02s}
+.stagger>*{animation:riseIn .5s both cubic-bezier(.22,.61,.36,1)}
+.stagger>*:nth-child(1){animation-delay:.03s}.stagger>*:nth-child(2){animation-delay:.06s}
+.stagger>*:nth-child(3){animation-delay:.09s}.stagger>*:nth-child(4){animation-delay:.12s}
+.stagger>*:nth-child(5){animation-delay:.15s}.stagger>*:nth-child(6){animation-delay:.18s}
+.stagger>*:nth-child(7){animation-delay:.21s}.stagger>*:nth-child(8){animation-delay:.24s}
+.stagger>*:nth-child(9){animation-delay:.27s}.stagger>*:nth-child(n+10){animation-delay:.3s}
+
+/* animated stat & rating bars grow from the left */
+.stat-bar-fill,.rating-bar{transform-origin:left;animation:barX .9s .15s both cubic-bezier(.22,.61,.36,1)}
+
+/* worm chart draws itself */
+.worm-svg polyline{stroke-dasharray:3000;stroke-dashoffset:3000;animation:wormDraw 1.5s .2s ease forwards;stroke-linecap:round;stroke-linejoin:round}
+
+/* over-analysis bars grow up, lightly staggered */
+.ov-bar{transform-origin:bottom;animation:barY .55s both cubic-bezier(.22,.61,.36,1)}
+.ov-bar:hover{background:rgba(240,165,0,.55)}
+.ov-bar.has-wicket{background:rgba(198,35,48,.5)}
+.ov-bar.has-wicket:hover{background:rgba(198,35,48,.75)}
+
+/* champions banner sheen */
+.champ-banner{position:relative;overflow:hidden}
+.champ-banner::after{content:'';position:absolute;top:-40%;left:0;width:40%;height:180%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent);animation:sheen 4.5s ease-in-out infinite}
+
+/* stat leaderboard rows pop in */
+#stats-content .stat-row{animation:riseIn .45s both}
+#stats-content .stat-row:nth-child(1){animation-delay:.02s}#stats-content .stat-row:nth-child(2){animation-delay:.05s}
+#stats-content .stat-row:nth-child(3){animation-delay:.08s}#stats-content .stat-row:nth-child(4){animation-delay:.11s}
+#stats-content .stat-row:nth-child(5){animation-delay:.14s}#stats-content .stat-row:nth-child(n+6){animation-delay:.17s}
+
+/* fab pulse + press feedback */
+#chat-fab{animation:fabPulse 3s ease-in-out infinite;transition:transform .15s}
+#chat-fab:hover{transform:scale(1.08)}
+#chat-fab:active{transform:scale(.94)}
+button,.mc-card,.team-card,.atab{-webkit-tap-highlight-color:transparent}
+.atab:active,nav button:active{transform:scale(.96)}
+#chat-panel{animation:popIn .25s cubic-bezier(.22,.61,.36,1)}
+
+/* horizontal-scroll wrapper for wide tables on small screens */
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.table-wrap::-webkit-scrollbar{height:5px}
+.table-wrap::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px}
+
+/* respect reduced-motion */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+  .worm-svg polyline{stroke-dashoffset:0}
+}
+
+/* ═══════════════ RESPONSIVE POLISH ═══════════════ */
+html{-webkit-text-size-adjust:100%}
+.sh h2{font-size:clamp(22px,5.5vw,30px)}
+nav{gap:6px}
+.nav-btns{overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none}
+.nav-btns::-webkit-scrollbar{display:none}
+img{max-width:100%}
+@media (max-width:900px){ .main-w{padding:18px 14px} }
+@media (max-width:640px){
+  .main-w{padding:14px 12px}
+  .tc-header,.tc-section{padding:12px 14px}
+  .tc-key-grid{grid-template-columns:1fr 1fr}
+  .md-hero{padding:16px 14px}
+  .atab{padding:9px 11px;font-size:11px}
+  .worm-svg{height:220px}
+}
+@media (max-width:430px){
+  .tc-key-grid{grid-template-columns:1fr}
+  .tc-player-grid{grid-template-columns:1fr 1fr}
+  .tc-finish{font-size:10px;padding:5px 9px}
+  .live-tname{font-size:19px}
+}
 </style>
 </head>
 <body>
@@ -432,7 +532,6 @@ nav button.on{color:var(--gold);background:rgba(240,165,0,.1)}
     <button id="nav-matches" onclick="showView('matches')">Matches</button>
     <button id="nav-stats" onclick="showView('stats')">Tournament Stats</button>
     <button id="nav-teams" onclick="showView('teams')">Teams</button>
-    <button id="nav-schedule" onclick="showView('schedule')">Schedule</button>
   </div>
   <div class="nav-right">
     <input type="hidden" id="api-key" value="a7402ce9-871c-4dee-813a-5484b141ef5a">
@@ -440,6 +539,37 @@ nav button.on{color:var(--gold);background:rgba(240,165,0,.1)}
 </nav>
 
 <script>
+// ═══════════════════════════════════════════════════════════════════
+// CONFIG — the single place to update for a new IPL season.
+// Point DATA at new CSVs (or flip LIVE.enabled to read live scores from
+// Firebase), bump SEASON, and the whole app adapts with zero code rework.
+// ═══════════════════════════════════════════════════════════════════
+const CONFIG = {
+  season: '2026',
+  seasonLabel: 'IPL 2026',
+  // Static datasets (relative paths). Swap these each season.
+  data: {
+    schedule: './Schedule.csv', points: './Points.csv',
+    batting: './Batting.csv', bowling: './Bowling.csv',
+    fow: './FOW.csv', partnerships: './Partnerships.csv',
+    overs: './Overs.csv', squads: './Squads.csv', teams: './Teams.csv'
+  },
+  // LIVE mode — while a season is in progress, a Cloudflare Worker (worker.js)
+  // polls CricAPI into Firebase and the app reads iplbuzz/live. Turn on next year.
+  live: {
+    enabled: false,
+    firebaseUrl: 'https://iplbuzz-2de05-default-rtdb.asia-southeast1.firebasedatabase.app',
+    cricApiKey: (document.getElementById('api-key') || {}).value || ''
+  },
+  // AI analyst — set chat.apiKey (or wire a proxy) to enable the live LLM;
+  // otherwise the built-in offline analyst answers from the season data.
+  chat: {
+    apiKey: '',                               // set to enable the hosted LLM
+    endpoint: 'https://api.anthropic.com/v1/messages',
+    model: 'claude-sonnet-4-20250514'
+  }
+};
+
 // ═══ CORE DATA ═══
 
 const TEAMS = {
@@ -742,16 +872,16 @@ var POINTS = [
 
 async function loadSeasonDataFromCSVs(){
   try{
+    var D = CONFIG.data;
+    var opt = function(url){ return fetch(url).then(r=>r.text()).catch(function(){ return ''; }); };
     var files = await Promise.all([
-      fetch('./Schedule.csv').then(r=>r.text()),
-      fetch('./Points.csv').then(r=>r.text()),
-      fetch('./Batting.csv').then(r=>r.text()),
-      fetch('./Bowling.csv').then(r=>r.text()),
-      fetch('./Partnerships.csv').then(r=>r.text()),
-      fetch('./FOW.csv').then(r=>r.text()),
-      fetch('./Overs.csv').then(r=>r.text()).catch(function(){ return ''; }),
-      fetch('./Squads.csv').then(r=>r.text()).catch(function(){ return ''; }),
-      fetch('./Teams.csv').then(r=>r.text()).catch(function(){ return ''; })
+      fetch(D.schedule).then(r=>r.text()),
+      fetch(D.points).then(r=>r.text()),
+      fetch(D.batting).then(r=>r.text()),
+      fetch(D.bowling).then(r=>r.text()),
+      fetch(D.partnerships).then(r=>r.text()),
+      fetch(D.fow).then(r=>r.text()),
+      opt(D.overs), opt(D.squads), opt(D.teams)
     ]);
     var scheduleRows = parseCSV(files[0]), pointsRows = parseCSV(files[1]);
     var battingRows = parseCSV(files[2]), bowlingRows = parseCSV(files[3]);
@@ -934,7 +1064,8 @@ function showView(viewId){
   else if(viewId==='matches') renderMatches();
   else if(viewId==='stats') renderStats();
   else if(viewId==='teams') renderTeams();
-  else if(viewId==='schedule') renderSchedule();
+  // 'schedule' view retired — Match Centre covers fixtures & results.
+  // renderSchedule() is kept below for reuse in future seasons with upcoming fixtures.
 }
 
 // ═══ TEAM LOGO HELPER ═══
@@ -969,10 +1100,10 @@ function renderHome(){
   var champHtml = '';
   if(seasonComplete && champ){
     champHtml =
-      '<div style="position:relative;overflow:hidden;border-radius:14px;margin-bottom:20px;padding:22px 20px;'+
+      '<div class="champ-banner" style="border-radius:14px;margin-bottom:20px;padding:22px 20px;'+
         'background:linear-gradient(135deg,'+champ.color+' 0%, rgba(7,8,12,.92) 70%);border:1px solid rgba(240,165,0,.4)">'+
-        '<div style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold)">🏆 IPL 2026 Champions</div>'+
-        '<div style="font-family:Teko,sans-serif;font-size:40px;font-weight:700;line-height:1;color:#fff;margin:6px 0 4px">'+champ.name+'</div>'+
+        '<div style="position:relative;z-index:1;font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold)">🏆 '+CONFIG.seasonLabel+' Champions</div>'+
+        '<div style="position:relative;z-index:1;font-family:Teko,sans-serif;font-size:clamp(30px,7vw,42px);font-weight:700;line-height:1;color:#fff;margin:6px 0 4px">'+champ.name+'</div>'+
         (runner ? '<div style="font-family:Barlow Condensed,sans-serif;font-size:14px;color:rgba(255,255,255,.85)">defeated '+runner.name+' in the Final · '+(finalM?finalM.result:'')+'</div>' : '')+
         (finalM && finalM.playerOfMatch ? '<div style="font-family:Barlow Condensed,sans-serif;font-size:13px;color:rgba(255,255,255,.7);margin-top:4px">Final · Player of the Match: '+finalM.playerOfMatch+'</div>' : '')+
       '</div>';
@@ -998,7 +1129,7 @@ function renderHome(){
   ) : '';
 
   // ── Full points table with playoff cutoff after top 4 ──
-  var pointsHtml = '<table class="ptbl">' +
+  var pointsHtml = '<div class="table-wrap"><table class="ptbl">' +
     '<tr><th>#</th><th>Team</th><th>P</th><th>W</th><th>L</th><th>Pts</th><th>NRR</th></tr>';
   POINTS.forEach(function(p,i){
     var team = TEAMS[p.team];
@@ -1009,7 +1140,7 @@ function renderHome(){
       '<td>'+p.p+'</td><td>'+p.w+'</td><td>'+p.l+'</td><td style="font-weight:700">'+p.pts+'</td><td>'+p.nrr+'</td></tr>';
     if(i === 3) pointsHtml += '<tr><td colspan="7" style="padding:2px 0;border-bottom:1px dashed var(--bd2);font-size:9px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;text-align:center">Playoff cut-off</td></tr>';
   });
-  pointsHtml += '</table>';
+  pointsHtml += '</table></div>';
 
   // ── Season awards ──
   var stats = buildPlayerStats();
@@ -2128,7 +2259,7 @@ function playerPhoto(playerName, teamCode, size, extraStyle){
 
 // ═══ CHATBOT SYSTEM ═══
 
-function sendChatMessage(){
+async function sendChatMessage(){
   var input = document.getElementById('chat-input');
   var message = input.value.trim();
   if(!message) return;
@@ -2140,12 +2271,34 @@ function sendChatMessage(){
   var typing = document.getElementById('chat-typing');
   if(typing) typing.style.display = 'flex';
 
-  // Fully offline analyst — answers from the real season data baked into the app
-  setTimeout(function(){
-    if(typing) typing.style.display = 'none';
-    chatHistory.push({role: 'assistant', content: answerLocally(message)});
-    renderChatMessages();
-  }, 350);
+  var reply = await getChatReply(message);
+  if(typing) typing.style.display = 'none';
+  chatHistory.push({role: 'assistant', content: reply});
+  renderChatMessages();
+}
+
+// Uses the hosted LLM when CONFIG.chat.apiKey is set (kept wired for future
+// seasons); otherwise answers instantly from the offline season analyst.
+async function getChatReply(message){
+  if(CONFIG.chat && CONFIG.chat.apiKey){
+    try {
+      var context = {
+        season: CONFIG.seasonLabel,
+        matches: MATCHES.filter(function(m){ return m.status==='completed'; }).map(function(m){
+          return { no:m.no, stage:m.stage, teams:[m.t1,m.t2], result:m.result, pom:m.playerOfMatch }; }),
+        points: POINTS, stats: buildPlayerStats(), pom: getPlayerOfMatchStats()
+      };
+      var res = await fetch(CONFIG.chat.endpoint, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json', 'x-api-key':CONFIG.chat.apiKey,
+                  'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' },
+        body: JSON.stringify({ model: CONFIG.chat.model, max_tokens: 1000, messages:[{ role:'user',
+          content: 'You are IPLBuzz Bot, an analyst for '+CONFIG.seasonLabel+'. Data:\n'+JSON.stringify(context)+'\n\nQ: '+message+'\nAnswer concisely with exact numbers.' }] })
+      });
+      if(res.ok){ var d = await res.json(); if(d.content && d.content[0]) return d.content[0].text; }
+    } catch(e){ /* fall through to offline analyst */ }
+  }
+  return new Promise(function(resolve){ setTimeout(function(){ resolve(answerLocally(message)); }, 300); });
 }
 
 function answerLocally(msg){
@@ -2166,7 +2319,8 @@ function answerLocally(msg){
 
   var has = function(){ for(var i=0;i<arguments.length;i++){ if(q.indexOf(arguments[i])>=0) return true; } return false; };
 
-  if(has('champion','won ipl','win ipl','winner of ipl','who won','trophy','title') && !teamAb){
+  if(has('champion','won ipl','win ipl','winner of ipl','who won','trophy','title') && !teamAb
+     && !has('cap','wicket','run','point','table','standing','score','fifty','fifties','hundred','six')){
     if(finalM){
       var champ = finalM.result.split(' ')[0];
       var runner = finalM.t1===champ?finalM.t2:finalM.t1;
@@ -2337,10 +2491,6 @@ document.addEventListener('DOMContentLoaded', async function(){
 </div>
 
 <!-- SCHEDULE VIEW -->
-<div class="view" id="view-schedule">
-  <div id="schedule-content"></div>
-</div>
-
 <!-- ═══ CHATBOT ═══ -->
 <button id="chat-fab" onclick="toggleChat()" title="Ask IPLBuzz Bot">🏏</button>
 

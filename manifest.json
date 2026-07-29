@@ -1,0 +1,16 @@
+{
+  "name": "IPLBuzz — The World of T20 Cricket",
+  "short_name": "IPLBuzz",
+  "description": "IPL analytics dashboard — scores, scorecards, stats, teams and match analytics.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0a0506",
+  "theme_color": "#0a0506",
+  "icons": [
+    { "src": "logo.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "logo.png", "sizes": "1024x1024", "type": "image/png", "purpose": "maskable" }
+  ]
+}
