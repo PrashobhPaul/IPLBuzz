@@ -1,10 +1,12 @@
-const VERSION = 'iplbuzz-v4';
+const VERSION = 'iplbuzz-v5';
 const STATIC_CACHE = `${VERSION}-static`;
 const DATA_CACHE = `${VERSION}-data`;
 
 const APP_SHELL = [
   './',
   './index.html',
+  './manifest.json',
+  './logo.png',
   './stats-engine.js',
   './Points.csv',
   './Batting.csv',

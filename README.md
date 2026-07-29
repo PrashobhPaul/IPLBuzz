@@ -1,75 +1,90 @@
-# IPLBuzz — IPL 2026 Analytics Dashboard
+<div align="center">
 
-> Complete analytics dashboard for the **finished IPL 2026 season**. Single-file web app, zero dependencies, works fully offline.
+<img src="logo.png" alt="IPLBuzz" width="140" />
 
-🌐 **Live:** https://prashobhpaul.github.io/IPLBuzz/
+# IPLBuzz — The World of T20 Cricket
 
-🏆 **Champions:** Royal Challengers Bengaluru (beat Gujarat Titans in the Final).
-🟠 **Orange Cap:** Vaibhav Sooryavanshi (776 runs) · 🟣 **Purple Cap:** Bhuvneshwar Kumar (29 wickets).
+**A complete, offline-first IPL analytics dashboard.** Scores, full scorecards, ball-by-ball charts, stats leaderboards, team profiles and an in-app analyst — in a single static web app with zero dependencies.
+
+[**🌐 Open the live app**](https://prashobhpaul.github.io/IPLBuzz/) · [**⬇️ Download**](#-download--install)
+
+</div>
 
 ---
 
-## Project Structure
+## 🏆 IPL 2026 at a glance
 
-```
-IPLBuzz/
-├── index.html          ← Main app (all JS + data embedded)
-├── README.md           ← This file
-├── players/            ← Player headshots (add new ones here)
-│   ├── virat-kohli.jpg
-│   ├── rohit-sharma.jpg
-│   └── [player-name].jpg   ← Add any new player photo here
-└── logos/              ← Team logos (all 10 teams)
-    ├── rcb.png
-    ├── mi.png
-    ├── csk.png
-    ├── kkr.png
-    ├── srh.png
-    ├── rr.png
-    ├── pbks.png
-    ├── dc.png
-    ├── gt.png
-    └── lsg.png
-```
-## Adding a New Player Photo
+| | |
+|---|---|
+| **Champions** | Royal Challengers Bengaluru (beat Gujarat Titans in the Final) |
+| **Runners-up** | Gujarat Titans |
+| **Orange Cap** | Vaibhav Sooryavanshi — 776 runs |
+| **Purple Cap** | Bhuvneshwar Kumar — 29 wickets |
 
-1. Name the file: `firstname-lastname.jpg` (all lowercase, hyphen-separated)
-   - Examples: `jasprit-bumrah.jpg`, `suryakumar-yadav.jpg`, `rinku-singh.jpg`
-2. Drop it into the `players/` folder
-3. That's it — the dashboard auto-picks it up. No code changes needed.
-> Photos auto-appear in: Orange Cap · Purple Cap · POM · Stats leaderboard · Squad cards
-If a photo file is missing, the dashboard automatically shows a team-coloured circle with the player's initials as a fallback.
+---
+
+## ⬇️ Download & Install
+
+**Install as an app (recommended — works fully offline):**
+- **Mobile (Android/iOS):** open the [live app](https://prashobhpaul.github.io/IPLBuzz/), then **Add to Home Screen**.
+- **Desktop (Chrome/Edge):** open the [live app](https://prashobhpaul.github.io/IPLBuzz/) and click the **Install** icon in the address bar.
+
+It's a full **PWA** — once installed it launches like a native app and keeps working with no network.
+
+**Download the source / self-host:**
+- **[⬇️ Download ZIP](https://github.com/PrashobhPaul/IPLBuzz/archive/refs/heads/main.zip)**
+- or clone: `git clone https://github.com/PrashobhPaul/IPLBuzz.git`
+
+Then serve the folder over any static server (the app fetches CSV data, so it needs `http://`, not `file://`):
+
+```bash
+cd IPLBuzz
+python3 -m http.server 8000
+# open http://localhost:8000
+```
+
+---
 
 ## Features
 
-- **Home** — Season summary, champions banner, final standings (with playoff cut-off), season awards
-- **Schedule** — Full 74-match fixture list (70 league + 4 playoffs) with results, grouped by date
-- **Points Table** — Final league standings with NRR and playoff qualification
-- **Teams** — Squad (with photos) and season performance for all 10 teams
-- **Match Centre** — Every match with detailed scorecards
-- **Match Analytics** — Scorecard · Worm Chart · Over Analysis · Partnerships · Player Analysis · Key Moments (all derived from ball-by-ball data)
-- **Stats** — 16 full-season leaderboard categories (Orange Cap, Purple Cap, and more)
-- **🏏 IPLBuzz Bot** — A built-in, fully offline analyst that answers from the season data baked into the app
+- **Home** — champions banner, final standings (with playoff cut-off) and season awards
+- **Matches** — every match with detailed scorecards and analytics
+- **Match Analytics** — Scorecard · animated **Worm Chart** · **Over Analysis** · Partnerships · Player Analysis · Key Moments, all derived from ball-by-ball data
+- **Tournament Stats** — 16 full-season leaderboards (Orange Cap, Purple Cap, and more)
+- **Teams** — for each side: crest, intro, key performers, where they finished, and the full 2026 squad (coach & captain first)
+- **🏏 IPLBuzz Bot** — an in-app analyst that answers from the season data (works offline; upgrades to a hosted LLM when configured)
 
-## Data
+Premium, animated UI that adapts to mobile, tablet and desktop.
 
-All season data lives in CSV files that the app loads at startup (no backend, no API keys):
+## Data model
+
+All data lives in CSV files loaded at startup (no backend required):
 
 | File | What |
 |---|---|
 | `Schedule.csv` | All 74 matches — teams, venue, result, scores, POM, toss, playoff stage |
 | `Points.csv` | Final league points table (P/W/L/NR/Pts/NRR) |
-| `Batting.csv` · `Bowling.csv` | Per-innings batting & bowling scorecards for every match |
+| `Batting.csv` · `Bowling.csv` | Per-innings batting & bowling scorecards |
 | `FOW.csv` · `Partnerships.csv` | Fall of wickets and partnerships per innings |
-| `Overs.csv` | Over-by-over runs/wickets (powers the worm chart & over analysis) |
-| `Teams.csv` · `Squads.csv` | Team metadata and squads |
+| `Overs.csv` | Over-by-over runs/wickets (worm chart & over analysis) |
+| `Teams.csv` · `Squads.csv` | Team metadata (captain/coach) and full squads |
 
-Match data is sourced from **[Cricsheet](https://cricsheet.org)** ball-by-ball records (ODbL). Leaderboards, the points table, and all analytics are computed in-browser from these files, so the numbers always reconcile with the scorecards.
+Match data is sourced from **[Cricsheet](https://cricsheet.org)** ball-by-ball records (ODbL). All leaderboards, the points table and analytics are computed in-browser, so every number reconciles with the scorecards.
 
-> **Note:** `admin.html` and `worker.js` were part of the original live-ops pipeline (Firebase + CricAPI polling) used while the season was in progress. The season is over, so the public app no longer depends on them — it reads everything from the static CSVs above.
+## 🔁 Built to be reused every season
 
-## Zero-cost, offline-first delivery
+The app is a **platform**, not a one-off. Everything season-specific is in one `CONFIG` block at the top of `index.html`:
 
-- **Instant app-shell load** via a Service Worker (`sw.js`) that pre-caches the app and all CSV datasets.
-- **Stale-while-revalidate** for data files so tables and stats open immediately from cache.
-- **Fully static** — deploys on any free static host (GitHub Pages / Cloudflare Pages / Netlify) and runs offline after first load.
+- Point `CONFIG.data.*` at next season's CSVs and bump `CONFIG.season` — the whole app adapts with **zero code changes**.
+- `CONFIG.live` re-enables live scores: `worker.js` (a Cloudflare Worker) polls CricAPI into Firebase and the app reads `iplbuzz/live`. `admin.html` ingests fresh CSVs.
+- `CONFIG.chat.apiKey` switches the analyst from the built-in offline engine to a hosted LLM.
+
+So next year: drop in new data (or flip on live mode), and IPLBuzz is ready for the new IPL season.
+
+## Tech
+
+Single-file app (`index.html`) + CSV data + a Service Worker (`sw.js`) for instant, offline-first loads. Static-host friendly (GitHub Pages / Cloudflare Pages / Netlify). No build step.
+
+---
+
+<div align="center"><sub>Match data © <a href="https://cricsheet.org">Cricsheet</a> (ODbL). Team logos are property of their respective franchises.</sub></div>
