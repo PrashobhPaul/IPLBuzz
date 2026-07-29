@@ -1,131 +1,258 @@
-team,player,role,country
-RCB,Rajat Patidar,Batsman,India
-RCB,Tim David,Batsman,Singapore
-RCB,Virat Kohli,Batsman,India
-RCB,Devdutt Padikkal,Batsman,India
-RCB,Jacob Bethell,All-Rounder,England
-RCB,Krunal Pandya,All-Rounder,India
-RCB,Venkatesh Iyer,All-Rounder,India
-RCB,Romario Shepherd,All-Rounder,West Indies
-RCB,Philip Salt,WK-Batsman,England
-RCB,Jitesh Sharma,WK-Batsman,India
-RCB,Abhinandan Singh,Bowler,India
-RCB,Bhuvneshwar Kumar,Bowler,India
-RCB,Jacob Duffy,Bowler,New Zealand
-RCB,Suyash Sharma,Bowler,India
-RCB,Rasikh Salam Dar,Bowler,India
-MI,Rohit Sharma,Batsman,India
-MI,Suryakumar Yadav,Batsman,India
-MI,Tilak Varma,Batsman,India
-MI,Naman Dhir,Batsman,India
-MI,Hardik Pandya,All-Rounder,India
-MI,Sherfane Rutherford,All-Rounder,West Indies
-MI,Shardul Thakur,All-Rounder,India
-MI,Will Jacks,All-Rounder,England
-MI,Ryan Rickelton,WK-Batsman,South Africa
-MI,Quinton de Kock,WK-Batsman,South Africa
-MI,Robin Minz,WK-Batsman,India
-MI,Jasprit Bumrah,Bowler,India
-MI,Trent Boult,Bowler,New Zealand
-MI,AM Ghazanfar,Bowler,Afghanistan
-MI,Deepak Chahar,Bowler,India
-MI,Mayank Markande,Bowler,India
-CSK,Ruturaj Gaikwad,Batsman,India
-CSK,Ayush Mhatre,Batsman,India
-CSK,Sarfaraz Khan,Batsman,India
-CSK,Dewald Brevis,Batsman,South Africa
-CSK,Shivam Dube,All-Rounder,India
-CSK,Jamie Overton,All-Rounder,England
-CSK,Anshul Kamboj,All-Rounder,India
-CSK,Prashant Veer,All-Rounder,India
-CSK,MS Dhoni,WK-Batsman,India
-CSK,Sanju Samson,WK-Batsman,India
-CSK,Urvil Patel,WK-Batsman,India
-CSK,Khaleel Ahmed,Bowler,India
-CSK,Noor Ahmad,Bowler,Afghanistan
-CSK,Matt Henry,Bowler,New Zealand
-CSK,Gurjapneet Singh,Bowler,India
-KKR,Ajinkya Rahane,Batsman,India
-KKR,Finn Allen,Batsman,New Zealand
-KKR,Angkrish Raghuvanshi,Batsman,India
-KKR,Rinku Singh,Batsman,India
-KKR,Rovman Powell,Batsman,West Indies
-KKR,Sunil Narine,All-Rounder,West Indies
-KKR,Cameron Green,All-Rounder,Australia
-KKR,Ramandeep Singh,All-Rounder,India
-KKR,Anukul Roy,All-Rounder,India
-KKR,Varun Chakaravarthy,Bowler,India
-KKR,Vaibhav Arora,Bowler,India
-KKR,Blessing Muzarabani,Bowler,Zimbabwe
-KKR,Kartik Tyagi,Bowler,India
-KKR,Navdeep Saini,Bowler,India
-SRH,Travis Head,Batsman,Australia
-SRH,Abhishek Sharma,All-Rounder,India
-SRH,Nitish Kumar Reddy,All-Rounder,India
-SRH,Liam Livingstone,All-Rounder,England
-SRH,Harsh Dubey,All-Rounder,India
-SRH,Ishan Kishan,WK-Batsman,India
-SRH,Heinrich Klaasen,WK-Batsman,South Africa
-SRH,Pat Cummins,Bowler,Australia
-SRH,Jaydev Unadkat,Bowler,India
-SRH,Harshal Patel,Bowler,India
-SRH,David Payne,Bowler,England
-SRH,Eshan Malinga,Bowler,Sri Lanka
-SRH,Shivam Mavi,Bowler,India
-RR,Riyan Parag,All-Rounder,India
-RR,Yashasvi Jaiswal,Batsman,India
-RR,Vaibhav Sooryavanshi,Batsman,India
-RR,Shimron Hetmyer,Batsman,West Indies
-RR,Dhruv Jurel,WK-Batsman,India
-RR,Ravindra Jadeja,All-Rounder,India
-RR,Jofra Archer,Bowler,England
-RR,Ravi Bishnoi,Bowler,India
-RR,Sandeep Sharma,Bowler,India
-RR,Nandre Burger,Bowler,South Africa
-RR,Kwena Maphaka,Bowler,South Africa
-PBKS,Shreyas Iyer,Batsman,India
-PBKS,Priyansh Arya,Batsman,India
-PBKS,Nehal Wadhera,Batsman,India
-PBKS,Shashank Singh,All-Rounder,India
-PBKS,Cooper Connolly,All-Rounder,Australia
-PBKS,Marcus Stoinis,All-Rounder,Australia
-PBKS,Marco Jansen,All-Rounder,South Africa
-PBKS,Prabhsimran Singh,WK-Batsman,India
-PBKS,Arshdeep Singh,Bowler,India
-PBKS,Xavier Bartlett,Bowler,Australia
-PBKS,Yuzvendra Chahal,Bowler,India
-PBKS,Vijaykumar Vyshak,Bowler,India
-DC,Axar Patel,All-Rounder,India
-DC,Sameer Rizvi,Batsman,India
-DC,KL Rahul,WK-Batsman,India
-DC,Pathum Nissanka,Batsman,Sri Lanka
-DC,Nitish Rana,Batsman,India
-DC,Tristan Stubbs,WK-Batsman,South Africa
-DC,Abishek Porel,WK-Batsman,India
-DC,Kuldeep Yadav,Bowler,India
-DC,Lungi Ngidi,Bowler,South Africa
-DC,Mitchell Starc,Bowler,Australia
-DC,T Natarajan,Bowler,India
-DC,Mukesh Kumar,Bowler,India
-GT,Shubman Gill,Batsman,India
-GT,Sai Sudharsan,Batsman,India
-GT,Rashid Khan,All-Rounder,Afghanistan
-GT,Washington Sundar,All-Rounder,India
-GT,Jos Buttler,WK-Batsman,England
-GT,Kumar Kushagra,WK-Batsman,India
-GT,Kagiso Rabada,Bowler,South Africa
-GT,Mohammed Siraj,Bowler,India
-GT,Prasidh Krishna,Bowler,India
-GT,Gurnoor Brar,Bowler,India
-LSG,Rishabh Pant,WK-Batsman,India
-LSG,Mitchell Marsh,All-Rounder,Australia
-LSG,Aiden Markram,Batsman,South Africa
-LSG,Nicholas Pooran,WK-Batsman,West Indies
-LSG,Abdul Samad,All-Rounder,India
-LSG,Mukul Choudhary,WK-Batsman,India
-LSG,Shahbaz Ahmed,All-Rounder,India
-LSG,Mohammed Shami,Bowler,India
-LSG,Avesh Khan,Bowler,India
-LSG,Prince Yadav,Bowler,India
-LSG,Digvesh Singh Rathi,Bowler,India
-LSG,Mohsin Khan,Bowler,India
+team,player,role
+RCB,Jitesh Sharma,Wicketkeeper Batter
+RCB,Jordan Cox,Wicketkeeper Batter
+RCB,Phil Salt,Wicketkeeper Batter
+RCB,Devdutt Padikkal,Batter
+RCB,Rajat Patidar,Batter
+RCB,Tim David,Batter
+RCB,Virat Kohli,Batter
+RCB,Jacob Bethell,Batting Allrounder
+RCB,Vihaan Malhotra,Batting Allrounder
+RCB,Krunal Pandya,Allrounder
+RCB,Mangesh Yadav,Allrounder
+RCB,Venkatesh Iyer,Allrounder
+RCB,Kanishk Chouhan,Bowling Allrounder
+RCB,Romario Shepherd,Bowling Allrounder
+RCB,Abhinandan Singh,Bowler
+RCB,Bhuvneshwar Kumar,Bowler
+RCB,Jacob Duffy,Bowler
+RCB,Josh Hazlewood,Bowler
+RCB,Nuwan Thushara,Bowler
+RCB,Rasikh Salam,Bowler
+RCB,Satvik Deswal,Bowler
+RCB,Suyash Sharma,Bowler
+RCB,Swapnil Singh,Bowler
+RCB,Vicky Ostwal,Bowler
+RCB,Yash Dayal,Bowler
+MI,Quinton de Kock,Wicketkeeper Batter
+MI,Robin Minz,Wicketkeeper Batter
+MI,Ryan Rickelton,Wicketkeeper Batter
+MI,Danish Malewar,Batter
+MI,Rohit Sharma,Batter
+MI,Sherfane Rutherford,Batter
+MI,Suryakumar Yadav,Batter
+MI,Tilak Varma,Batting Allrounder
+MI,Will Jacks,Batting Allrounder
+MI,Atharva Ankolekar,Allrounder
+MI,Corbin Bosch,Allrounder
+MI,Hardik Pandya,Allrounder
+MI,Mayank Rawat,Allrounder
+MI,Naman Dhir,Allrounder
+MI,Raj Bawa,Allrounder
+MI,Mitchell Santner,Bowling Allrounder
+MI,Shardul Thakur,Bowling Allrounder
+MI,AM Ghazanfar,Bowler
+MI,Ashwani Kumar,Bowler
+MI,Deepak Chahar,Bowler
+MI,Jasprit Bumrah,Bowler
+MI,Mayank Markande,Bowler
+MI,Mohd Izhar,Bowler
+MI,Raghu Sharma,Bowler
+MI,Trent Boult,Bowler
+CSK,Kartik Sharma,Wicketkeeper Batter
+CSK,MS Dhoni,Wicketkeeper Batter
+CSK,Sanju Samson,Wicketkeeper Batter
+CSK,Urvil Patel,Wicketkeeper Batter
+CSK,Ayush Mhatre,Batter
+CSK,Dewald Brevis,Batter
+CSK,Ruturaj Gaikwad,Batter
+CSK,Sarfaraz Khan,Batter
+CSK,Matthew Short,Batting Allrounder
+CSK,Aman Khan,Allrounder
+CSK,Shivam Dube,Allrounder
+CSK,Zak Foulkes,Allrounder
+CSK,Anshul Kamboj,Bowling Allrounder
+CSK,Jamie Overton,Bowling Allrounder
+CSK,Prashant Veer,Bowling Allrounder
+CSK,Ramakrishna Ghosh,Bowling Allrounder
+CSK,Akeal Hosein,Bowler
+CSK,Gurjapneet Singh,Bowler
+CSK,Khaleel Ahmed,Bowler
+CSK,Matt Henry,Bowler
+CSK,Mukesh Choudhary,Bowler
+CSK,Nathan Ellis,Bowler
+CSK,Noor Ahmad,Bowler
+CSK,Rahul Chahar,Bowler
+CSK,Shreyas Gopal,Bowler
+CSK,Spencer Johnson,Bowler
+KKR,Tejasvi Dahiya,Wicketkeeper Batter
+KKR,Tim Seifert,Wicketkeeper Batter
+KKR,Ajinkya Rahane,Batter
+KKR,Angkrish Raghuvanshi,Batter
+KKR,Finn Allen,Batter
+KKR,Manish Pandey,Batter
+KKR,Rahul Tripathi,Batter
+KKR,Ramandeep Singh,Batter
+KKR,Rinku Singh,Batter
+KKR,Rovman Powell,Batter
+KKR,Sarthak Ranjan,Batter
+KKR,Cameron Green,Batting Allrounder
+KKR,Rachin Ravindra,Batting Allrounder
+KKR,Anukul Roy,Allrounder
+KKR,Daksh Kamra,Allrounder
+KKR,Sunil Narine,Bowling Allrounder
+KKR,Akash Deep,Bowler
+KKR,Blessing Muzarabani,Bowler
+KKR,Harshit Rana,Bowler
+KKR,Kartik Tyagi,Bowler
+KKR,Matheesha Pathirana,Bowler
+KKR,Mustafizur Rahman,Bowler
+KKR,Navdeep Saini,Bowler
+KKR,Prashant Solanki,Bowler
+KKR,Saurabh Dubey,Bowler
+KKR,Umran Malik,Bowler
+KKR,Vaibhav Arora,Bowler
+KKR,Varun Chakravarthy,Bowler
+SRH,Heinrich Klaasen,Wicketkeeper Batter
+SRH,Ishan Kishan,Wicketkeeper Batter
+SRH,Salil Arora,Wicketkeeper Batter
+SRH,Aniket Verma,Batter
+SRH,Ravichandran Smaran,Batter
+SRH,Travis Head,Batter
+SRH,Abhishek Sharma,Batting Allrounder
+SRH,Liam Livingstone,Batting Allrounder
+SRH,Nitish Kumar Reddy,Batting Allrounder
+SRH,Jack Edwards,Allrounder
+SRH,Kamindu Mendis,Allrounder
+SRH,Brydon Carse,Bowling Allrounder
+SRH,Harsh Dubey,Bowling Allrounder
+SRH,Harshal Patel,Bowling Allrounder
+SRH,Krains Fuletra,Bowling Allrounder
+SRH,Shivam Mavi,Bowling Allrounder
+SRH,Shivang Kumar,Bowling Allrounder
+SRH,Amit Kumar,Bowler
+SRH,David Payne,Bowler
+SRH,Eshan Malinga,Bowler
+SRH,Jaydev Unadkat,Bowler
+SRH,Onkar Tarmale,Bowler
+SRH,Pat Cummins,Bowler
+SRH,Praful Hinge,Bowler
+SRH,Sakib Hussain,Bowler
+SRH,Zeeshan Ansari,Bowler
+RR,Dhruv Jurel,Wicketkeeper Batter
+RR,Lhuan-dre Pretorius,Wicketkeeper Batter
+RR,Aman Rao,Batter
+RR,Ravi Singh,Batter
+RR,Riyan Parag,Batter
+RR,Shimron Hetmyer,Batter
+RR,Shubham Dubey,Batter
+RR,Vaibhav Sooryavanshi,Batter
+RR,Yashasvi Jaiswal,Batter
+RR,Dasun Shanaka,Allrounder
+RR,Donovan Ferreira,Allrounder
+RR,Ravindra Jadeja,Allrounder
+RR,Sam Curran,Allrounder
+RR,Adam Milne,Bowler
+RR,Brijesh Sharma,Bowler
+RR,Jofra Archer,Bowler
+RR,Kuldeep Sen,Bowler
+RR,Kwena Maphaka,Bowler
+RR,Nandre Burger,Bowler
+RR,Ravi Bishnoi,Bowler
+RR,Sandeep Sharma,Bowler
+RR,Sushant Mishra,Bowler
+RR,Tushar Deshpande,Bowler
+RR,Vignesh Puthur,Bowler
+RR,Yash Raj Punja,Bowler
+RR,Yudhvir Singh,Bowler
+PBKS,Prabhsimran Singh,Wicketkeeper Batter
+PBKS,Vishnu Vinod,Wicketkeeper Batter
+PBKS,Harnoor Singh,Batter
+PBKS,Nehal Wadhera,Batter
+PBKS,Priyansh Arya,Batter
+PBKS,Pyla Avinash,Batter
+PBKS,Shreyas Iyer,Batter
+PBKS,Cooper Connolly,Batting Allrounder
+PBKS,Marcus Stoinis,Batting Allrounder
+PBKS,Shashank Singh,Batting Allrounder
+PBKS,Suryansh Shedge,Batting Allrounder
+PBKS,Azmatullah Omarzai,Allrounder
+PBKS,Mitchell Owen,Allrounder
+PBKS,Musheer Khan,Allrounder
+PBKS,Marco Jansen,Bowling Allrounder
+PBKS,Arshdeep Singh,Bowler
+PBKS,Ben Dwarshuis,Bowler
+PBKS,Harpreet Brar,Bowler
+PBKS,Lockie Ferguson,Bowler
+PBKS,Praveen Dubey,Bowler
+PBKS,Vijaykumar Vyshak,Bowler
+PBKS,Vishal Nishad,Bowler
+PBKS,Xavier Bartlett,Bowler
+PBKS,Yash Thakur,Bowler
+PBKS,Yuzvendra Chahal,Bowler
+DC,Abishek Porel,Wicketkeeper Batter
+DC,Ben Duckett,Wicketkeeper Batter
+DC,KL Rahul,Wicketkeeper Batter
+DC,Tristan Stubbs,Wicketkeeper Batter
+DC,David Miller,Batter
+DC,Karun Nair,Batter
+DC,Nitish Rana,Batter
+DC,Pathum Nissanka,Batter
+DC,Prithvi Shaw,Batter
+DC,Sahil Parakh,Batter
+DC,Ashutosh Sharma,Batting Allrounder
+DC,Ajay Mandal,Allrounder
+DC,Axar Patel,Allrounder
+DC,Madhav Tiwari,Allrounder
+DC,Sameer Rizvi,Allrounder
+DC,Auqib Nabi,Bowler
+DC,Dushmantha Chameera,Bowler
+DC,Kuldeep Yadav,Bowler
+DC,Kyle Jamieson,Bowler
+DC,Lungi Ngidi,Bowler
+DC,Mitchell Starc,Bowler
+DC,Mukesh Kumar,Bowler
+DC,T Natarajan,Bowler
+DC,Tripurana Vijay,Bowler
+DC,Vipraj Nigam,Bowler
+GT,Anuj Rawat,Wicketkeeper Batter
+GT,Jos Buttler,Wicketkeeper Batter
+GT,Kumar Kushagra,Wicketkeeper Batter
+GT,Tom Banton,Wicketkeeper Batter
+GT,M Shahrukh Khan,Batter
+GT,Sai Sudharsan,Batter
+GT,Shubman Gill,Batter
+GT,Glenn Phillips,Allrounder
+GT,Nishant Sindhu,Allrounder
+GT,Jason Holder,Bowling Allrounder
+GT,Manav Suthar,Bowling Allrounder
+GT,Rahul Tewatia,Bowling Allrounder
+GT,Rashid Khan,Bowling Allrounder
+GT,Washington Sundar,Bowling Allrounder
+GT,Arshad Khan,Bowler
+GT,Ashok Sharma,Bowler
+GT,Gurnoor Brar,Bowler
+GT,Ishant Sharma,Bowler
+GT,Jayant Yadav,Bowler
+GT,Kagiso Rabada,Bowler
+GT,Kulwant Khejroliya,Bowler
+GT,Luke Wood,Bowler
+GT,Mohammed Siraj,Bowler
+GT,Prasidh Krishna,Bowler
+GT,Prithvi Raj,Bowler
+GT,Sai Kishore,Bowler
+LSG,Josh Inglis,Wicketkeeper Batter
+LSG,Nicholas Pooran,Wicketkeeper Batter
+LSG,Rishabh Pant,Wicketkeeper Batter
+LSG,Abdul Samad,Batter
+LSG,Aiden Markram,Batter
+LSG,Akshat Raghuwanshi,Batter
+LSG,Ayush Badoni,Batter
+LSG,Himmat Singh,Batter
+LSG,Matthew Breetzke,Batter
+LSG,Mukul Choudhary,Batter
+LSG,Arshin Kulkarni,Allrounder
+LSG,Mitchell Marsh,Allrounder
+LSG,Shahbaz Ahmed,Allrounder
+LSG,Wanindu Hasaranga,Allrounder
+LSG,Akash Singh,Bowler
+LSG,Anrich Nortje,Bowler
+LSG,Arjun Tendulkar,Bowler
+LSG,Avesh Khan,Bowler
+LSG,Digvesh Rathi,Bowler
+LSG,Manimaran Siddharth,Bowler
+LSG,Mayank Yadav,Bowler
+LSG,Mohammed Shami,Bowler
+LSG,Mohsin Khan,Bowler
+LSG,Naman Tiwari,Bowler
+LSG,Prince Yadav,Bowler

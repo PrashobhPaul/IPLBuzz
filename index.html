@@ -3,15 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IPL 2026</title>
+<title>IPLBuzz · IPL 2026</title>
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="apple-touch-icon" href="logo.png">
+<meta name="theme-color" content="#0a0506">
 <link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&family=DM+Sans:wght@400;500&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#07080c;--s1:#0d0f17;--s2:#141720;--bd:#222840;--bd2:#2c3555;--gold:#f0a500;--red:#e0341a;--green:#1db954;--txt:#dde1ee;--dim:#606880;--dim2:#9099b4}
+:root{--bg:#0a0506;--s1:#170a0c;--s2:#230f12;--bd:#3a1b20;--bd2:#5c2a31;--gold:#f0a500;--amber:#f2872a;--maroon:#7a1620;--silver:#cfd2da;--red:#c62330;--green:#d7a339;--txt:#ece3e1;--dim:#8f7c7f;--dim2:#bda9ac}
 body{background:var(--bg);color:var(--txt);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
 nav{display:flex;align-items:center;height:54px;padding:0 16px;background:var(--s1);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:100;gap:2px}
-.brand{font-family:'Teko',sans-serif;font-size:24px;font-weight:700;color:var(--txt);cursor:pointer;margin-right:12px;letter-spacing:-.5px;flex-shrink:0}
+.brand{display:flex;align-items:center;gap:8px;font-family:'Teko',sans-serif;font-size:24px;font-weight:700;color:var(--txt);cursor:pointer;margin-right:12px;letter-spacing:-.5px;flex-shrink:0}
+.brand-logo{height:34px;width:34px;object-fit:contain;border-radius:6px;filter:drop-shadow(0 0 6px rgba(240,165,0,.25))}
 .brand b{color:var(--gold)}
+@media (max-width:560px){.brand span{display:none}.brand-logo{height:30px;width:30px}}
 .nav-btns{display:flex;gap:2px;flex-shrink:0}
 nav button{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim2);background:none;border:none;cursor:pointer;padding:5px 10px;border-radius:4px;transition:.15s;white-space:nowrap}
 nav button:hover{color:var(--txt);background:var(--s2)}
@@ -36,7 +41,8 @@ nav button.on{color:var(--gold);background:rgba(240,165,0,.1)}
 .live-scores-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .live-team-score{flex:1;min-width:120px}
 .live-tname{font-family:'Teko',sans-serif;font-size:22px;font-weight:700;line-height:1;display:flex;align-items:center;gap:7px}
-.tdot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.tdot{width:9px;height:9px;border-radius:50%;flex-shrink:0;display:inline-block}
+.tlogo{object-fit:contain;vertical-align:middle;flex-shrink:0}
 .live-sc{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;color:var(--gold);margin-top:2px}
 .live-sc small{font-size:12px;color:var(--dim2);font-weight:400;margin-left:2px}
 .live-vs{font-family:'Teko',sans-serif;font-size:15px;color:var(--dim);flex-shrink:0}
@@ -72,7 +78,7 @@ nav button.on{color:var(--gold);background:rgba(240,165,0,.1)}
 .ball{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Teko',sans-serif;font-size:13px;font-weight:700;flex-shrink:0}
 .ball-dot{background:var(--s2);border:1px solid var(--bd);color:var(--dim)}
 .ball-run{background:var(--s2);border:1px solid var(--bd2);color:var(--txt)}
-.ball-four{background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.4);color:#60a5fa}
+.ball-four{background:rgba(207,210,218,.14);border:1px solid rgba(207,210,218,.4);color:var(--silver)}
 .ball-six{background:rgba(240,165,0,.15);border:1px solid rgba(240,165,0,.4);color:var(--gold)}
 .ball-wicket{background:rgba(224,52,26,.15);border:1px solid rgba(224,52,26,.4);color:var(--red)}
 .ball-wide{background:var(--s2);border:1px solid var(--bd);color:var(--dim);font-size:9px}
@@ -238,23 +244,23 @@ nav button.on{color:var(--gold);background:rgba(240,165,0,.1)}
 .ad-banner-text{flex:1;min-width:0}
 .ad-banner-name{font-family:'Teko',sans-serif;font-size:24px;font-weight:700;color:#fff;line-height:1;letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ad-banner-tag{font-family:'Barlow Condensed',sans-serif;font-size:12px;color:rgba(255,255,255,.6);margin-top:3px;letter-spacing:.5px}
-.ad-banner-cta{flex-shrink:0;display:flex;align-items:center;gap:7px;background:#ff0000;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:8px 14px;border-radius:5px;transition:background .15s;white-space:nowrap}
-.ad-banner:hover .ad-banner-cta{background:#cc0000}
+.ad-banner-cta{flex-shrink:0;display:flex;align-items:center;gap:7px;background:#c62330;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:8px 14px;border-radius:5px;transition:background .15s;white-space:nowrap}
+.ad-banner:hover .ad-banner-cta{background:#9c1a24}
 .ad-card{background:var(--s1);border:1px solid var(--bd);border-radius:10px;overflow:hidden;cursor:pointer;text-decoration:none;display:block;transition:border-color .2s,transform .18s}
 .ad-card:hover{border-color:rgba(255,0,0,.6);transform:translateY(-2px)}
 .ad-card-thumb{position:relative;width:100%;height:130px;overflow:hidden}
 .ad-card-thumb svg{width:100%;height:100%}
 .ad-card-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
 .ad-play-btn{width:52px;height:38px;background:rgba(255,0,0,.9);border-radius:9px;display:flex;align-items:center;justify-content:center;transition:transform .18s,background .15s}
-.ad-card:hover .ad-play-btn{transform:scale(1.12);background:#ff0000}
+.ad-card:hover .ad-play-btn{transform:scale(1.12);background:#c62330}
 .ad-tri{width:0;height:0;border-style:solid;border-width:10px 0 10px 18px;border-color:transparent transparent transparent #fff;margin-left:3px}
 .ad-card-body{padding:13px 15px;display:flex;align-items:center;gap:12px}
-.ad-avatar{width:38px;height:38px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;background:linear-gradient(135deg,#1a4a2a,#2d7a3a);border:2px solid rgba(255,255,255,.1)}
+.ad-avatar{width:38px;height:38px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;background:linear-gradient(135deg,#3a1b20,#7a1620);border:2px solid rgba(255,255,255,.1)}
 .ad-info{flex:1;min-width:0}
 .ad-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:var(--txt);line-height:1.2}
 .ad-sub{font-family:'Barlow Condensed',sans-serif;font-size:11px;color:var(--dim2);margin-top:3px;letter-spacing:.3px}
-.ad-sub-btn{flex-shrink:0;background:#ff0000;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:6px 13px;border-radius:4px;transition:background .15s}
-.ad-card:hover .ad-sub-btn{background:#cc0000}
+.ad-sub-btn{flex-shrink:0;background:#c62330;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:6px 13px;border-radius:4px;transition:background .15s}
+.ad-card:hover .ad-sub-btn{background:#9c1a24}
 
 .date-sep{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--dim);padding:14px 0 6px;border-top:1px solid var(--bd);margin-top:2px}
 .date-sep.today{color:var(--gold)}
@@ -316,6 +322,30 @@ nav button.on{color:var(--gold);background:rgba(240,165,0,.1)}
 .tc-player-name{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--txt);margin-bottom:2px}
 .tc-player-role{font-family:'Barlow Condensed',sans-serif;font-size:9px;color:var(--dim);letter-spacing:1px;text-transform:uppercase}
 .tc-player-stats{font-family:'Barlow Condensed',sans-serif;font-size:10px;color:var(--dim2);margin-top:3px}
+/* Rich Teams tab */
+.team-list{display:flex;flex-direction:column;gap:18px;margin-bottom:40px}
+.team-list .team-card{cursor:default}
+.team-list .team-card:hover{transform:none;border-color:var(--bd)}
+.tc-logo{border-radius:8px;padding:4px}
+.tc-finish{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:6px 12px;border-radius:6px;white-space:nowrap;flex-shrink:0}
+.tc-finish-champ{color:#0a0506;background:linear-gradient(135deg,var(--gold),var(--amber));box-shadow:0 0 14px rgba(240,165,0,.35)}
+.tc-finish-runner{color:var(--gold);background:rgba(240,165,0,.12);border:1px solid rgba(240,165,0,.35)}
+.tc-finish-playoff{color:var(--silver);background:rgba(207,210,218,.1);border:1px solid rgba(207,210,218,.25)}
+.tc-finish-league{color:var(--dim2);background:var(--s2);border:1px solid var(--bd2)}
+.tc-intro{font-family:'Barlow Condensed',sans-serif;font-size:13.5px;line-height:1.55;color:var(--dim2);margin-top:10px}
+.tc-section{padding:14px 20px;border-bottom:1px solid var(--bd)}
+.tc-section:last-child{border-bottom:none}
+.tc-section-hd{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:12px}
+.tc-key-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.tc-key{display:flex;align-items:center;background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:10px 12px}
+.tc-key-tag{font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--amber)}
+.tc-key-name{font-family:'Teko',sans-serif;font-size:18px;font-weight:600;color:var(--txt);line-height:1.05;margin:1px 0}
+.tc-key-stat{font-family:'Barlow Condensed',sans-serif;font-size:11.5px;color:var(--dim2)}
+.tc-badge{font-family:'Barlow Condensed',sans-serif;font-size:8px;font-weight:700;letter-spacing:1px;color:var(--gold);border:1px solid rgba(240,165,0,.4);border-radius:3px;padding:0 4px;vertical-align:middle}
+.tc-player-cap{border-color:rgba(240,165,0,.4);background:rgba(240,165,0,.06)}
+.tc-staff{margin-bottom:10px}
+.tc-staff-chip{display:inline-block;font-family:'Barlow Condensed',sans-serif;font-size:12px;color:var(--dim2);background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:6px 12px}
+.tc-staff-chip b{color:var(--silver);letter-spacing:1px;text-transform:uppercase;font-size:10px;margin-right:6px}
 
 /* ── CHAT SYSTEM ── */
 #chat-fab{position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:var(--gold);color:#000;border:none;font-size:24px;cursor:pointer;box-shadow:0 4px 20px rgba(240,165,0,.3);transition:.2s;z-index:1000;display:flex;align-items:center;justify-content:center}
@@ -341,7 +371,7 @@ nav button.on{color:var(--gold);background:rgba(240,165,0,.1)}
 #chat-input:focus{border-color:var(--gold);outline:none}
 #chat-input::placeholder{color:var(--dim)}
 #chat-send{width:36px;height:36px;background:var(--gold);color:#000;border:none;border-radius:6px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:.14s}
-#chat-send:hover{background:#ffb800}
+#chat-send:hover{background:#f2872a}
 #chat-send:disabled{opacity:.5;cursor:not-allowed}
 
 /* ── SCHEDULE ── */
@@ -396,7 +426,7 @@ nav button.on{color:var(--gold);background:rgba(240,165,0,.1)}
 <body>
 
 <nav>
-  <div class="brand" onclick="showView('home')">IPL<b>Buzz</b></div>
+  <div class="brand" onclick="showView('home')"><img class="brand-logo" src="logo.png" alt="IPLBuzz"><span>IPL<b>Buzz</b></span></div>
   <div class="nav-btns">
     <button id="nav-home" onclick="showView('home')">Home</button>
     <button id="nav-matches" onclick="showView('matches')">Matches</button>
@@ -425,150 +455,7 @@ const TEAMS = {
   LSG: { name: "Lucknow Super Giants", color: "#00A8CC", logo: "logos/lsg.png" }
 };
 
-const SQUADS = {
-  CSK: {
-    'MS Dhoni': { role: 'WK-Batsman', type: 'overseas' },
-    'Ruturaj Gaikwad': { role: 'Batsman', type: 'indian' },
-    'Devon Conway': { role: 'WK-Batsman', type: 'overseas' },
-    'Ambati Rayudu': { role: 'Batsman', type: 'indian' },
-    'Shivam Dube': { role: 'All-Rounder', type: 'indian' },
-    'Moeen Ali': { role: 'All-Rounder', type: 'overseas' },
-    'Ravindra Jadeja': { role: 'All-Rounder', type: 'indian' },
-    'Deepak Chahar': { role: 'Bowler', type: 'indian' },
-    'Tushar Deshpande': { role: 'Bowler', type: 'indian' },
-    'Mustafizur Rahman': { role: 'Bowler', type: 'overseas' },
-    'Matheesha Pathirana': { role: 'Bowler', type: 'overseas' }
-  },
-  MI: {
-    'Rohit Sharma': { role: 'Batsman', type: 'indian' },
-    'Ishan Kishan': { role: 'WK-Batsman', type: 'indian' },
-    'Suryakumar Yadav': { role: 'Batsman', type: 'indian' },
-    'Tilak Varma': { role: 'Batsman', type: 'indian' },
-    'Tim David': { role: 'All-Rounder', type: 'overseas' },
-    'Hardik Pandya': { role: 'All-Rounder', type: 'indian' },
-    'Jasprit Bumrah': { role: 'Bowler', type: 'indian' },
-    'Trent Boult': { role: 'Bowler', type: 'overseas' },
-    'Ryan Rickelton': { role: 'WK-Batsman', type: 'overseas' },
-    'Sherfane Rutherford': { role: 'All-Rounder', type: 'overseas' },
-    'Shardul Thakur': { role: 'All-Rounder', type: 'indian' },
-    'AM Ghazanfar': { role: 'Bowler', type: 'overseas' },
-    'Mayank Markande': { role: 'Bowler', type: 'indian' },
-    'Naman Dhir': { role: 'Batsman', type: 'indian' }
-  },
-  RCB: {
-    'Virat Kohli': { role: 'Batsman', type: 'indian' },
-    'Faf du Plessis': { role: 'Batsman', type: 'overseas' },
-    'Glenn Maxwell': { role: 'All-Rounder', type: 'overseas' },
-    'Dinesh Karthik': { role: 'WK-Batsman', type: 'indian' },
-    'Phil Salt': { role: 'WK-Batsman', type: 'overseas' },
-    'Devdutt Padikkal': { role: 'Batsman', type: 'indian' },
-    'Rajat Patidar': { role: 'Batsman', type: 'indian' },
-    'Jitesh Sharma': { role: 'WK-Batsman', type: 'indian' },
-    'Tim David': { role: 'All-Rounder', type: 'overseas' },
-    'Romario Shepherd': { role: 'All-Rounder', type: 'overseas' },
-    'Krunal Pandya': { role: 'All-Rounder', type: 'indian' },
-    'Bhuvneshwar Kumar': { role: 'Bowler', type: 'indian' },
-    'Jacob Duffy': { role: 'Bowler', type: 'overseas' },
-    'Abhinandan Singh': { role: 'Bowler', type: 'indian' },
-    'Suyash Sharma': { role: 'Bowler', type: 'indian' }
-  },
-  KKR: {
-    'Shreyas Iyer': { role: 'Batsman', type: 'indian' },
-    'Dinesh Karthik': { role: 'WK-Batsman', type: 'indian' },
-    'Andre Russell': { role: 'All-Rounder', type: 'overseas' },
-    'Sunil Narine': { role: 'All-Rounder', type: 'overseas' },
-    'Ajinkya Rahane': { role: 'Batsman', type: 'indian' },
-    'Finn Allen': { role: 'WK-Batsman', type: 'overseas' },
-    'Cameron Green': { role: 'All-Rounder', type: 'overseas' },
-    'Angkrish Raghuvanshi': { role: 'Batsman', type: 'indian' },
-    'Rinku Singh': { role: 'Batsman', type: 'indian' },
-    'Ramandeep Singh': { role: 'All-Rounder', type: 'indian' },
-    'Anukul Roy': { role: 'All-Rounder', type: 'indian' },
-    'Varun Chakaravarthy': { role: 'Bowler', type: 'indian' },
-    'Vaibhav Arora': { role: 'Bowler', type: 'indian' },
-    'Blessing Muzarabani': { role: 'Bowler', type: 'overseas' },
-    'Kartik Tyagi': { role: 'Bowler', type: 'indian' }
-  },
-  SRH: {
-    'Ishan Kishan': { role: 'WK-Batsman', type: 'indian' },
-    'Abhishek Sharma': { role: 'All-Rounder', type: 'indian' },
-    'Travis Head': { role: 'Batsman', type: 'overseas' },
-    'Heinrich Klaasen': { role: 'WK-Batsman', type: 'overseas' },
-    'Nitish Kumar Reddy': { role: 'All-Rounder', type: 'indian' },
-    'Aniket Verma': { role: 'Batsman', type: 'indian' },
-    'Salil Arora': { role: 'All-Rounder', type: 'indian' },
-    'Harsh Dubey': { role: 'Bowler', type: 'indian' },
-    'Harshal Patel': { role: 'Bowler', type: 'indian' },
-    'David Payne': { role: 'Bowler', type: 'overseas' },
-    'Jaydev Unadkat': { role: 'Bowler', type: 'indian' },
-    'Eshan Malinga': { role: 'Bowler', type: 'overseas' }
-  },
-  DC: {
-    'Rishabh Pant': { role: 'WK-Batsman', type: 'indian' },
-    'Prithvi Shaw': { role: 'Batsman', type: 'indian' },
-    'David Warner': { role: 'Batsman', type: 'overseas' },
-    'Rovman Powell': { role: 'All-Rounder', type: 'overseas' },
-    'Axar Patel': { role: 'All-Rounder', type: 'indian' },
-    'Mitchell Marsh': { role: 'All-Rounder', type: 'overseas' },
-    'Anrich Nortje': { role: 'Bowler', type: 'overseas' },
-    'Kagiso Rabada': { role: 'Bowler', type: 'overseas' },
-    'Kuldeep Yadav': { role: 'Bowler', type: 'indian' },
-    'Mukesh Kumar': { role: 'Bowler', type: 'indian' },
-    'Khaleel Ahmed': { role: 'Bowler', type: 'indian' }
-  },
-  PBKS: {
-    'Shikhar Dhawan': { role: 'Batsman', type: 'indian' },
-    'Jonny Bairstow': { role: 'WK-Batsman', type: 'overseas' },
-    'Liam Livingstone': { role: 'All-Rounder', type: 'overseas' },
-    'Jitesh Sharma': { role: 'WK-Batsman', type: 'indian' },
-    'Shashank Singh': { role: 'All-Rounder', type: 'indian' },
-    'Sam Curran': { role: 'All-Rounder', type: 'overseas' },
-    'Harpreet Brar': { role: 'All-Rounder', type: 'indian' },
-    'Kagiso Rabada': { role: 'Bowler', type: 'overseas' },
-    'Arshdeep Singh': { role: 'Bowler', type: 'indian' },
-    'Rahul Chahar': { role: 'Bowler', type: 'indian' },
-    'Nathan Ellis': { role: 'Bowler', type: 'overseas' }
-  },
-  RR: {
-    'Sanju Samson': { role: 'WK-Batsman', type: 'indian' },
-    'Jos Buttler': { role: 'WK-Batsman', type: 'overseas' },
-    'Yashasvi Jaiswal': { role: 'Batsman', type: 'indian' },
-    'Shimron Hetmyer': { role: 'Batsman', type: 'overseas' },
-    'Riyan Parag': { role: 'All-Rounder', type: 'indian' },
-    'Ravichandran Ashwin': { role: 'All-Rounder', type: 'indian' },
-    'Trent Boult': { role: 'Bowler', type: 'overseas' },
-    'Prasidh Krishna': { role: 'Bowler', type: 'indian' },
-    'Yuzvendra Chahal': { role: 'Bowler', type: 'indian' },
-    'Sandeep Sharma': { role: 'Bowler', type: 'indian' },
-    'Nandre Burger': { role: 'Bowler', type: 'overseas' }
-  },
-  GT: {
-    'Hardik Pandya': { role: 'All-Rounder', type: 'indian' },
-    'Shubman Gill': { role: 'Batsman', type: 'indian' },
-    'David Miller': { role: 'Batsman', type: 'overseas' },
-    'Wriddhiman Saha': { role: 'WK-Batsman', type: 'indian' },
-    'Vijay Shankar': { role: 'All-Rounder', type: 'indian' },
-    'Rahul Tewatia': { role: 'All-Rounder', type: 'indian' },
-    'Rashid Khan': { role: 'All-Rounder', type: 'overseas' },
-    'Mohammed Shami': { role: 'Bowler', type: 'indian' },
-    'Josh Little': { role: 'Bowler', type: 'overseas' },
-    'Darshan Nalkande': { role: 'Bowler', type: 'indian' },
-    'Noor Ahmad': { role: 'Bowler', type: 'overseas' }
-  },
-  LSG: {
-    'KL Rahul': { role: 'WK-Batsman', type: 'indian' },
-    'Quinton de Kock': { role: 'WK-Batsman', type: 'overseas' },
-    'Marcus Stoinis': { role: 'All-Rounder', type: 'overseas' },
-    'Deepak Hooda': { role: 'All-Rounder', type: 'indian' },
-    'Ayush Badoni': { role: 'All-Rounder', type: 'indian' },
-    'Krunal Pandya': { role: 'All-Rounder', type: 'indian' },
-    'Ravi Bishnoi': { role: 'Bowler', type: 'indian' },
-    'Mohsin Khan': { role: 'Bowler', type: 'indian' },
-    'Avesh Khan': { role: 'Bowler', type: 'indian' },
-    'Mark Wood': { role: 'Bowler', type: 'overseas' },
-    'Yash Thakur': { role: 'Bowler', type: 'indian' }
-  }
-};
+var SQUADS = {}; // 2026 squads loaded from Squads.csv at runtime
 
 var MATCHES = [{
   id:'m1', no:1, date:'Sat, Mar 28 2026',
@@ -862,7 +749,9 @@ async function loadSeasonDataFromCSVs(){
       fetch('./Bowling.csv').then(r=>r.text()),
       fetch('./Partnerships.csv').then(r=>r.text()),
       fetch('./FOW.csv').then(r=>r.text()),
-      fetch('./Overs.csv').then(r=>r.text()).catch(function(){ return ''; })
+      fetch('./Overs.csv').then(r=>r.text()).catch(function(){ return ''; }),
+      fetch('./Squads.csv').then(r=>r.text()).catch(function(){ return ''; }),
+      fetch('./Teams.csv').then(r=>r.text()).catch(function(){ return ''; })
     ]);
     var scheduleRows = parseCSV(files[0]), pointsRows = parseCSV(files[1]);
     var battingRows = parseCSV(files[2]), bowlingRows = parseCSV(files[3]);
@@ -898,10 +787,83 @@ async function loadSeasonDataFromCSVs(){
         inn1: inn1, inn2: inn2
       };
     });
+
+    // Real 2026 squads
+    if(files[7]){
+      var squadRows = parseCSV(files[7]);
+      Object.keys(SQUADS).forEach(function(k){ delete SQUADS[k]; });
+      squadRows.forEach(function(r){
+        if(!r.team || !r.player) return;
+        if(!SQUADS[r.team]) SQUADS[r.team] = {};
+        SQUADS[r.team][r.player] = { role: r.role || '' };
+      });
+    }
+    // Captain / coach / titles from Teams.csv
+    if(files[8]){
+      parseCSV(files[8]).forEach(function(r){
+        var ab = r.abbr; if(!ab || !TEAMS[ab]) return;
+        TEAMS[ab].captain = r.captain || '';
+        TEAMS[ab].coach = r.coach || '';
+        TEAMS[ab].city = r.city || '';
+        TEAMS[ab].titles = r.titles || '0';
+        TEAMS[ab].titleYears = r.titleYears || '';
+      });
+    }
   }catch(e){
     console.warn('CSV load failed, using embedded fallback data.', e);
   }
 }
+
+// Short display role
+function shortRole(role){
+  return ({'Wicketkeeper Batter':'WK-Batter','Batter':'Batter','Bowler':'Bowler',
+    'Allrounder':'All-Rounder','Batting Allrounder':'Batting AR','Bowling Allrounder':'Bowling AR'})[role] || role || 'Player';
+}
+
+// Where a team finished in the tournament
+function teamFinish(teamCode){
+  var ord = function(n){ return n+(['th','st','nd','rd'][(n%100>>3^1&&n%10)]||'th'); };
+  var pos = POINTS.findIndex(function(p){ return p.team === teamCode; }) + 1;
+  var finalM = MATCHES.find(function(m){ return m.stage==='Final'; });
+  var q2 = MATCHES.find(function(m){ return m.stage==='Qualifier 2'; });
+  var elim = MATCHES.find(function(m){ return m.stage==='Eliminator'; });
+  var winnerOf = function(m){ return m ? m.result.split(' ')[0] : ''; };
+  var loserOf = function(m){ if(!m) return ''; var w=winnerOf(m); return m.t1===w?m.t2:m.t1; };
+  if(finalM && winnerOf(finalM)===teamCode) return {label:'CHAMPIONS', tone:'champ', pos:1};
+  if(finalM && loserOf(finalM)===teamCode) return {label:'Runners-up', tone:'runner', pos:2};
+  if(q2 && loserOf(q2)===teamCode) return {label:'Lost Qualifier 2 · 3rd', tone:'playoff', pos:3};
+  if(elim && loserOf(elim)===teamCode) return {label:'Lost Eliminator · 4th', tone:'playoff', pos:4};
+  return {label:ord(pos)+' · Missed playoffs', tone:'league', pos:pos};
+}
+
+// Top 3 performers of a team's season
+function teamKeyPlayers(teamCode, bat, bowl){
+  var out = [];
+  var teamBat = bat.filter(function(p){ return p.team===teamCode; }).sort(function(a,b){ return b.runs-a.runs; });
+  var teamBowl = bowl.filter(function(p){ return p.team===teamCode; }).sort(function(a,b){ return b.wkts-a.wkts || a.runs-b.runs; });
+  var used = {};
+  if(teamBat[0] && teamBat[0].runs>0){ var b=teamBat[0]; used[b.name]=1; out.push({n:b.name, tag:'Top Scorer', stat:b.runs+' runs · SR '+b.sr, sub:b.fifties+'x50 '+b.hundreds+'x100'}); }
+  if(teamBowl[0] && teamBowl[0].wkts>0){ var w=teamBowl[0]; used[w.name]=1; out.push({n:w.name, tag:'Top Wicket-taker', stat:w.wkts+' wkts · Econ '+w.econ, sub:'Best '+w.best}); }
+  // third: best remaining impact (next batter, else next bowler)
+  var third = teamBat.find(function(p){ return !used[p.name] && p.runs>0; });
+  var thirdW = teamBowl.find(function(p){ return !used[p.name] && p.wkts>0; });
+  if(third && (!thirdW || third.runs*1.0 >= thirdW.wkts*22)){ out.push({n:third.name, tag:'Impact', stat:third.runs+' runs · SR '+third.sr, sub:third.sixes+' sixes'}); }
+  else if(thirdW){ out.push({n:thirdW.name, tag:'Impact', stat:thirdW.wkts+' wkts · Econ '+thirdW.econ, sub:'Best '+thirdW.best}); }
+  return out;
+}
+
+var TEAM_INTROS = {
+  RCB:'The pride of Bengaluru went back-to-back. Rajat Patidar’s side topped the league table and then conquered Gujarat Titans in the final, with Virat Kohli the hero once again.',
+  GT:'Shubman Gill’s Titans were the season’s model of consistency — finishing second in the league and fighting all the way to the final before falling to RCB.',
+  SRH:'Sunrisers’ fearless top order fired them into the playoffs in third, but a loss in the Eliminator ended a season of big totals a little short.',
+  RR:'Rajasthan rode the record-breaking teenage sensation Vaibhav Sooryavanshi to a Qualifier 2 finish, bowing out one win from the final.',
+  PBKS:'Punjab pushed hard all season and finished just outside the top four — fifth, agonisingly close to a playoff berth.',
+  DC:'Delhi were in the hunt for much of the campaign but faded late to finish sixth and miss out on the knockouts.',
+  KKR:'The Knight Riders never quite found top gear this year, ending seventh in a competitive table.',
+  CSK:'A rebuilding season for the Super Kings around a new core, finishing eighth as the next generation found its feet.',
+  MI:'Mumbai endured a difficult campaign, unable to string wins together and slipping to ninth.',
+  LSG:'Lucknow struggled for momentum throughout the season and finished bottom of the table.'
+};
 
 function parseCSV(text){
   var lines = text.trim().split(/\r?\n/);
@@ -975,6 +937,15 @@ function showView(viewId){
   else if(viewId==='schedule') renderSchedule();
 }
 
+// ═══ TEAM LOGO HELPER ═══
+// Renders the team crest (logos/{abbr}.png) from a TEAMS object; falls back to a colour dot.
+function teamLogoObj(t, size){
+  size = size || 20;
+  if(t && t.logo) return '<img class="tlogo" src="'+t.logo+'" alt="" style="width:'+size+'px;height:'+size+'px">';
+  return '<span class="tdot" style="width:'+size+'px;height:'+size+'px;background:'+(t?t.color:'#888')+'"></span>';
+}
+function teamLogo(abbr, size){ return teamLogoObj(TEAMS[abbr], size); }
+
 // ═══ HOME PAGE ═══
 
 function renderHome(){
@@ -1017,9 +988,9 @@ function renderHome(){
       '<div class="live-tile-header">'+
         '<div class="live-tag">'+(liveMatch?'<div class="live-dot"></div>':'')+tag+'</div>'+
         '<div class="live-scores-row">'+
-          '<div class="live-team-score"><div class="live-tname"><div class="tdot" style="background:'+(ft1?ft1.color:'#888')+'"></div>'+featured.t1+'</div><div class="live-sc">'+(featured.t1score||'—')+' <small>'+(featured.t1ov?featured.t1ov+' ov':'')+'</small></div></div>'+
+          '<div class="live-team-score"><div class="live-tname">'+teamLogoObj(ft1, 26)+featured.t1+'</div><div class="live-sc">'+(featured.t1score||'—')+' <small>'+(featured.t1ov?featured.t1ov+' ov':'')+'</small></div></div>'+
           '<div class="live-vs">vs</div>'+
-          '<div class="live-team-score"><div class="live-tname"><div class="tdot" style="background:'+(ft2?ft2.color:'#888')+'"></div>'+featured.t2+'</div><div class="live-sc">'+(featured.t2score||'—')+' <small>'+(featured.t2ov?featured.t2ov+' ov':'')+'</small></div></div>'+
+          '<div class="live-team-score"><div class="live-tname">'+teamLogoObj(ft2, 26)+featured.t2+'</div><div class="live-sc">'+(featured.t2score||'—')+' <small>'+(featured.t2ov?featured.t2ov+' ov':'')+'</small></div></div>'+
         '</div>'+
         '<div class="live-status-txt">'+(featured.result||featured.date+' · '+featured.venue)+'</div>'+
       '</div>'+
@@ -1034,7 +1005,7 @@ function renderHome(){
     var q = i < 4;
     pointsHtml += '<tr style="'+(q?'background:rgba(240,165,0,.06)':'')+'">'+
       '<td style="'+(q?'color:var(--gold);font-weight:700':'color:var(--dim)')+'">'+(i+1)+'</td>'+
-      '<td style="color:'+(team?team.color:'var(--txt)')+';font-weight:600">'+p.team+'</td>'+
+      '<td style="color:'+(team?team.color:'var(--txt)')+';font-weight:600"><span style="display:inline-flex;align-items:center;gap:6px">'+teamLogo(p.team,18)+p.team+'</span></td>'+
       '<td>'+p.p+'</td><td>'+p.w+'</td><td>'+p.l+'</td><td style="font-weight:700">'+p.pts+'</td><td>'+p.nrr+'</td></tr>';
     if(i === 3) pointsHtml += '<tr><td colspan="7" style="padding:2px 0;border-bottom:1px dashed var(--bd2);font-size:9px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;text-align:center">Playoff cut-off</td></tr>';
   });
@@ -1247,7 +1218,7 @@ function renderStatCategory(cat){
         var val = valFn(p);
         var sub = subFn ? subFn(p) : '';
         var barPct = barFn ? Math.min(100, (barFn(p)/maxVal)*100) : 0;
-        var col = colFn ? colFn(p) : '#22c55e';
+        var col = colFn ? colFn(p) : '#f2872a';
         return '<div class="stat-row">'+
           '<div class="stat-rank '+rankClass(i)+'">'+(i+1)+'</div>'+
           playerPhoto(p.name, p.team, 32, 'margin-right:6px')+
@@ -1296,7 +1267,7 @@ function renderStatCategory(cat){
         function(p){return p.runs;},
         function(p){return 'Avg '+p.avg+' · SR '+p.sr;},
         function(p){return p.runs;},
-        function(p){return p.runs>=200?'#22c55e':p.runs>=100?'#f0a500':'var(--gold)'}
+        function(p){return p.runs>=200?'#f2872a':p.runs>=100?'#f0a500':'var(--gold)'}
       );
 
   } else if(cat === 'bat-hs'){
@@ -1306,7 +1277,7 @@ function renderStatCategory(cat){
         function(p){return p.hs+(p.hsNo?'*':'');},
         function(p){return p.runs+' runs · '+p.inn+' inn';},
         function(p){return p.hs;},
-        function(p){return p.hs>=100?'#22c55e':p.hs>=75?'#f0a500':'var(--gold)'}
+        function(p){return p.hs>=100?'#f2872a':p.hs>=75?'#f0a500':'var(--gold)'}
       );
 
   } else if(cat === 'bat-avg'){
@@ -1332,7 +1303,7 @@ function renderStatCategory(cat){
         function(p){return parseFloat(p.sr);},
         function(p){
           var sr=parseFloat(p.sr);
-          return sr>=200?'#22c55e':sr>=150?'#f0a500':'var(--gold)';
+          return sr>=200?'#f2872a':sr>=150?'#f0a500':'var(--gold)';
         }
       );
 
@@ -1346,7 +1317,7 @@ function renderStatCategory(cat){
           function(p){return p.hundreds;},
           function(p){return p.runs+' runs · HS '+p.hs+(p.hsNo?'*':'');},
           function(p){return p.hundreds;},
-          function(p){return '#22c55e'}
+          function(p){return '#f2872a'}
         );
     }
 
@@ -1367,7 +1338,7 @@ function renderStatCategory(cat){
         function(p){return p.fours;},
         function(p){return p.runs+' runs · SR '+p.sr;},
         function(p){return p.fours;},
-        function(p){return '#3b82f6'}
+        function(p){return '#cfd2da'}
       );
 
   } else if(cat === 'bat-6s'){
@@ -1387,7 +1358,7 @@ function renderStatCategory(cat){
         function(p){return p.wkts;},
         function(p){return p.econ+' econ · '+p.best+' best';},
         function(p){return p.wkts;},
-        function(p){return '#22c55e'}
+        function(p){return '#f2872a'}
       );
 
   } else if(cat === 'bowl-avg'){
@@ -1399,7 +1370,7 @@ function renderStatCategory(cat){
         function(p){return p.avg;},
         function(p){return p.wkts+'W · '+p.runs+'R · '+p.overs+' ov';},
         function(p){return Math.max(0,60-parseFloat(p.avg));},
-        function(p){return '#22c55e'}
+        function(p){return '#f2872a'}
       );
 
   } else if(cat === 'bowl-best'){
@@ -1411,7 +1382,7 @@ function renderStatCategory(cat){
         function(p){return p.best;},
         function(p){return p.wkts+'W total · Econ '+p.econ;},
         function(p){return p.best_w*10;},
-        function(p){return p.best_w>=4?'#22c55e':p.best_w>=3?'#f0a500':'var(--green)'}
+        function(p){return p.best_w>=4?'#f2872a':p.best_w>=3?'#f0a500':'var(--green)'}
       );
 
   } else if(cat === 'bowl-5w'){
@@ -1424,7 +1395,7 @@ function renderStatCategory(cat){
           function(p){return p.fifers;},
           function(p){return p.wkts+'W total · '+p.best+' best';},
           function(p){return p.fifers;},
-          function(p){return '#22c55e'}
+          function(p){return '#f2872a'}
         );
     }
 
@@ -1439,7 +1410,7 @@ function renderStatCategory(cat){
         function(p){return Math.max(0,20-parseFloat(p.econ));},
         function(p){
           var e=parseFloat(p.econ);
-          return e<=7?'#22c55e':e<=9?'#f0a500':'var(--gold)';
+          return e<=7?'#f2872a':e<=9?'#f0a500':'var(--gold)';
         }
       );
 
@@ -1452,7 +1423,7 @@ function renderStatCategory(cat){
         function(p){return p.bsr;},
         function(p){return p.wkts+'W · '+p.balls+' balls · '+p.overs+' ov';},
         function(p){return p.wkts>=1 ? Math.max(0,80-parseFloat(p.bsr)) : 0;},
-        function(p){return '#22c55e'}
+        function(p){return '#f2872a'}
       );
 
   } else if(cat === 'bowl-dots'){
@@ -1494,7 +1465,7 @@ function renderMatches(){
       '<div class="mc-teams-row">' +
         '<div class="mc-team">' +
           '<div class="mc-team-name">' +
-            '<div class="tdot" style="background:'+(t1?t1.color:'#888')+'"></div>' +
+            teamLogoObj(t1, 20) +
             m.t1 +
           '</div>' +
           (m.t1score ? '<div class="mc-score">'+m.t1score+' ('+m.t1ov+' ov)</div>' : '') +
@@ -1502,7 +1473,7 @@ function renderMatches(){
         '<div class="mc-vs">vs</div>' +
         '<div class="mc-team">' +
           '<div class="mc-team-name">' +
-            '<div class="tdot" style="background:'+(t2?t2.color:'#888')+'"></div>' +
+            teamLogoObj(t2, 20) +
             m.t2 +
           '</div>' +
           (m.t2score ? '<div class="mc-score">'+m.t2score+' ('+m.t2ov+' ov)</div>' : '') +
@@ -1542,7 +1513,7 @@ function renderMatchDetail(matchId){
     '<div class="md-scores">' +
       '<div class="md-team">' +
         '<div class="md-tname">' +
-          '<div class="tdot" style="background:'+(t1?t1.color:'#888')+'"></div>' +
+          teamLogoObj(t1, 20) +
           match.t1 +
         '</div>' +
         (match.t1score ? '<div class="md-score">'+match.t1score+' <small>('+match.t1ov+' ov)</small></div>' : '<div class="md-score">—</div>') +
@@ -1550,7 +1521,7 @@ function renderMatchDetail(matchId){
       '<div class="md-vs">vs</div>' +
       '<div class="md-team">' +
         '<div class="md-tname">' +
-          '<div class="tdot" style="background:'+(t2?t2.color:'#888')+'"></div>' +
+          teamLogoObj(t2, 20) +
           match.t2 +
         '</div>' +
         (match.t2score ? '<div class="md-score">'+match.t2score+' <small>('+match.t2ov+' ov)</small></div>' : '<div class="md-score">—</div>') +
@@ -1686,7 +1657,7 @@ function renderScorecard(match){
     var team = TEAMS[inn.team];
     html += '<div style="background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:18px;margin-bottom:20px">' +
       '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">' +
-        '<div class="tdot" style="background:'+(team?team.color:'#888')+'"></div>' +
+        teamLogoObj(team, 20) +
         '<div style="font-family:Teko,sans-serif;font-size:22px;font-weight:700;color:var(--txt)">'+inn.team+'</div>' +
         '<div style="margin-left:auto;font-family:Teko,sans-serif;font-size:20px;font-weight:700;color:var(--gold)">'+inn.total+'</div>' +
       '</div>';
@@ -1764,7 +1735,7 @@ function renderWormChart(match){
     '<svg class="worm-svg" viewBox="0 0 400 200">' +
       '<defs><linearGradient id="wormGrad" x1="0%" y1="0%" x2="100%" y2="0%">' +
         '<stop offset="0%" style="stop-color:'+(TEAMS[match.inn1.team]?TEAMS[match.inn1.team].color:'#f0a500')+';stop-opacity:1" />' +
-        '<stop offset="100%" style="stop-color:'+(TEAMS[match.inn2.team]?TEAMS[match.inn2.team].color:'#22c55e')+';stop-opacity:1" />' +
+        '<stop offset="100%" style="stop-color:'+(TEAMS[match.inn2.team]?TEAMS[match.inn2.team].color:'#f2872a')+';stop-opacity:1" />' +
       '</linearGradient></defs>';
   
   // Dynamic y-scale from the higher innings total
@@ -1783,7 +1754,7 @@ function renderWormChart(match){
     return '<polyline fill="none" stroke="'+color+'" stroke-width="2" points="'+pts.join(' ')+'"/>';
   };
   html += wormLine(match.inn1.overR, TEAMS[match.inn1.team]?TEAMS[match.inn1.team].color:'#f0a500');
-  html += wormLine(match.inn2.overR, TEAMS[match.inn2.team]?TEAMS[match.inn2.team].color:'#22c55e');
+  html += wormLine(match.inn2.overR, TEAMS[match.inn2.team]?TEAMS[match.inn2.team].color:'#f2872a');
   
   html += '</svg>' +
     '<div class="worm-legend">' +
@@ -1792,7 +1763,7 @@ function renderWormChart(match){
         match.inn1.team +
       '</div>' +
       '<div class="worm-legend-item">' +
-        '<div class="worm-legend-dot" style="background:'+(TEAMS[match.inn2.team]?TEAMS[match.inn2.team].color:'#22c55e')+'"></div>' +
+        '<div class="worm-legend-dot" style="background:'+(TEAMS[match.inn2.team]?TEAMS[match.inn2.team].color:'#f2872a')+'"></div>' +
         match.inn2.team +
       '</div>' +
     '</div>' +
@@ -1987,76 +1958,89 @@ function renderTeams(){
   var stats = buildPlayerStats();
   var bat = stats.bat, bowl = stats.bowl;
   
+  // Order teams by final standings
+  var order = POINTS.map(function(p){ return p.team; });
+  Object.keys(TEAMS).forEach(function(tc){ if(order.indexOf(tc) < 0) order.push(tc); });
+
+  var recItem = function(v,l){ return '<div class="tc-record-item"><div class="tc-record-val">'+v+'</div><div class="tc-record-label">'+l+'</div></div>'; };
+
   var html = '<div class="main-w">' +
-    '<div class="sh"><h2>IPL 2026 Teams</h2><p>Full Squads • Tournament Stats • Performance</p></div>' +
-    '<div class="team-grid">';
-  
-  Object.keys(TEAMS).forEach(function(teamCode){
-    var team = TEAMS[teamCode];
+    '<div class="sh"><h2>IPL 2026 Teams</h2><p>Squads · Key Performers · Where They Finished</p></div>' +
+    '<div class="team-list">';
+
+  order.forEach(function(teamCode){
+    var team = TEAMS[teamCode]; if(!team) return;
     var squad = SQUADS[teamCode] || {};
-    var teamRecord = POINTS.find(function(p){ return p.team === teamCode; }) || {p:0,w:0,l:0,pts:0};
-    
-    html += '<div class="team-card" onclick="expandTeam(\''+teamCode+'\')">' +
-      '<div class="tc-header">' +
-        '<div class="tc-name-row">' +
-          '<div class="tc-logo" style="background:'+(team.logo?'url('+team.logo+') center/cover':team.color)+'"></div>' +
-          '<div class="tc-info">' +
-            '<h3>'+teamCode+'</h3>' +
-            '<p>'+(team.name || teamCode)+'</p>' +
-          '</div>' +
+    var rec = POINTS.find(function(p){ return p.team === teamCode; }) || {p:0,w:0,l:0,pts:0,nrr:'—'};
+    var fin = teamFinish(teamCode);
+    var captain = team.captain || '';
+    var coach = team.coach || '';
+
+    // Key players
+    var keyHtml = teamKeyPlayers(teamCode, bat, bowl).map(function(k){
+      return '<div class="tc-key">' +
+        playerPhoto(k.n, teamCode, 44, 'margin-right:11px;flex-shrink:0') +
+        '<div style="min-width:0">' +
+          '<div class="tc-key-tag">'+k.tag+'</div>' +
+          '<div class="tc-key-name">'+k.n+'</div>' +
+          '<div class="tc-key-stat">'+k.stat+'</div>' +
         '</div>' +
+      '</div>';
+    }).join('') || '<div class="stats-note">No performance data.</div>';
+
+    // Squad chips (captain first, then the rest)
+    var playerChip = function(name, role, badge){
+      var pb = bat.find(function(b){ return b.name===name && b.team===teamCode; });
+      var pw = bowl.find(function(b){ return b.name===name && b.team===teamCode; });
+      var s = '';
+      if(pb && pb.runs>0) s = pb.runs+' runs';
+      if(pw && pw.wkts>0) s = (s?s+' · ':'')+pw.wkts+' wkts';
+      return '<div class="tc-player'+(badge==='CAPTAIN'?' tc-player-cap':'')+'">' +
+        '<div class="tc-player-name">'+name+(badge?' <span class="tc-badge">'+badge+'</span>':'')+'</div>' +
+        '<div class="tc-player-role">'+shortRole(role)+'</div>' +
+        (s?'<div class="tc-player-stats">'+s+'</div>':'') +
+      '</div>';
+    };
+    var names = Object.keys(squad);
+    var capChip = (captain && squad[captain]) ? playerChip(captain, squad[captain].role, 'CAPTAIN')
+                : (captain ? playerChip(captain, '', 'CAPTAIN') : '');
+    var restChips = names.filter(function(n){ return n !== captain; })
+                         .map(function(n){ return playerChip(n, squad[n].role, ''); }).join('');
+
+    html += '<div class="team-card">' +
+      '<div class="tc-header" style="background:linear-gradient(135deg,'+team.color+'26,transparent 60%)">' +
+        '<div class="tc-name-row" style="margin-bottom:0">' +
+          '<img class="tc-logo" src="'+team.logo+'" alt="'+teamCode+'">' +
+          '<div class="tc-info" style="flex:1">' +
+            '<h3>'+team.name+'</h3>' +
+            '<p>'+(team.city||'')+(captain?' · Captain '+captain:'')+'</p>' +
+          '</div>' +
+          '<div class="tc-finish tc-finish-'+fin.tone+'">'+fin.label+'</div>' +
+        '</div>' +
+        '<div class="tc-intro">'+(TEAM_INTROS[teamCode]||'')+'</div>' +
+      '</div>' +
+      '<div class="tc-section">' +
+        '<div class="tc-section-hd">★ Key Players</div>' +
+        '<div class="tc-key-grid">'+keyHtml+'</div>' +
+      '</div>' +
+      '<div class="tc-section">' +
+        '<div class="tc-section-hd">Season</div>' +
         '<div class="tc-record">' +
-          '<div class="tc-record-item">' +
-            '<div class="tc-record-val">'+teamRecord.p+'</div>' +
-            '<div class="tc-record-label">Played</div>' +
-          '</div>' +
-          '<div class="tc-record-item">' +
-            '<div class="tc-record-val">'+teamRecord.w+'</div>' +
-            '<div class="tc-record-label">Won</div>' +
-          '</div>' +
-          '<div class="tc-record-item">' +
-            '<div class="tc-record-val">'+teamRecord.pts+'</div>' +
-            '<div class="tc-record-label">Points</div>' +
-          '</div>' +
+          recItem(rec.p,'Played')+recItem(rec.w,'Won')+recItem(rec.l,'Lost')+recItem(rec.pts,'Points')+recItem(rec.nrr,'NRR') +
         '</div>' +
       '</div>' +
-      '<div class="tc-players">' +
-        '<div class="tc-players-title">Squad ('+Object.keys(squad).length+' players)</div>' +
-        '<div class="tc-player-grid">';
-    
-    Object.keys(squad).forEach(function(playerName){
-      var player = squad[playerName];
-      
-      // Get player stats from completed matches
-      var playerBat = bat.find(function(b){ return b.name === playerName && b.team === teamCode; });
-      var playerBowl = bowl.find(function(b){ return b.name === playerName && b.team === teamCode; });
-      
-      var statsText = 'YET TO PLAY';
-      if(playerBat && playerBat.inn > 0) {
-        statsText = playerBat.runs + ' runs, Avg ' + playerBat.avg;
-      } else if(playerBowl && playerBowl.wkts > 0) {
-        statsText = playerBowl.wkts + ' wkts, Econ ' + playerBowl.econ;
-      }
-      
-      html += '<div class="tc-player">' +
-        '<div class="tc-player-name">'+playerName+'</div>' +
-        '<div class="tc-player-role">'+player.role+'</div>' +
-        '<div class="tc-player-stats">'+statsText+'</div>' +
-      '</div>';
-    });
-    
-    html += '</div></div></div>';
+      '<div class="tc-section">' +
+        '<div class="tc-section-hd">Full Squad · '+names.length+' players</div>' +
+        (coach?'<div class="tc-staff"><span class="tc-staff-chip"><b>Coach</b>'+coach+'</span></div>':'') +
+        '<div class="tc-player-grid">'+capChip+restChips+'</div>' +
+      '</div>' +
+    '</div>';
   });
-  
+
   html += '</div></div>';
-  
+
   var el = document.getElementById('teams-content');
   if(el) el.innerHTML = html;
-}
-
-function expandTeam(teamCode){
-  // Simple expand - could add modal or detailed view
-  console.log('Expanding team:', teamCode);
 }
 
 // ═══ SCHEDULE PAGE ═══
@@ -2094,12 +2078,12 @@ function renderSchedule(){
         '<div class="mno">'+(match.stage ? '<span title="'+match.stage+'">'+playoffTag(match.stage)+'</span>' : match.no)+'</div>' +
         '<div class="mteams">' +
           '<div class="mteam">' +
-            '<div class="tdot" style="background:'+(t1?t1.color:'#888')+'"></div>' +
+            teamLogoObj(t1, 20) +
             match.t1 +
           '</div>' +
           '<div class="mvs">VS</div>' +
           '<div class="mteam">' +
-            '<div class="tdot" style="background:'+(t2?t2.color:'#888')+'"></div>' +
+            teamLogoObj(t2, 20) +
             match.t2 +
           '</div>' +
         '</div>' +
