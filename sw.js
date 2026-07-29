@@ -1,4 +1,4 @@
-const VERSION = 'iplbuzz-v3';
+const VERSION = 'iplbuzz-v4';
 const STATIC_CACHE = `${VERSION}-static`;
 const DATA_CACHE = `${VERSION}-data`;
 
@@ -13,7 +13,8 @@ const APP_SHELL = [
   './Teams.csv',
   './Squads.csv',
   './Partnerships.csv',
-  './FOW.csv'
+  './FOW.csv',
+  './Overs.csv'
 ];
 
 self.addEventListener('install', (event) => {
