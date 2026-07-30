@@ -7,7 +7,7 @@
 <link rel="icon" type="image/png" href="logo.png">
 <link rel="apple-touch-icon" href="logo.png">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0a0506">
+<meta name="theme-color" content="#070d1a">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -15,9 +15,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&family=DM+Sans:wght@400;500&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#0a0506;--s1:#170a0c;--s2:#230f12;--bd:#3a1b20;--bd2:#5c2a31;--gold:#f0a500;--amber:#f2872a;--maroon:#7a1620;--silver:#cfd2da;--red:#c62330;--green:#d7a339;--txt:#ece3e1;--dim:#8f7c7f;--dim2:#bda9ac}
+:root{--bg:#070d1a;--s1:rgba(12,21,42,.86);--s2:rgba(21,34,64,.9);--bd:#243350;--bd2:#37527f;--gold:#f5b301;--amber:#f2872a;--maroon:#12325f;--silver:#cdd6e6;--red:#e0473a;--green:#3fb96e;--txt:#e9eefb;--dim:#7e8aa6;--dim2:#aab6d0}
+/* Global stadium backdrop — one fixed layer, identical on every device */
 body{background:var(--bg);color:var(--txt);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
-nav{display:flex;align-items:center;height:54px;padding:0 16px;background:var(--s1);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:100;gap:2px}
+body::before{content:'';position:fixed;inset:0;z-index:-1;
+  background:linear-gradient(180deg,rgba(6,11,24,.84) 0%,rgba(6,11,24,.9) 55%,rgba(6,11,24,.95) 100%),
+             url('bg.jpg') center top/cover no-repeat;
+  background-attachment:scroll}
+nav{display:flex;align-items:center;height:54px;padding:0 16px;background:rgba(8,14,28,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:100;gap:2px}
 .brand{display:flex;align-items:center;gap:8px;font-family:'Teko',sans-serif;font-size:24px;font-weight:700;color:var(--txt);cursor:pointer;margin-right:12px;letter-spacing:-.5px;flex-shrink:0}
 .brand-logo{height:34px;width:34px;object-fit:contain;border-radius:6px;filter:drop-shadow(0 0 6px rgba(240,165,0,.25))}
 .brand b{color:var(--gold)}
@@ -1076,6 +1081,17 @@ function teamLogoObj(t, size){
   return '<span class="tdot" style="width:'+size+'px;height:'+size+'px;background:'+(t?t.color:'#888')+'"></span>';
 }
 function teamLogo(abbr, size){ return teamLogoObj(TEAMS[abbr], size); }
+// Team colour, lightened when too dark to read on the navy backdrop
+function teamTextColor(t){
+  var c = (t && t.color) || t || '';
+  var m = /^#?([0-9a-fA-F]{6})$/.exec(c || '');
+  if(!m) return 'var(--txt)';
+  var n = parseInt(m[1],16), r=n>>16&255, g=n>>8&255, b=n&255;
+  var lum = 0.299*r + 0.587*g + 0.114*b;
+  if(lum >= 115) return c;
+  var mix = function(x){ return Math.round(x + (255-x)*0.55); };
+  return 'rgb('+mix(r)+','+mix(g)+','+mix(b)+')';
+}
 
 // ═══ HOME PAGE ═══
 
@@ -1136,7 +1152,7 @@ function renderHome(){
     var q = i < 4;
     pointsHtml += '<tr style="'+(q?'background:rgba(240,165,0,.06)':'')+'">'+
       '<td style="'+(q?'color:var(--gold);font-weight:700':'color:var(--dim)')+'">'+(i+1)+'</td>'+
-      '<td style="color:'+(team?team.color:'var(--txt)')+';font-weight:600"><span style="display:inline-flex;align-items:center;gap:6px">'+teamLogo(p.team,18)+p.team+'</span></td>'+
+      '<td style="color:'+teamTextColor(team)+';font-weight:600"><span style="display:inline-flex;align-items:center;gap:6px">'+teamLogo(p.team,18)+p.team+'</span></td>'+
       '<td>'+p.p+'</td><td>'+p.w+'</td><td>'+p.l+'</td><td style="font-weight:700">'+p.pts+'</td><td>'+p.nrr+'</td></tr>';
     if(i === 3) pointsHtml += '<tr><td colspan="7" style="padding:2px 0;border-bottom:1px dashed var(--bd2);font-size:9px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;text-align:center">Playoff cut-off</td></tr>';
   });
@@ -1957,7 +1973,7 @@ function renderPartnerships(match){
     if(!inn || !inn.pships) return;
     
     var team = TEAMS[inn.team];
-    html += '<div style="font-family:Teko,sans-serif;font-size:20px;font-weight:700;color:'+(team?team.color:'var(--txt)')+';margin:20px 0 12px">'+inn.team+' Partnerships</div>';
+    html += '<div style="font-family:Teko,sans-serif;font-size:20px;font-weight:700;color:'+teamTextColor(team)+';margin:20px 0 12px">'+inn.team+' Partnerships</div>';
     
     inn.pships.forEach(function(p){
       var rr = p.b > 0 ? ((p.r / p.b) * 6).toFixed(1) : '0.0';
@@ -2036,7 +2052,7 @@ function renderPlayerAnalysis(match){
           '</div>' +
         '</div>' +
         '<div style="display:flex;align-items:center;gap:8px;margin:12px 0">' +
-          '<div class="rating-val" style="color:'+(team?team.color:'var(--gold)')+'">'+r.v+'</div>' +
+          '<div class="rating-val" style="color:'+teamTextColor(team)+'">'+r.v+'</div>' +
           '<div style="flex:1">' +
             '<div class="rating-bar-wrap">' +
               '<div class="rating-bar" style="width:'+(r.v*10)+'%;background:'+(team?team.color:'var(--gold)')+'"></div>' +
@@ -2065,7 +2081,7 @@ function renderKeyMoments(match){
     if(!inn || !moments) return;
 
     var team = TEAMS[inn.team];
-    html += '<div style="font-family:Teko,sans-serif;font-size:20px;font-weight:700;color:'+(team?team.color:'var(--txt)')+';margin:20px 0 12px">'+inn.team+' Innings</div>';
+    html += '<div style="font-family:Teko,sans-serif;font-size:20px;font-weight:700;color:'+teamTextColor(team)+';margin:20px 0 12px">'+inn.team+' Innings</div>';
 
     moments.forEach(function(m){
       html += '<div class="km-item">' +
